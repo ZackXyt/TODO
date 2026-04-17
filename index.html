@@ -1162,6 +1162,69 @@
       user-select: none;
       text-shadow: 0 1px 4px rgba(0,0,0,0.4);
     }
+
+    /* ===== PURE FOCUS OVERLAY ===== */
+    #pf-overlay {
+      position: fixed; inset: 0; z-index: 9000;
+      display: none; overflow: hidden;
+    }
+    #pf-overlay.show { display: block; }
+    #pf-cv {
+      position: absolute; inset: 0; width: 100%; height: 100%;
+    }
+    #pf-time-wrap {
+      position: absolute; top: 45%; left: 50%;
+      transform: translate(-50%, -50%);
+      text-align: center; pointer-events: none;
+      display: flex; flex-direction: column; align-items: center; gap: 0;
+    }
+    #pf-tm {
+      font-family: 'SF Mono', 'JetBrains Mono', 'Menlo', 'Monaco', 'Courier New', monospace;
+      font-size: clamp(56px, 7.8vw, 100px);
+      font-weight: 100;
+      letter-spacing: 0.07em;
+      color: rgba(255,255,255,0.92);
+      line-height: 1;
+      font-variant-numeric: tabular-nums;
+      text-shadow: 0 0 60px rgba(255,255,255,0.10);
+    }
+    #pf-cs {
+      font-family: 'SF Mono', 'JetBrains Mono', 'Menlo', 'Monaco', 'Courier New', monospace;
+      font-size: clamp(20px, 2.7vw, 36px);
+      font-weight: 200;
+      letter-spacing: 0.12em;
+      color: rgba(255,255,255,0.38);
+      font-variant-numeric: tabular-nums;
+      margin-top: 4px;
+    }
+    #pf-exit-btn {
+      position: absolute; top: 24px; right: 28px;
+      width: 38px; height: 38px; border-radius: 50%;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.10);
+      color: rgba(255,255,255,0.38); font-size: 15px;
+      cursor: pointer; display: flex; align-items: center; justify-content: center;
+      transition: all 0.22s;
+    }
+    #pf-exit-btn:hover {
+      background: rgba(255,255,255,0.10);
+      border-color: rgba(255,255,255,0.26);
+      color: rgba(255,255,255,0.82);
+    }
+    .pf-enter-btn {
+      background: transparent;
+      border: 1px solid rgba(255,255,255,0.09);
+      border-radius: 8px;
+      color: rgba(255,255,255,0.22);
+      font-size: 10px; letter-spacing: 0.08em;
+      padding: 3px 8px; cursor: pointer;
+      transition: all 0.2s; white-space: nowrap;
+    }
+    .pf-enter-btn:hover {
+      background: rgba(255,255,255,0.06);
+      border-color: rgba(255,255,255,0.22);
+      color: rgba(255,255,255,0.65);
+    }
   </style>
 </head>
 <body>
@@ -1265,7 +1328,8 @@
           </div>
           <div style="display:flex;flex-direction:column;gap:6px;align-items:flex-end;flex-shrink:0;">
             <button class="start-timer-btn" id="start-timer-btn" onclick="startPauseTimer()">▶ 开始</button>
-            <button class="reset-stretch-btn" onclick="resetStretchTimer()">重置</button>
+            <button class="reset-stretch-btn" id="reset-timer-btn" onclick="resetStretchTimer()">重置</button>
+            <button class="pf-enter-btn" onclick="enterPureFocus()" title="进入纯享专注模式">纯享</button>
           </div>
         </div>
 
@@ -2713,6 +2777,176 @@
       }
       document.getElementById('report-task-list').innerHTML = html;
     }
+    // ===== PURE FOCUS MODE =====
+    var _pfRunning = false, _pfAnimId = null;
+    var _pfCanvas = null, _pfCtx = null;
+    var _pfParts = [];
+    var _pfBeat = 0;
+    var _pfLastST = -999;
+    var _pfSecTs = 0;
+    var _pfEcg = [];
+    var _pfSpike = 0, _pfSpikePh = 0;
+
+    function _pfPal() {
+      var hx = (localStorage.getItem('todo_wallpaper_color') || '#533483').replace('#','');
+      var R=parseInt(hx.slice(0,2),16)/255, G=parseInt(hx.slice(2,4),16)/255, B=parseInt(hx.slice(4,6),16)/255;
+      var mx=Math.max(R,G,B), mn=Math.min(R,G,B), d=mx-mn;
+      var h=0, s=mx?d/mx:0;
+      if(d>0){if(mx===R)h=((((G-B)/d)%6)+6)%6;else if(mx===G)h=(B-R)/d+2;else h=(R-G)/d+4;h*=60;}
+      var f=function(hh,ss,ll,aa){aa=aa===undefined?1:aa;return'hsla('+((Math.round(hh)%360+360)%360)+','+(ss*100).toFixed(1)+'%,'+(ll*100).toFixed(1)+'%,'+aa+')';};
+      var sv=Math.max(s,.5);
+      return {
+        arc:  f(h,sv,.72),     arcBg: f(h,.18,.28,.38),
+        glow: f(h,sv,.68,.20), glowS: f(h,sv,.72,.55),
+        ecg:  f(h+18,sv,.72),  ecgF:  f(h+18,sv*.7,.58,.36),
+        p0:   f(h-16,sv,.70,.68), p1: f(h,sv*.85,.76,.44), p2: f(h+28,sv*.6,.82,.26),
+        bg0:  f(h,sv*.4,.12,.88),
+      };
+    }
+
+    function _pfMkParts() {
+      var W=_pfCanvas.width, H=_pfCanvas.height, cx=W/2, cy=H/2;
+      var pal=_pfPal(), cs=[pal.p0,pal.p1,pal.p2];
+      _pfParts=[];
+      for(var i=0;i<72;i++){
+        var a=(i/72)*Math.PI*2+(Math.random()-.5)*.2;
+        var rMin=Math.min(W,H)*.17, rMax=Math.min(W,H)*.43;
+        var r=rMin+Math.pow(Math.random(),.65)*(rMax-rMin);
+        _pfParts.push({a:a, av:(Math.random()<.5?1:-1)*(.0003+Math.random()*.0005),
+          r:r, rb:r, rd:0, sz:.5+Math.random()*2.2, col:cs[i%3], t:Math.random()*Math.PI*2});
+      }
+    }
+
+    function _pfMkEcg() { _pfEcg=new Array(_pfCanvas.width).fill(0); }
+
+    function _pfFire() {
+      _pfBeat=1; _pfSpike=1; _pfSpikePh=0;
+      _pfParts.forEach(function(p){ p.rd+=10+Math.random()*14; });
+    }
+
+    function _pfStep() {
+      for(var k=0;k<2;k++){
+        var y=Math.sin(performance.now()*.00112)*2.6+Math.sin(performance.now()*.0058)*1.3;
+        if(_pfSpike>.015){
+          var ph=_pfSpikePh;
+          if     (ph< 4) y=-11*_pfSpike;
+          else if(ph< 7) y=-74*_pfSpike;
+          else if(ph<10) y= 46*_pfSpike;
+          else if(ph<16) y=-14*_pfSpike*((16-ph)/6);
+          else            y=0;
+          _pfSpikePh++; _pfSpike=Math.max(0,_pfSpike-.038);
+        }
+        _pfEcg.shift(); _pfEcg.push(y);
+      }
+    }
+
+    function _pfFrame(ts) {
+      if(!_pfRunning) return;
+      var cv=_pfCanvas, ctx=_pfCtx, W=cv.width, H=cv.height, cx=W/2, cy=H/2;
+      var pal=_pfPal();
+
+      if(timerRunning && stretchTime!==_pfLastST){
+        if(_pfLastST!==-999) _pfFire();
+        _pfLastST=stretchTime; _pfSecTs=ts;
+      }
+
+      var frac=timerRunning?Math.min((ts-_pfSecTs)/1e3,1):0;
+      var remMs=Math.max(0,stretchTime*1e3-frac*1e3);
+      var mm=Math.floor(remMs/6e4), ss=Math.floor((remMs%6e4)/1e3), cc=Math.floor((remMs%1e3)/10);
+      var tmEl=document.getElementById('pf-tm'), csEl=document.getElementById('pf-cs');
+      if(tmEl) tmEl.textContent=String(mm).padStart(2,'0')+':'+String(ss).padStart(2,'0');
+      if(csEl) csEl.textContent='.'+String(cc).padStart(2,'0');
+
+      _pfBeat=Math.max(0,_pfBeat-.026);
+      var bp=Math.sin(_pfBeat*Math.PI)*.055;
+
+      // clear
+      ctx.clearRect(0,0,W,H);
+      ctx.fillStyle='rgba(4,4,11,.97)'; ctx.fillRect(0,0,W,H);
+      var rg=ctx.createRadialGradient(cx,cy,0,cx,cy,Math.min(W,H)*.56);
+      rg.addColorStop(0,pal.bg0); rg.addColorStop(1,'transparent');
+      ctx.fillStyle=rg; ctx.fillRect(0,0,W,H);
+
+      // particles
+      _pfParts.forEach(function(p){
+        p.a+=p.av; p.t+=.013; p.rd*=.91;
+        var r=p.rb+p.rd+Math.sin(p.t)*3.5;
+        var x=cx+Math.cos(p.a)*r, y=cy+Math.sin(p.a)*r;
+        ctx.save(); ctx.beginPath(); ctx.arc(x,y,p.sz*(1+bp*.9),0,Math.PI*2);
+        ctx.fillStyle=p.col; ctx.shadowColor=p.col; ctx.shadowBlur=5; ctx.fill(); ctx.restore();
+      });
+
+      // ECG line
+      if(timerRunning||_pfSpike>0) _pfStep();
+      var eyBase=H*.68, eHalf=W*.38, eX0=cx-eHalf, eX1=cx+eHalf;
+      ctx.save();
+      ctx.beginPath();
+      var N=_pfEcg.length;
+      for(var i=0;i<N;i++){
+        var ex=eX0+(i/N)*eHalf*2, ey=eyBase+_pfEcg[i]*(1+bp*3.0);
+        i===0?ctx.moveTo(ex,ey):ctx.lineTo(ex,ey);
+      }
+      var eg=ctx.createLinearGradient(eX0,0,eX1,0);
+      eg.addColorStop(0,'transparent'); eg.addColorStop(.07,pal.ecgF);
+      eg.addColorStop(.55,pal.ecg);   eg.addColorStop(1,pal.ecg);
+      ctx.strokeStyle=eg; ctx.lineWidth=1.8; ctx.shadowColor=pal.ecg; ctx.shadowBlur=9; ctx.stroke();
+      // left baseline
+      ctx.beginPath(); ctx.moveTo(0,eyBase); ctx.lineTo(eX0,eyBase);
+      var lg=ctx.createLinearGradient(0,0,eX0,0); lg.addColorStop(0,'transparent'); lg.addColorStop(1,pal.ecgF);
+      ctx.strokeStyle=lg; ctx.lineWidth=1; ctx.shadowBlur=0; ctx.stroke();
+      // right baseline
+      ctx.beginPath(); ctx.moveTo(eX1,eyBase); ctx.lineTo(W,eyBase);
+      var rgg=ctx.createLinearGradient(eX1,0,W,0); rgg.addColorStop(0,pal.ecgF); rgg.addColorStop(1,'transparent');
+      ctx.strokeStyle=rgg; ctx.stroke();
+      ctx.restore();
+
+      // Circle
+      var R=Math.min(W,H)*.135;
+      var circY=cy-H*.05;
+      ctx.save(); ctx.translate(cx,circY); ctx.scale(1+bp, 1+bp);
+      var gl=ctx.createRadialGradient(0,0,R*.6,0,0,R*1.28);
+      gl.addColorStop(0,pal.glow); gl.addColorStop(1,'transparent');
+      ctx.fillStyle=gl; ctx.beginPath(); ctx.arc(0,0,R*1.28,0,Math.PI*2); ctx.fill();
+      ctx.beginPath(); ctx.arc(0,0,R,0,Math.PI*2);
+      ctx.strokeStyle=pal.arcBg; ctx.lineWidth=2.5; ctx.shadowBlur=0; ctx.stroke();
+      var progFrac=timerDuration>0?Math.max(0,stretchTime/timerDuration):1;
+      ctx.beginPath(); ctx.arc(0,0,R,-Math.PI/2,-Math.PI/2+progFrac*Math.PI*2);
+      ctx.strokeStyle=pal.arc; ctx.lineWidth=2.5; ctx.lineCap='round';
+      ctx.shadowColor=pal.glowS; ctx.shadowBlur=18; ctx.stroke();
+      ctx.beginPath(); ctx.arc(0,0,R*.84,0,Math.PI*2);
+      ctx.strokeStyle='rgba(255,255,255,0.04)'; ctx.lineWidth=.7; ctx.shadowBlur=0; ctx.stroke();
+      ctx.restore();
+
+      _pfAnimId=requestAnimationFrame(_pfFrame);
+    }
+
+    function enterPureFocus() {
+      var ov=document.getElementById('pf-overlay'); if(!ov) return;
+      _pfCanvas=document.getElementById('pf-cv'); _pfCtx=_pfCanvas.getContext('2d');
+      _pfCanvas.width=window.innerWidth; _pfCanvas.height=window.innerHeight;
+      _pfLastST=-999; _pfBeat=0; _pfSpike=0; _pfSpikePh=0; _pfRunning=true;
+      _pfMkParts(); _pfMkEcg();
+      ov.classList.add('show');
+      window._pfRsz=function(){ _pfCanvas.width=window.innerWidth; _pfCanvas.height=window.innerHeight; _pfMkParts(); _pfMkEcg(); };
+      window.addEventListener('resize',window._pfRsz);
+      _pfAnimId=requestAnimationFrame(_pfFrame);
+    }
+    function exitPureFocus() {
+      _pfRunning=false; cancelAnimationFrame(_pfAnimId);
+      var ov=document.getElementById('pf-overlay'); if(ov) ov.classList.remove('show');
+      window.removeEventListener('resize',window._pfRsz);
+    }
+    document.addEventListener('keydown',function(e){ if(e.key==='Escape'&&_pfRunning) exitPureFocus(); });
+
   </script>
+
+  <div id="pf-overlay">
+    <canvas id="pf-cv"></canvas>
+    <div id="pf-time-wrap">
+      <div id="pf-tm">00:00</div>
+      <div id="pf-cs">.00</div>
+    </div>
+    <button id="pf-exit-btn" onclick="exitPureFocus()">✕</button>
+  </div>
 </body>
 </html>
