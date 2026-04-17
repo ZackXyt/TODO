@@ -748,6 +748,50 @@
     }
     .submit-btn:hover { background:rgba(255,255,255,0.38); }
 
+    /* ====== COMPLETED TASKS PANEL ====== */
+    .completed-toggle {
+      display: flex; align-items: center; gap: 7px;
+      padding: 9px 4px 6px; cursor: pointer;
+      color: rgba(255,255,255,0.38); font-size: 11px; font-weight: 600;
+      letter-spacing: 0.4px; border-top: 1px solid rgba(255,255,255,0.07);
+      margin-top: 6px; transition: color 0.18s; user-select: none;
+    }
+    .completed-toggle:hover { color: rgba(255,255,255,0.65); }
+    .c-badge {
+      background: rgba(255,255,255,0.1); border-radius: 8px;
+      padding: 1px 7px; font-size: 10px;
+    }
+    .c-chevron {
+      margin-left: auto; font-size: 14px; color: rgba(255,255,255,0.25);
+      transition: transform 0.24s ease;
+    }
+    .c-chevron.open { transform: rotate(90deg); color: rgba(255,255,255,0.55); }
+    .completed-panel {
+      max-height: 0; overflow: hidden;
+      transition: max-height 0.32s cubic-bezier(0.4,0,0.2,1);
+    }
+    .completed-panel.open { max-height: 500px; }
+    .completed-item {
+      display: flex; align-items: center; gap: 8px;
+      padding: 7px 10px; border-radius: 10px;
+      background: rgba(255,255,255,0.04);
+      margin-bottom: 5px;
+    }
+    .ci-name {
+      flex: 1; font-size: 12px; color: rgba(255,255,255,0.5);
+      text-decoration: line-through; overflow: hidden;
+      text-overflow: ellipsis; white-space: nowrap;
+    }
+    .ci-time { font-size: 9px; color: rgba(255,255,255,0.25); white-space: nowrap; flex-shrink: 0; }
+    .restore-btn {
+      background: rgba(100,180,255,0.13); border: none;
+      border-radius: 7px; color: rgba(120,190,255,0.8);
+      font-size: 10px; font-weight: 600; padding: 4px 9px;
+      cursor: pointer; white-space: nowrap; flex-shrink: 0;
+      transition: background 0.18s;
+    }
+    .restore-btn:hover { background: rgba(100,180,255,0.28); }
+
     .empty-state {
       text-align:center; color:rgba(255,255,255,0.62);
       font-size:13px; padding:20px 0; line-height:1.9;
@@ -1195,6 +1239,17 @@
         </div>
 
         <div id="task-list"></div>
+
+        <!-- Completed tasks collapsible -->
+        <div class="completed-toggle" id="completed-toggle" onclick="toggleCompletedPanel()">
+          ✓ 已完成
+          <span class="c-badge" id="c-badge">0</span>
+          <span class="c-chevron" id="c-chevron">›</span>
+        </div>
+        <div class="completed-panel" id="completed-panel">
+          <div id="completed-list"></div>
+        </div>
+
       </div>
     </div>
 
@@ -1680,6 +1735,7 @@
       }
 
       if (typeof updateStadiumProgress === 'function') updateStadiumProgress();
+      if (typeof renderCompletedList === 'function') renderCompletedList();
       list.innerHTML = sorted.map(t => {
         const s = getState(t.deadline), c = STATE_CFG[s];
         const p = t.priority || 3;
@@ -1757,6 +1813,7 @@
         }
         tasks = tasks.filter(t => t.id !== id);
         saveTasks(); render();
+        renderCompletedList();
         updateStadiumProgress();
         showToast(currentLang === 'en' ? "🎉 Done! Great job!" : "🎉 完成！干得漂亮！");
       }, 270);
@@ -1985,11 +2042,79 @@
       }
     });
 
-    // ===== COMPLETED TASKS (for reports) =====
-    let completedTasks = JSON.parse(localStorage.getItem('todo_completed_tasks') || '[]');
+    // ===== COMPLETED TASKS (for reports + undo panel) =====
+    var completedTasks = JSON.parse(localStorage.getItem('todo_completed_tasks') || '[]'); // var avoids TDZ
     function saveCompletedTask(task) {
       completedTasks.push({ ...task, completedAt: new Date().toISOString() });
       localStorage.setItem('todo_completed_tasks', JSON.stringify(completedTasks));
+    }
+
+    // Returns completed tasks for the current adjusted day key
+    function getTodayCompleted() {
+      if (!completedTasks) return [];
+      const dk = getDayKey();
+      const rh = parseInt(localStorage.getItem('todo_reset_hour') || '7');
+      return completedTasks.filter(t => {
+        const d = new Date(t.completedAt || 0);
+        const ref = d.getHours() < rh ? new Date(d - 864e5) : d;
+        const k = `${ref.getFullYear()}-${String(ref.getMonth()+1).padStart(2,'0')}-${String(ref.getDate()).padStart(2,'0')}`;
+        return k === dk;
+      });
+    }
+
+    var completedPanelOpen = false;
+    function toggleCompletedPanel() {
+      completedPanelOpen = !completedPanelOpen;
+      document.getElementById('completed-panel').classList.toggle('open', completedPanelOpen);
+      document.getElementById('c-chevron').classList.toggle('open', completedPanelOpen);
+      renderCompletedList();
+    }
+
+    function renderCompletedList() {
+      const today = getTodayCompleted();
+      const badge = document.getElementById('c-badge');
+      if (badge) badge.textContent = today.length;
+      if (!completedPanelOpen) return;
+      const list = document.getElementById('completed-list');
+      if (!list) return;
+      if (!today.length) {
+        list.innerHTML = '<div style="text-align:center;color:rgba(255,255,255,0.22);font-size:11px;padding:12px 0">今日暂无已完成任务</div>';
+        return;
+      }
+      list.innerHTML = [...today].reverse().map(t => {
+        const time = new Date(t.completedAt).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
+        return `<div class="completed-item" id="ctask-${t.id}">
+          <span class="ci-name" title="${t.text}">✓ ${t.text}</span>
+          <span class="ci-time">${time}</span>
+          <button class="restore-btn" onclick="restoreTask(${t.id})">↩ 恢复</button>
+        </div>`;
+      }).join('');
+    }
+
+    function restoreTask(id) {
+      const idx = completedTasks.findIndex(t => t.id === id);
+      if (idx === -1) return;
+      const task = { ...completedTasks[idx] };
+      delete task.completedAt;
+      // Move back to active
+      completedTasks.splice(idx, 1);
+      localStorage.setItem('todo_completed_tasks', JSON.stringify(completedTasks));
+      tasks.push(task);
+      saveTasks();
+      // Decrement daily done
+      const dk = getDayKey(), dd = getDayData(dk);
+      dd.done = Math.max(0, dd.done - 1);
+      saveDayData(dk, dd);
+      // Animate out then re-render
+      const el = document.getElementById('ctask-' + id);
+      if (el) {
+        el.style.transition = 'opacity 0.22s, transform 0.22s';
+        el.style.opacity = '0'; el.style.transform = 'translateX(-16px)';
+        setTimeout(() => { render(); renderCompletedList(); updateStadiumProgress(); }, 230);
+      } else {
+        render(); renderCompletedList(); updateStadiumProgress();
+      }
+      showToast('↩ 任务已恢复到待完成！');
     }
 
     // ===== MENU =====
@@ -2275,6 +2400,7 @@
       dd.total = Math.max(dd.total, tasks.length + dd.done);
       saveDayData(dk, dd);
 
+      renderCompletedList();   // set badge on load
       const q = getDailyQuote();
       document.getElementById('sq-text').textContent    = `"${q.text}"`;
       document.getElementById('sq-author').textContent  = `— ${q.author}`;
