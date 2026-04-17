@@ -1253,11 +1253,10 @@
             </div>
             <div class="stretch-countdown" id="stretch-countdown">60:00</div>
             <div class="timer-row" id="timer-row">
-              <button class="duration-btn" data-mins="25" onclick="setDuration(25)">25分</button>
-              <button class="duration-btn" data-mins="45" onclick="setDuration(45)">45分</button>
+              <button class="duration-btn" data-mins="15" onclick="setDuration(15)">15分</button>
+              <button class="duration-btn" data-mins="30" onclick="setDuration(30)">30分</button>
               <button class="duration-btn sel" data-mins="60" onclick="setDuration(60)">60分</button>
-              <button class="duration-btn" data-mins="90" onclick="setDuration(90)">90分</button>
-              <button class="duration-btn" id="custom-dur-btn" data-mins="0" onclick="showCustomDurInput()">自定义</button>
+              <button class="duration-btn" id="custom-dur-btn" data-mins="0" onclick="showCustomDurInput()">自定义：—</button>
               <input class="custom-dur-input" id="custom-dur-input" type="number" min="1" max="480" placeholder="分钟"
                 onkeydown="if(event.key==='Enter')applyCustomDur()"
                 onblur="applyCustomDur()" />
@@ -2086,7 +2085,7 @@
       if (!mins || mins < 1) return;
       const btn = document.getElementById('custom-dur-btn');
       btn.dataset.mins = mins;
-      btn.textContent = mins + '分';
+      btn.textContent = '自定义：' + mins + '分';
       setDuration(mins);
     }
 
@@ -2099,7 +2098,7 @@
       });
       if (!matched && savedMins > 0) {
         const btn = document.getElementById('custom-dur-btn');
-        if (btn) { btn.dataset.mins = savedMins; btn.textContent = savedMins + '分'; btn.classList.add('sel'); }
+        if (btn) { btn.dataset.mins = savedMins; btn.textContent = '自定义：' + savedMins + '分'; btn.classList.add('sel'); }
       }
       updateStretchDisplay();
     })();
