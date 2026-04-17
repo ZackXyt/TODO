@@ -1808,10 +1808,15 @@
     const P_LABELS = { 1:'P1', 2:'P2', 3:'P3', 4:'P4', 5:'P5' };
 
     function getDefaultTasks() {
+      const h = 3600*1000, d = 86400*1000;
       return [
-        { id: 1, text: "完成 ML 作业 3",                  deadline: new Date(Date.now() + 0.4*3600*1000).toISOString(), priority: 1 },
-        { id: 2, text: "读论文 Attention is All You Need", deadline: new Date(Date.now() + 5*3600*1000).toISOString(),   priority: 2 },
-        { id: 3, text: "准备组会 PPT",                    deadline: new Date(Date.now() + 5*24*3600*1000).toISOString(), priority: 3 },
+        { id: 1, text: "给昨天拖延的自己写封道歉信",              deadline: new Date(Date.now() - 0.5*h).toISOString(),  priority: 1 },
+        { id: 2, text: "关掉 37 个标签页（只保留最重要的那个）",  deadline: new Date(Date.now() + 0.4*h).toISOString(),  priority: 2 },
+        { id: 3, text: "把脑子里的灵感画出来，别再说『等我找到纸』", deadline: new Date(Date.now() + 3*h).toISOString(),    priority: 1 },
+        { id: 4, text: "研究竞品，顺便说服自己我们比他们好",       deadline: new Date(Date.now() + 9*h).toISOString(),    priority: 3 },
+        { id: 5, text: "更新作品集（上次更新时还在用 Sketch）",    deadline: new Date(Date.now() + 1.5*d).toISOString(),  priority: 2 },
+        { id: 6, text: "认真冥想 10 分钟，手机静音，不许偷看",     deadline: new Date(Date.now() + 3*d).toISOString(),    priority: 4 },
+        { id: 7, text: "规划下一个 100 天要成为什么样的人",        deadline: new Date(Date.now() + 7*d).toISOString(),    priority: 3 },
       ];
     }
 
