@@ -1174,15 +1174,16 @@
     }
     #pf-time-wrap {
       position: absolute; top: 45%; left: 50%;
-      transform: translate(-50%, -50%);
+      transform: translate(-50%, -50%) scaleX(0.78);
+      transform-origin: center center;
       text-align: center; pointer-events: none;
       display: flex; flex-direction: column; align-items: center; gap: 0;
     }
     #pf-tm {
       font-family: 'SF Mono', 'JetBrains Mono', 'Menlo', 'Monaco', 'Courier New', monospace;
-      font-size: clamp(56px, 7.8vw, 100px);
+      font-size: clamp(46px, 6.5vw, 86px);
       font-weight: 100;
-      letter-spacing: 0.07em;
+      letter-spacing: 0.02em;
       color: rgba(255,255,255,0.92);
       line-height: 1;
       font-variant-numeric: tabular-nums;
@@ -1190,7 +1191,7 @@
     }
     #pf-cs {
       font-family: 'SF Mono', 'JetBrains Mono', 'Menlo', 'Monaco', 'Courier New', monospace;
-      font-size: clamp(20px, 2.7vw, 36px);
+      font-size: clamp(18px, 2.4vw, 30px);
       font-weight: 200;
       letter-spacing: 0.12em;
       color: rgba(255,255,255,0.38);
@@ -2786,6 +2787,7 @@
     var _pfSecTs = 0;
     var _pfEcg = [];
     var _pfSpike = 0, _pfSpikePh = 0, _pfSpikeAmp = 1.0;
+    var _pfCircleR = 0;
 
     function _pfPal() {
       var hx = (localStorage.getItem('todo_wallpaper_color') || '#533483').replace('#','');
@@ -2936,7 +2938,7 @@
       ctx.restore();
 
       // Circle
-      var R=Math.min(W,H)*.155;
+      var R=_pfCircleR>10 ? _pfCircleR : Math.min(W,H)*.18;
       var circY=cy-H*.05;
       ctx.save(); ctx.translate(cx,circY); ctx.scale(1+bp, 1+bp);
       var gl=ctx.createRadialGradient(0,0,R*.6,0,0,R*1.28);
@@ -2962,7 +2964,16 @@
       _pfLastST=-999; _pfBeat=0; _pfSpike=0; _pfSpikePh=0; _pfRunning=true;
       _pfMkParts(); _pfMkEcg();
       ov.classList.add('show');
-      window._pfRsz=function(){ _pfCanvas.width=window.innerWidth; _pfCanvas.height=window.innerHeight; _pfMkParts(); _pfMkEcg(); };
+      // Measure text bounding box to size circle — wait one frame for layout
+      setTimeout(function(){
+        var tw=document.getElementById('pf-time-wrap');
+        if(tw){ var b=tw.getBoundingClientRect(); _pfCircleR=Math.sqrt(Math.pow(b.width/2,2)+Math.pow(b.height/2,2))*1.30; }
+      }, 60);
+      window._pfRsz=function(){
+        _pfCanvas.width=window.innerWidth; _pfCanvas.height=window.innerHeight; _pfMkParts(); _pfMkEcg();
+        var tw=document.getElementById('pf-time-wrap');
+        if(tw){ var b=tw.getBoundingClientRect(); _pfCircleR=Math.sqrt(Math.pow(b.width/2,2)+Math.pow(b.height/2,2))*1.30; }
+      };
       window.addEventListener('resize',window._pfRsz);
       _pfAnimId=requestAnimationFrame(_pfFrame);
     }
