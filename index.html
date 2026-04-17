@@ -90,12 +90,13 @@
     .weather-row {
       grid-column: 1; grid-row: 2;
       display: flex;
-      align-items: flex-start;
+      align-items: stretch;
       gap: 10px;
     }
 
     .weather-widget {
       width: fit-content;
+      flex-shrink: 0;
     }
 
     .weather-card {
@@ -107,6 +108,8 @@
       padding: 16px 22px;
       box-shadow: 0 8px 32px rgba(0,0,0,0.2);
       min-width: 180px;
+      height: 100%;
+      box-sizing: border-box;
     }
 
     .weather-sky {
@@ -224,10 +227,7 @@
     /* ====== DINO WIDGET → STADIUM CONTAINER ====== */
     .dino-widget {
       flex: 1;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 4px 4px 4px 0;
+      min-width: 0;
       min-height: 0;
     }
 
@@ -332,50 +332,58 @@
     /* ====== STADIUM WIDGET ====== */
     .stadium-wrap {
       position: relative;
-      width: min(100%, calc(100vh - 340px));
-      max-width: 230px;
-      aspect-ratio: 1;
+      width: 100%;
+      height: 100%;
     }
-    .stadium-svg { width: 100%; height: 100%; display: block; overflow: visible; }
+    .stadium-svg {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      display: block;
+      overflow: visible;
+    }
     .stadium-quote {
       position: absolute;
-      inset: 24% 16%;
+      inset: 13% 9%;
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
       text-align: center;
       pointer-events: none;
-      gap: 6px;
+      gap: 10px;
     }
     .sq-text {
-      font-size: clamp(8.5px, 1.05vw, 11px);
-      color: rgba(255,255,255,0.78);
+      font-size: clamp(12px, 1.3vw, 15px);
+      color: rgba(255,255,255,0.85);
       font-style: italic;
-      line-height: 1.6;
+      line-height: 1.65;
       font-weight: 400;
-      letter-spacing: 0.15px;
+      letter-spacing: 0.1px;
     }
-    .sq-attr {
-      font-size: clamp(7px, 0.82vw, 9px);
+    .sq-author {
+      font-size: clamp(10px, 1vw, 12px);
+      color: rgba(255,255,255,0.7);
+      font-weight: 700;
+      letter-spacing: 0.8px;
+    }
+    .sq-info {
+      font-size: clamp(9px, 0.85vw, 10.5px);
       color: rgba(255,255,255,0.35);
-      font-weight: 600;
-      letter-spacing: 0.4px;
-      line-height: 1.5;
-      text-transform: uppercase;
+      font-weight: 500;
+      letter-spacing: 0.3px;
+      margin-top: -4px;
     }
     .stadium-prog-label {
       position: absolute;
-      bottom: 4%;
-      left: 50%;
-      transform: translateX(-50%);
-      font-size: 9px;
+      bottom: 16px;
+      right: 22px;
+      font-size: 11px;
       font-weight: 700;
-      color: rgba(255,255,255,0.35);
+      color: rgba(255,255,255,0.45);
       pointer-events: none;
-      letter-spacing: 0.8px;
-      text-transform: uppercase;
-      white-space: nowrap;
+      letter-spacing: 0.3px;
     }
 
     /* ====== NOTEPAD (bottom-left) ====== */
@@ -1083,38 +1091,27 @@
 
       <div class="dino-widget" id="dino-widget">
         <div class="stadium-wrap" id="stadium-wrap">
-          <svg class="stadium-svg" viewBox="0 0 300 300" xmlns="http://www.w3.org/2000/svg">
+          <svg class="stadium-svg" id="stadium-svg" xmlns="http://www.w3.org/2000/svg">
             <defs>
               <linearGradient id="arcGrad" x1="0%" y1="0%" x2="100%" y2="100%">
                 <stop offset="0%" stop-color="#60C8FF" stop-opacity="0.95"/>
                 <stop offset="100%" stop-color="#A78BFA" stop-opacity="0.95"/>
               </linearGradient>
             </defs>
-            <!-- Track background ring -->
-            <circle cx="150" cy="150" r="121" fill="none" stroke="rgba(255,255,255,0.055)" stroke-width="22"/>
-            <!-- Lane edge markers -->
-            <circle cx="150" cy="150" r="110" fill="none" stroke="rgba(255,255,255,0.07)" stroke-width="0.6"/>
-            <circle cx="150" cy="150" r="132" fill="none" stroke="rgba(255,255,255,0.07)" stroke-width="0.6"/>
-            <!-- Progress arc (JS sets stroke-dasharray) -->
-            <circle cx="150" cy="150" r="121" fill="none" stroke="url(#arcGrad)" stroke-width="20"
-              stroke-linecap="round" transform="rotate(-90 150 150)" id="progress-arc"
-              stroke-dasharray="0 760" style="transition: stroke-dasharray 0.9s ease;"/>
-            <!-- Inner field -->
-            <ellipse cx="150" cy="150" rx="102" ry="82" fill="rgba(35,90,45,0.18)" stroke="rgba(90,180,70,0.1)" stroke-width="1"/>
-            <!-- Field center line -->
-            <line x1="48" y1="150" x2="252" y2="150" stroke="rgba(255,255,255,0.06)" stroke-width="0.7"/>
-            <!-- Field center circle -->
-            <circle cx="150" cy="150" r="24" fill="none" stroke="rgba(255,255,255,0.09)" stroke-width="0.8"/>
-            <!-- Center spot -->
-            <circle cx="150" cy="150" r="2.5" fill="rgba(255,255,255,0.22)"/>
-            <!-- Penalty box -->
-            <rect x="104" y="116" width="92" height="68" rx="4" fill="none" stroke="rgba(255,255,255,0.05)" stroke-width="0.7"/>
+            <!-- Background fill (JS-driven rounded rect) -->
+            <path id="stadium-bg-fill" fill="rgba(255,255,255,0.07)" stroke="none"/>
+            <!-- Track background stroke -->
+            <path id="stadium-track-bg" fill="none" stroke="rgba(255,255,255,0.09)" stroke-width="5" stroke-linecap="round"/>
+            <!-- Progress arc (clockwise from top-center, JS sets dasharray) -->
+            <path id="progress-arc" fill="none" stroke="url(#arcGrad)" stroke-width="5" stroke-linecap="round"
+              stroke-dasharray="0 9999" style="transition: stroke-dasharray 0.85s ease;"/>
           </svg>
           <div class="stadium-quote" id="stadium-quote">
             <div class="sq-text" id="sq-text"></div>
-            <div class="sq-attr" id="sq-attr"></div>
+            <div class="sq-author" id="sq-author"></div>
+            <div class="sq-info" id="sq-info"></div>
           </div>
-          <div class="stadium-prog-label" id="stadium-prog-label">今日进度</div>
+          <div class="stadium-prog-label" id="stadium-prog-label">—</div>
         </div>
       </div>
     </div>
@@ -2166,32 +2163,62 @@
       return DAILY_QUOTES[dayIndex % DAILY_QUOTES.length];
     }
 
+    // Stadium: rounded-rect path builder (clockwise from top-center)
+    let _stadiumPerim = 1;
+
+    function _rrPath(W, H, R, p) {
+      const x1=p, y1=p, x2=W-p, y2=H-p;
+      return `M ${W/2},${y1} H ${x2-R} A ${R},${R} 0 0 1 ${x2},${y1+R} V ${y2-R} A ${R},${R} 0 0 1 ${x2-R},${y2} H ${x1+R} A ${R},${R} 0 0 1 ${x1},${y2-R} V ${y1+R} A ${R},${R} 0 0 1 ${x1+R},${y1} H ${W/2}`;
+    }
+    function _rrFill(W, H, R, p) {
+      const x1=p, y1=p, x2=W-p, y2=H-p;
+      return `M ${x1+R},${y1} H ${x2-R} A ${R},${R} 0 0 1 ${x2},${y1+R} V ${y2-R} A ${R},${R} 0 0 1 ${x2-R},${y2} H ${x1+R} A ${R},${R} 0 0 1 ${x1},${y2-R} V ${y1+R} A ${R},${R} 0 0 1 ${x1+R},${y1} Z`;
+    }
+
+    function updateStadiumLayout() {
+      const wrap = document.getElementById('stadium-wrap');
+      const svg  = document.getElementById('stadium-svg');
+      if (!wrap || !svg) return;
+      const W = wrap.offsetWidth, H = wrap.offsetHeight;
+      if (W < 10 || H < 10) return;
+      const SW=5, R=18, pad=SW/2+1;
+      svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
+      const trackPath = _rrPath(W, H, R, pad);
+      const fillPath  = _rrFill(W, H, R, pad);
+      _stadiumPerim   = 2*(W-2*R-2*pad) + 2*(H-2*R-2*pad) + 2*Math.PI*R;
+      const bgFill  = document.getElementById('stadium-bg-fill');
+      const trackBg = document.getElementById('stadium-track-bg');
+      const arcEl   = document.getElementById('progress-arc');
+      if (bgFill)  bgFill.setAttribute('d', fillPath);
+      if (trackBg) trackBg.setAttribute('d', trackPath);
+      if (arcEl)   arcEl.setAttribute('d', trackPath);
+      updateStadiumProgress();
+    }
+
     function updateStadiumProgress() {
-      const arc = document.getElementById('progress-arc');
+      const arcEl = document.getElementById('progress-arc');
       const label = document.getElementById('stadium-prog-label');
-      if (!arc) return;
-      const total = tasks.length;
+      if (!arcEl) return;
+      const today = new Date().toDateString();
       const done  = (JSON.parse(localStorage.getItem('todo_completed') || '[]'))
-        .filter(t => {
-          const d = new Date(t.completedAt || t.deadline || 0);
-          const now = new Date();
-          return d.toDateString() === now.toDateString();
-        }).length;
-      const CIRC = 760.3;
+        .filter(t => new Date(t.completedAt || t.deadline || 0).toDateString() === today).length;
+      const total = tasks.length + done;
       const progress = total > 0 ? Math.min(done / total, 1) : 0;
-      const dash = progress > 0 ? Math.max(progress * CIRC, 8) : 0;
-      arc.setAttribute('stroke-dasharray', `${dash} ${CIRC}`);
-      const pct = total > 0 ? Math.round(progress * 100) : 0;
-      if (label) label.textContent = total > 0 ? `今日进度  ${done}/${total}  ${pct}%` : '今日进度';
+      const filled   = progress > 0 ? Math.max(progress * _stadiumPerim, 10) : 0;
+      arcEl.setAttribute('stroke-dasharray', `${filled} ${_stadiumPerim - filled}`);
+      if (label) label.textContent = total > 0 ? `${done} / ${total}` : '—';
     }
 
     function initStadium() {
       const q = getDailyQuote();
-      document.getElementById('sq-text').textContent = `"${q.text}"`;
-      document.getElementById('sq-attr').textContent = `— ${q.author}\n${q.info}`;
-      updateStadiumProgress();
+      document.getElementById('sq-text').textContent    = `"${q.text}"`;
+      document.getElementById('sq-author').textContent  = `— ${q.author}`;
+      document.getElementById('sq-info').textContent    = q.info;
+      updateStadiumLayout();
     }
-    initStadium();
+    // Layout needs real DOM dimensions — defer one frame
+    requestAnimationFrame(initStadium);
+    window.addEventListener('resize', updateStadiumLayout);
 
     // ===== CALENDAR =====
     let calYear, calMonth, calView = 'month';
