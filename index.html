@@ -317,6 +317,20 @@
       50%     { transform: translateY(-14px) scale(1.12) rotate(-5deg); }
     }
 
+    /* ====== HOUR PICKER (reset time) ====== */
+    .hour-picker { display:flex; align-items:center; gap:5px; margin-left:auto; flex-shrink:0; }
+    .hour-btn {
+      background: rgba(255,255,255,0.1); border: none;
+      color: rgba(255,255,255,0.7); width:22px; height:22px; border-radius:6px;
+      cursor:pointer; font-size:16px; display:flex; align-items:center; justify-content:center;
+      transition: background 0.15s; line-height:1;
+    }
+    .hour-btn:hover { background: rgba(255,255,255,0.22); }
+    #reset-hour-display {
+      font-size:12px; font-weight:700; color:rgba(255,255,255,0.88);
+      min-width:40px; text-align:center; font-variant-numeric:tabular-nums;
+    }
+
     /* ====== FLOATING MASCOT ====== */
     #mascot-float {
       position: fixed;
@@ -1225,6 +1239,18 @@
           <div class="menu-item-desc" id="report-desc">查看时间段内的任务情况</div>
         </div>
       </div>
+      <div class="menu-item" style="cursor:default;">
+        <span class="menu-item-icon">⏰</span>
+        <div>
+          <div>每日进度重置</div>
+          <div class="menu-item-desc">每天到点清零进度计数</div>
+        </div>
+        <div class="hour-picker">
+          <button class="hour-btn" onclick="adjustResetHour(-1)">‹</button>
+          <span id="reset-hour-display">07:00</span>
+          <button class="hour-btn" onclick="adjustResetHour(1)">›</button>
+        </div>
+      </div>
     </div>
 
     <div class="menu-section">
@@ -1709,6 +1735,9 @@
       document.getElementById("task-name").value = "";
       document.getElementById("add-form").style.display = "none";
       saveTasks();
+      // Track today's denominator
+      const _dk = getDayKey(), _dd = getDayData(_dk);
+      _dd.total++; saveDayData(_dk, _dd);
       render();
       showToast("✅ 任务已添加，加油！");
     }
@@ -1720,9 +1749,15 @@
       el.style.transform = "translateX(24px) scale(0.95)";
       el.style.transition = "all 0.28s ease";
       setTimeout(() => {
-        if (task) saveCompletedTask(task);
+        if (task) {
+          saveCompletedTask(task);                   // work-report log
+          const dk = getDayKey(), dd = getDayData(dk);
+          dd.done++;
+          saveDayData(dk, dd);
+        }
         tasks = tasks.filter(t => t.id !== id);
         saveTasks(); render();
+        updateStadiumProgress();
         showToast(currentLang === 'en' ? "🎉 Done! Great job!" : "🎉 完成！干得漂亮！");
       }, 270);
     }
@@ -2036,6 +2071,33 @@
     // Init language
     applyLanguage(currentLang);
 
+    // ===== DAILY PROGRESS TRACKING =====
+    function getDayKey() {
+      const now = new Date();
+      const rh  = parseInt(localStorage.getItem('todo_reset_hour') || '7');
+      // Before reset hour → still counts as "yesterday"
+      const ref = now.getHours() < rh ? new Date(now - 864e5) : now;
+      return `${ref.getFullYear()}-${String(ref.getMonth()+1).padStart(2,'0')}-${String(ref.getDate()).padStart(2,'0')}`;
+    }
+    function getDayData(k) {
+      return JSON.parse(localStorage.getItem('todo_day_'+k) || '{"total":0,"done":0}');
+    }
+    function saveDayData(k, data) {
+      localStorage.setItem('todo_day_'+k, JSON.stringify(data));
+    }
+    function adjustResetHour(delta) {
+      const h = (parseInt(localStorage.getItem('todo_reset_hour') || '7') + delta + 24) % 24;
+      localStorage.setItem('todo_reset_hour', String(h));
+      const el = document.getElementById('reset-hour-display');
+      if (el) el.textContent = String(h).padStart(2,'0') + ':00';
+    }
+    // Initialise reset-hour display to saved value
+    (function() {
+      const h = parseInt(localStorage.getItem('todo_reset_hour') || '7');
+      const el = document.getElementById('reset-hour-display');
+      if (el) el.textContent = String(h).padStart(2,'0') + ':00';
+    })();
+
     // ===== MASCOTS =====
     const MASCOTS = [
       { emoji: '🦕', name: '恐龙' },
@@ -2164,7 +2226,7 @@
     }
 
     // Stadium: rounded-rect path builder (clockwise from top-center)
-    let _stadiumPerim = 1;
+    var _stadiumPerim = 0; // var (not let) avoids TDZ when render() fires before this line
 
     function _rrPath(W, H, R, p) {
       const x1=p, y1=p, x2=W-p, y2=H-p;
@@ -2198,11 +2260,9 @@
     function updateStadiumProgress() {
       const arcEl = document.getElementById('progress-arc');
       const label = document.getElementById('stadium-prog-label');
-      if (!arcEl) return;
-      const today = new Date().toDateString();
-      const done  = (JSON.parse(localStorage.getItem('todo_completed') || '[]'))
-        .filter(t => new Date(t.completedAt || t.deadline || 0).toDateString() === today).length;
-      const total = tasks.length + done;
+      if (!arcEl || !_stadiumPerim) return; // not yet laid out
+      const dk = getDayKey(), dd = getDayData(dk);
+      const done = dd.done, total = dd.total;
       const progress = total > 0 ? Math.min(done / total, 1) : 0;
       const filled   = progress > 0 ? Math.max(progress * _stadiumPerim, 10) : 0;
       arcEl.setAttribute('stroke-dasharray', `${filled} ${_stadiumPerim - filled}`);
@@ -2210,6 +2270,11 @@
     }
 
     function initStadium() {
+      // Sync: denominator must be at least active tasks + already-done today
+      const dk = getDayKey(), dd = getDayData(dk);
+      dd.total = Math.max(dd.total, tasks.length + dd.done);
+      saveDayData(dk, dd);
+
       const q = getDailyQuote();
       document.getElementById('sq-text').textContent    = `"${q.text}"`;
       document.getElementById('sq-author').textContent  = `— ${q.author}`;
