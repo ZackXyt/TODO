@@ -682,6 +682,271 @@
     }
     .toast.show { transform:translateX(-50%) translateY(0); }
 
+    /* ====== PRIORITY BADGES ====== */
+    .task-priority {
+      font-size: 10px; font-weight: 700;
+      padding: 2px 6px; border-radius: 5px;
+      flex-shrink: 0; letter-spacing: 0.3px;
+    }
+    .task-priority.p1 { background: rgba(255,70,70,0.2); color: #ff8080; }
+    .task-priority.p2 { background: rgba(255,150,0,0.2); color: #ffaa50; }
+    .task-priority.p3 { background: rgba(255,210,0,0.2); color: #ffd060; }
+    .task-priority.p4 { background: rgba(100,200,100,0.2); color: #80d080; }
+    .task-priority.p5 { background: rgba(100,160,255,0.2); color: #80b0ff; }
+
+    /* ====== SORT TOGGLE ====== */
+    .sort-btn {
+      background: rgba(255,255,255,0.1);
+      border: 1px solid rgba(255,255,255,0.18);
+      border-radius: 8px; color: rgba(255,255,255,0.6);
+      font-size: 10px; font-weight: 600;
+      padding: 5px 9px; cursor: pointer;
+      font-family: inherit; transition: all 0.2s; white-space: nowrap;
+    }
+    .sort-btn:hover { background: rgba(255,255,255,0.2); color: white; }
+
+    /* ====== TIMER DURATION BUTTONS ====== */
+    .timer-row { display: flex; gap: 4px; margin-top: 6px; flex-wrap: wrap; }
+    .duration-btn {
+      background: rgba(255,255,255,0.07);
+      border: 1px solid rgba(255,255,255,0.13);
+      border-radius: 6px; color: rgba(255,255,255,0.45);
+      font-size: 10px; font-weight: 600;
+      padding: 3px 7px; cursor: pointer;
+      font-family: inherit; transition: all 0.15s;
+    }
+    .duration-btn:hover { background: rgba(255,255,255,0.16); color: rgba(255,255,255,0.9); }
+    .duration-btn.sel { background: rgba(255,255,255,0.2); color: white; border-color: rgba(255,255,255,0.38); }
+
+    /* ====== START/PAUSE BUTTON ====== */
+    .start-timer-btn {
+      background: rgba(100,220,120,0.2);
+      border: 1px solid rgba(100,220,120,0.4);
+      color: #a0ffb4; padding: 7px 11px;
+      border-radius: 10px; font-size: 11px; font-weight: 600;
+      cursor: pointer; transition: all 0.2s; font-family: inherit; white-space: nowrap;
+    }
+    .start-timer-btn:hover { background: rgba(100,220,120,0.4); color: white; transform: scale(1.03); }
+    .start-timer-btn.running {
+      background: rgba(255,165,0,0.2); border-color: rgba(255,165,0,0.4); color: #ffc060;
+    }
+    .start-timer-btn.running:hover { background: rgba(255,165,0,0.4); color: white; }
+
+    /* ====== PRIORITY FORM PICKER ====== */
+    .form-priority-row { display: flex; align-items: center; gap: 5px; margin-bottom: 6px; flex-wrap: wrap; }
+    .form-priority-label { font-size: 11px; color: rgba(255,255,255,0.5); flex-shrink: 0; }
+    .ppick {
+      font-size: 11px; font-weight: 700; padding: 4px 9px;
+      border-radius: 7px; border: 1.5px solid transparent;
+      cursor: pointer; font-family: inherit; transition: all 0.15s; opacity: 0.65;
+    }
+    .ppick:hover { opacity: 1; transform: scale(1.05); }
+    .ppick.sel { border-color: rgba(255,255,255,0.7); opacity: 1; }
+    .ppick.pp1 { background: rgba(255,70,70,0.25); color: #ff8080; }
+    .ppick.pp2 { background: rgba(255,150,0,0.25); color: #ffaa50; }
+    .ppick.pp3 { background: rgba(255,210,0,0.25); color: #ffd060; }
+    .ppick.pp4 { background: rgba(100,200,100,0.25); color: #80d080; }
+    .ppick.pp5 { background: rgba(100,160,255,0.25); color: #80b0ff; }
+
+    /* ====== MENU BUTTON ====== */
+    #menu-btn {
+      position: fixed; bottom: 20px; right: 24px; z-index: 200;
+      background: rgba(255,255,255,0.15);
+      backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+      border: 1.5px solid rgba(255,255,255,0.25); border-radius: 14px;
+      width: 42px; height: 42px;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      gap: 5px; cursor: pointer; transition: all 0.2s;
+    }
+    #menu-btn:hover { background: rgba(255,255,255,0.28); transform: scale(1.06); }
+    #menu-btn span { width: 18px; height: 2px; background: rgba(255,255,255,0.85); border-radius: 2px; }
+
+    /* ====== SIDE MENU ====== */
+    #menu-overlay {
+      position: fixed; inset: 0; background: rgba(0,0,0,0.45);
+      backdrop-filter: blur(4px); z-index: 300;
+      opacity: 0; pointer-events: none; transition: opacity 0.3s;
+    }
+    #menu-overlay.open { opacity: 1; pointer-events: all; }
+
+    #side-menu {
+      position: fixed; top: 0; right: -340px;
+      width: 310px; height: 100%;
+      background: rgba(12,16,36,0.94);
+      backdrop-filter: blur(32px); -webkit-backdrop-filter: blur(32px);
+      border-left: 1.5px solid rgba(255,255,255,0.1);
+      z-index: 400; display: flex; flex-direction: column;
+      padding: 28px 22px; transition: right 0.35s cubic-bezier(0.4,0,0.2,1);
+      overflow-y: auto;
+    }
+    #side-menu.open { right: 0; }
+
+    .menu-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 26px; }
+    .menu-title { font-size: 18px; font-weight: 700; color: white; letter-spacing: -0.3px; }
+    .menu-close-btn {
+      background: rgba(255,255,255,0.1); border: none; border-radius: 8px;
+      color: rgba(255,255,255,0.6); width: 30px; height: 30px; font-size: 16px;
+      cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s;
+    }
+    .menu-close-btn:hover { background: rgba(255,255,255,0.2); color: white; }
+    .menu-section { margin-bottom: 22px; }
+    .menu-section-title {
+      font-size: 10px; font-weight: 700; color: rgba(255,255,255,0.3);
+      letter-spacing: 2px; text-transform: uppercase; margin-bottom: 8px;
+    }
+    .menu-item {
+      display: flex; align-items: center; gap: 12px;
+      padding: 11px 13px; border-radius: 12px; cursor: pointer;
+      transition: all 0.2s; color: rgba(255,255,255,0.8);
+      font-size: 13.5px; font-weight: 500; margin-bottom: 3px;
+      border: 1px solid transparent;
+    }
+    .menu-item:hover { background: rgba(255,255,255,0.09); border-color: rgba(255,255,255,0.1); }
+    .menu-item.active { background: rgba(255,255,255,0.14); color: white; border-color: rgba(255,255,255,0.18); }
+    .menu-item-icon { font-size: 18px; width: 26px; text-align: center; flex-shrink: 0; }
+    .menu-item-desc { font-size: 11px; color: rgba(255,255,255,0.35); margin-top: 1px; }
+
+    .menu-toggle {
+      margin-left: auto; width: 34px; height: 19px;
+      background: rgba(255,255,255,0.15); border-radius: 10px;
+      position: relative; transition: background 0.2s; flex-shrink: 0;
+    }
+    .menu-toggle.on { background: rgba(100,220,120,0.5); }
+    .menu-toggle::after {
+      content: ''; position: absolute; left: 2px; top: 1.5px;
+      width: 16px; height: 16px; border-radius: 50%;
+      background: white; transition: left 0.2s;
+    }
+    .menu-toggle.on::after { left: 16px; }
+
+    /* Mascot grid */
+    .mascot-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 6px; }
+    .mascot-option {
+      background: rgba(255,255,255,0.07); border: 1.5px solid transparent;
+      border-radius: 12px; padding: 10px 6px; text-align: center;
+      cursor: pointer; transition: all 0.15s;
+    }
+    .mascot-option:hover { background: rgba(255,255,255,0.14); }
+    .mascot-option.sel { border-color: rgba(255,255,255,0.55); background: rgba(255,255,255,0.16); }
+    .mascot-option .m-emoji { font-size: 26px; display: block; margin-bottom: 3px; }
+    .mascot-option .m-name { font-size: 10px; color: rgba(255,255,255,0.45); font-weight: 600; }
+
+    /* Lang pill */
+    .lang-pill { display: flex; background: rgba(255,255,255,0.08); border-radius: 20px; padding: 3px; margin-left: auto; }
+    .lang-pill button {
+      background: none; border: none; color: rgba(255,255,255,0.45);
+      font-size: 11px; font-weight: 700; padding: 4px 10px;
+      border-radius: 16px; cursor: pointer; font-family: inherit; transition: all 0.2s;
+    }
+    .lang-pill button.active { background: rgba(255,255,255,0.2); color: white; }
+
+    /* ====== CALENDAR MODAL ====== */
+    #calendar-modal {
+      position: fixed; inset: 0; z-index: 500;
+      background: rgba(0,0,0,0.55); backdrop-filter: blur(8px);
+      display: none; align-items: center; justify-content: center;
+    }
+    #calendar-modal.open { display: flex; }
+    .calendar-panel {
+      background: rgba(12,16,42,0.96); backdrop-filter: blur(32px);
+      border: 1.5px solid rgba(255,255,255,0.14); border-radius: 24px;
+      padding: 26px; width: 500px; max-height: 82vh; overflow-y: auto;
+    }
+    .calendar-header { display: flex; align-items: center; gap: 8px; margin-bottom: 16px; }
+    .cal-title { font-size: 17px; font-weight: 700; color: white; flex: 1; text-align: center; }
+    .cal-nav-btn {
+      background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.15);
+      border-radius: 8px; color: white; width: 30px; height: 30px;
+      font-size: 18px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s;
+    }
+    .cal-nav-btn:hover { background: rgba(255,255,255,0.2); }
+    .cal-close-btn {
+      background: rgba(255,255,255,0.1); border: none; border-radius: 8px;
+      color: rgba(255,255,255,0.6); width: 30px; height: 30px;
+      font-size: 16px; cursor: pointer; display: flex; align-items: center; justify-content: center;
+    }
+    .cal-close-btn:hover { background: rgba(255,255,255,0.2); color: white; }
+    .cal-view-tabs { display: flex; gap: 6px; margin-bottom: 14px; }
+    .cal-tab {
+      background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 8px; color: rgba(255,255,255,0.45);
+      font-size: 11px; font-weight: 600; padding: 5px 12px;
+      cursor: pointer; font-family: inherit; transition: all 0.2s;
+    }
+    .cal-tab.active { background: rgba(255,255,255,0.18); color: white; border-color: rgba(255,255,255,0.28); }
+    .cal-weekdays { display: grid; grid-template-columns: repeat(7, 1fr); gap: 3px; margin-bottom: 4px; }
+    .cal-weekday { text-align: center; font-size: 10px; font-weight: 700; color: rgba(255,255,255,0.25); padding: 4px 0; letter-spacing: 0.5px; }
+    .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 3px; }
+    .cal-day {
+      border-radius: 9px; padding: 5px 3px;
+      display: flex; flex-direction: column; align-items: center;
+      font-size: 12px; font-weight: 500; color: rgba(255,255,255,0.45);
+      transition: all 0.15s; min-height: 42px;
+    }
+    .cal-day.today { background: rgba(255,255,255,0.12); color: white; }
+    .cal-day.has-task { cursor: pointer; }
+    .cal-day.has-task:hover { background: rgba(255,255,255,0.1); color: white; }
+    .cal-day-num { line-height: 1.6; }
+    .cal-dot-row { display: flex; gap: 2px; flex-wrap: wrap; justify-content: center; margin-top: 2px; }
+    .cal-dot { width: 5px; height: 5px; border-radius: 50%; }
+
+    /* ====== REPORT MODAL ====== */
+    #report-modal {
+      position: fixed; inset: 0; z-index: 500;
+      background: rgba(0,0,0,0.55); backdrop-filter: blur(8px);
+      display: none; align-items: center; justify-content: center;
+    }
+    #report-modal.open { display: flex; }
+    .report-panel {
+      background: rgba(12,16,42,0.96); backdrop-filter: blur(32px);
+      border: 1.5px solid rgba(255,255,255,0.14); border-radius: 24px;
+      padding: 26px; width: 460px; max-height: 82vh; overflow-y: auto;
+    }
+    .report-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 18px; }
+    .report-title { font-size: 17px; font-weight: 700; color: white; }
+    .report-close-btn {
+      background: rgba(255,255,255,0.1); border: none; border-radius: 8px;
+      color: rgba(255,255,255,0.6); width: 30px; height: 30px;
+      font-size: 16px; cursor: pointer; display: flex; align-items: center; justify-content: center;
+    }
+    .report-close-btn:hover { background: rgba(255,255,255,0.2); color: white; }
+    .report-date-row { display: flex; gap: 8px; align-items: center; margin-bottom: 16px; flex-wrap: wrap; }
+    .report-date-input {
+      background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.18);
+      border-radius: 8px; padding: 6px 10px; color: white;
+      font-size: 12px; font-family: inherit; outline: none;
+    }
+    .report-date-input::-webkit-calendar-picker-indicator { filter: invert(1) opacity(0.5); cursor: pointer; }
+    .report-gen-btn {
+      background: rgba(100,160,255,0.2); border: 1px solid rgba(100,160,255,0.35);
+      color: #80b0ff; border-radius: 8px; padding: 6px 14px;
+      font-size: 12px; font-weight: 600; cursor: pointer; font-family: inherit; transition: all 0.2s;
+    }
+    .report-gen-btn:hover { background: rgba(100,160,255,0.4); color: white; }
+    .report-stats { display: flex; gap: 10px; margin-bottom: 16px; }
+    .report-stat-box { flex: 1; background: rgba(255,255,255,0.07); border-radius: 12px; padding: 12px; text-align: center; }
+    .report-stat-num { font-size: 26px; font-weight: 200; color: white; }
+    .report-stat-label { font-size: 11px; color: rgba(255,255,255,0.35); margin-top: 2px; }
+    .report-section-label {
+      font-size: 10px; font-weight: 700; color: rgba(255,255,255,0.28);
+      letter-spacing: 1.5px; text-transform: uppercase; margin: 12px 0 6px;
+    }
+    .report-task-item {
+      display: flex; align-items: center; gap: 8px;
+      padding: 8px 12px; border-radius: 10px;
+      background: rgba(255,255,255,0.05); font-size: 12px;
+      color: rgba(255,255,255,0.8); margin-bottom: 4px;
+    }
+    .report-task-done { opacity: 0.45; text-decoration: line-through; }
+
+    /* ====== FOCUS MODE ====== */
+    .focus-mode .time-widget,
+    .focus-mode .weather-row,
+    .focus-mode .wallpaper-area { display: none !important; }
+    .focus-mode #desktop { grid-template-columns: 1fr; }
+    .focus-mode .todo-area { grid-column: 1; }
+    .focus-mode #todo-resize-handle { display: none; }
+
     /* ====== WATERMARK ====== */
     .watermark {
       position: fixed;
@@ -747,7 +1012,7 @@
       <div class="dino-widget" id="dino-widget">
         <div class="dino-container">
           <div class="dino-speech" id="dino-speech">该去拉伸啦！🏃</div>
-          <div class="dino-emoji">🦕</div>
+          <div class="dino-emoji" id="mascot-emoji">🦕</div>
           <div class="dino-zzz">
             <span>z</span><span>z</span><span>z</span>
           </div>
@@ -759,7 +1024,7 @@
     <div class="wallpaper-area">
       <div class="notepad-widget">
         <div class="notepad-header">
-          <span class="notepad-title">🌿 随想录</span>
+          <span class="notepad-title" id="notepad-title-text">🌿 随想录</span>
           <span class="notepad-count" id="notepad-count">500</span>
         </div>
         <textarea class="notepad-textarea" id="notepad-textarea" maxlength="500" placeholder="写下一些你今日的灵感吧！让我们效率拉满！"></textarea>
@@ -771,16 +1036,26 @@
       <div id="todo-resize-handle"></div>
       <div class="widget">
 
-        <!-- 专注与拉伸提醒卡片（替换原小恐龙） -->
+        <!-- 专注与拉伸提醒卡片 -->
         <div class="status-card" id="stretch-timer-card">
-          <div class="status-info">
+          <div class="status-info" style="flex:1;min-width:0;">
             <div class="status-label">
-              当前状态: <span id="current-status">专注中 🧠</span>
-              <span id="session-counter" style="margin-left: 8px; opacity: 0.7; font-weight: 400;">(今日专注: 0 次)</span>
+              <span id="current-status">准备开始 ⏸</span>
+              <span id="session-counter" style="margin-left:8px;opacity:0.7;font-weight:400;">(今日专注: 0 次)</span>
             </div>
             <div class="stretch-countdown" id="stretch-countdown">60:00</div>
+            <div class="timer-row" id="timer-row">
+              <button class="duration-btn" data-mins="15" onclick="setDuration(15)">15分</button>
+              <button class="duration-btn" data-mins="25" onclick="setDuration(25)">25分</button>
+              <button class="duration-btn" data-mins="45" onclick="setDuration(45)">45分</button>
+              <button class="duration-btn sel" data-mins="60" onclick="setDuration(60)">60分</button>
+              <button class="duration-btn" data-mins="90" onclick="setDuration(90)">90分</button>
+            </div>
           </div>
-          <button class="reset-stretch-btn" onclick="resetStretchTimer()">拉伸完成 / 重置</button>
+          <div style="display:flex;flex-direction:column;gap:6px;align-items:flex-end;flex-shrink:0;">
+            <button class="start-timer-btn" id="start-timer-btn" onclick="startPauseTimer()">▶ 开始</button>
+            <button class="reset-stretch-btn" onclick="resetStretchTimer()">重置</button>
+          </div>
         </div>
 
         <div class="header">
@@ -788,14 +1063,25 @@
             <div class="w-title">⚡ 我的任务</div>
             <div class="w-subtitle" id="task-count">…</div>
           </div>
-          <button class="add-btn" onclick="toggleForm()">+</button>
+          <div style="display:flex;align-items:center;gap:6px;">
+            <button class="sort-btn" id="sort-btn" onclick="toggleSortMode()">按紧急</button>
+            <button class="add-btn" onclick="toggleForm()">+</button>
+          </div>
         </div>
 
         <div class="add-form" id="add-form" style="display:none;">
-          <div class="form-title">✨ 新任务</div>
+          <div class="form-title" id="add-form-title">✨ 新任务</div>
           <input class="form-input" type="text" id="task-name" placeholder="任务名称…" />
           <input class="form-input" type="datetime-local" id="task-ddl" />
-          <button class="submit-btn" onclick="addTask()">添加 ✓</button>
+          <div class="form-priority-row">
+            <span class="form-priority-label">优先级:</span>
+            <button class="ppick pp1" onclick="selectPriority(1)">P1 紧急</button>
+            <button class="ppick pp2" onclick="selectPriority(2)">P2 高</button>
+            <button class="ppick pp3 sel" onclick="selectPriority(3)">P3 中</button>
+            <button class="ppick pp4" onclick="selectPriority(4)">P4 低</button>
+            <button class="ppick pp5" onclick="selectPriority(5)">P5 可选</button>
+          </div>
+          <button class="submit-btn" id="submit-btn" onclick="addTask()">添加 ✓</button>
         </div>
 
         <div id="task-list"></div>
@@ -803,6 +1089,129 @@
     </div>
 
   </div><!-- /desktop -->
+
+  <!-- HAMBURGER MENU BUTTON -->
+  <button id="menu-btn" onclick="toggleMenu()">
+    <span></span><span></span><span></span>
+  </button>
+
+  <!-- MENU OVERLAY -->
+  <div id="menu-overlay" onclick="closeMenu()"></div>
+
+  <!-- SIDE MENU -->
+  <div id="side-menu">
+    <div class="menu-header">
+      <span class="menu-title" id="menu-title-text">菜单</span>
+      <button class="menu-close-btn" onclick="closeMenu()">✕</button>
+    </div>
+
+    <div class="menu-section">
+      <div class="menu-section-title">工具</div>
+      <div class="menu-item" id="focus-menu-item" onclick="toggleFocusMode()">
+        <span class="menu-item-icon">🎯</span>
+        <div>
+          <div id="focus-mode-label">专注模式</div>
+          <div class="menu-item-desc" id="focus-mode-desc">隐藏其他模块，只看任务</div>
+        </div>
+        <div class="menu-toggle" id="focus-toggle"></div>
+      </div>
+      <div class="menu-item" onclick="openCalendar()">
+        <span class="menu-item-icon">📅</span>
+        <div>
+          <div id="calendar-label">日历视图</div>
+          <div class="menu-item-desc" id="calendar-desc">查看任务日程总览</div>
+        </div>
+      </div>
+      <div class="menu-item" onclick="openReport()">
+        <span class="menu-item-icon">📊</span>
+        <div>
+          <div id="report-label">工作报告</div>
+          <div class="menu-item-desc" id="report-desc">查看时间段内的任务情况</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="menu-section">
+      <div class="menu-section-title" id="custom-section-title">自定义界面</div>
+      <div class="mascot-grid" id="mascot-grid"></div>
+    </div>
+
+    <div class="menu-section">
+      <div class="menu-item" style="cursor:default;">
+        <span class="menu-item-icon">🌐</span>
+        <div>语言 / Language</div>
+        <div class="lang-pill">
+          <button data-lang="zh" onclick="applyLanguage('zh')">中文</button>
+          <button data-lang="en" onclick="applyLanguage('en')">EN</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="menu-section">
+      <div class="menu-section-title">其他</div>
+      <div class="menu-item" style="opacity:0.35;cursor:default;">
+        <span class="menu-item-icon">👤</span>
+        <div>
+          <div>账号设置</div>
+          <div class="menu-item-desc">（开发中）</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CALENDAR MODAL -->
+  <div id="calendar-modal">
+    <div class="calendar-panel">
+      <div class="calendar-header">
+        <button class="cal-nav-btn" onclick="calPrev()">‹</button>
+        <span class="cal-title" id="cal-month-label"></span>
+        <button class="cal-nav-btn" onclick="calNext()">›</button>
+        <button class="cal-close-btn" onclick="closeCalendar()">✕</button>
+      </div>
+      <div class="cal-view-tabs">
+        <button class="cal-tab active" data-view="month" onclick="setCalView('month')">月视图</button>
+        <button class="cal-tab" data-view="week" onclick="setCalView('week')">周视图</button>
+      </div>
+      <div class="cal-weekdays">
+        <div class="cal-weekday">日</div><div class="cal-weekday">一</div>
+        <div class="cal-weekday">二</div><div class="cal-weekday">三</div>
+        <div class="cal-weekday">四</div><div class="cal-weekday">五</div>
+        <div class="cal-weekday">六</div>
+      </div>
+      <div class="cal-grid" id="cal-grid"></div>
+    </div>
+  </div>
+
+  <!-- REPORT MODAL -->
+  <div id="report-modal">
+    <div class="report-panel">
+      <div class="report-header">
+        <span class="report-title">📊 工作报告</span>
+        <button class="report-close-btn" onclick="closeReport()">✕</button>
+      </div>
+      <div class="report-date-row">
+        <input type="date" class="report-date-input" id="report-from" />
+        <span style="color:rgba(255,255,255,0.35);font-size:13px;">至</span>
+        <input type="date" class="report-date-input" id="report-to" />
+        <button class="report-gen-btn" onclick="generateReport()">生成报告</button>
+      </div>
+      <div class="report-stats">
+        <div class="report-stat-box">
+          <div class="report-stat-num" id="report-done-count">0</div>
+          <div class="report-stat-label">已完成</div>
+        </div>
+        <div class="report-stat-box">
+          <div class="report-stat-num" id="report-pending-count">0</div>
+          <div class="report-stat-label">进行中</div>
+        </div>
+        <div class="report-stat-box">
+          <div class="report-stat-num" id="report-overdue-count">0</div>
+          <div class="report-stat-label">已超期</div>
+        </div>
+      </div>
+      <div id="report-task-list"></div>
+    </div>
+  </div>
 
   <script>
     // ===== CLOCK =====
@@ -921,21 +1330,30 @@
       const prevSky = document.getElementById("weather-sky").textContent;
       document.getElementById("weather-sky").textContent = "搜索中…";
       document.getElementById("weather-candidates").innerHTML = "";
-      fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(input)}&count=5&language=zh`)
-        .then(r => r.json())
-        .then(data => {
+
+      // 同时用中文和英文搜索，合并结果
+      const urls = [
+        `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(input)}&count=10&language=zh`,
+        `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(input)}&count=10&language=en`
+      ];
+
+      Promise.all(urls.map(u => fetch(u).then(r => r.json()).catch(() => ({ results: [] }))))
+        .then(([zhData, enData]) => {
           document.getElementById("weather-sky").textContent = prevSky;
-          if (!data.results?.length) { showToast("❌ 找不到该城市，请重试"); return; }
 
-          if (data.results.length === 1) {
-            applyCity(data.results[0]);
-            return;
-          }
+          // 合并并去重（按 id），按人口降序排列
+          const seen = new Set();
+          const merged = [...(zhData.results || []), ...(enData.results || [])]
+            .filter(r => { if (seen.has(r.id)) return false; seen.add(r.id); return true; })
+            .sort((a, b) => (b.population || 0) - (a.population || 0))
+            .slice(0, 6);
 
-          // 多个结果，显示候选列表让用户选
+          if (!merged.length) { showToast("❌ 找不到该城市，请尝试英文名"); return; }
+          if (merged.length === 1) { applyCity(merged[0]); return; }
+
           const container = document.getElementById("weather-candidates");
           container.innerHTML = "";
-          data.results.forEach(r => {
+          merged.forEach(r => {
             const label = `${r.name}${r.admin1 ? ', ' + r.admin1 : ''}, ${r.country}`;
             const btn = document.createElement("button");
             btn.className = "weather-candidate-btn";
@@ -1033,11 +1451,27 @@
     }
 
     // ===== TASKS =====
-    let tasks = [
-      { id: 1, text: "完成 ML 作业 3",                  deadline: new Date(Date.now() + 0.4*3600*1000).toISOString() },
-      { id: 2, text: "读论文 Attention is All You Need", deadline: new Date(Date.now() + 5*3600*1000).toISOString() },
-      { id: 3, text: "准备组会 PPT",                    deadline: new Date(Date.now() + 5*24*3600*1000).toISOString() },
-    ];
+    let sortMode = localStorage.getItem('todo_sort_mode') || 'urgency';
+    let selectedPriority = 3;
+
+    const P_COLORS = { 1:'#ff8080', 2:'#ffaa50', 3:'#ffd060', 4:'#80d080', 5:'#80b0ff' };
+    const P_LABELS = { 1:'P1', 2:'P2', 3:'P3', 4:'P4', 5:'P5' };
+
+    function getDefaultTasks() {
+      return [
+        { id: 1, text: "完成 ML 作业 3",                  deadline: new Date(Date.now() + 0.4*3600*1000).toISOString(), priority: 1 },
+        { id: 2, text: "读论文 Attention is All You Need", deadline: new Date(Date.now() + 5*3600*1000).toISOString(),   priority: 2 },
+        { id: 3, text: "准备组会 PPT",                    deadline: new Date(Date.now() + 5*24*3600*1000).toISOString(), priority: 3 },
+      ];
+    }
+
+    function saveTasks() { localStorage.setItem('todo_tasks', JSON.stringify(tasks)); }
+    function loadTasksFromStorage() {
+      const s = localStorage.getItem('todo_tasks');
+      if (s) { try { return JSON.parse(s); } catch(e) {} }
+      return getDefaultTasks();
+    }
+    let tasks = loadTasksFromStorage();
 
     const STATE_ORDER = { overdue:0, panic:1, urgent:2, soon:3, normal:4 };
     const STATE_CFG = {
@@ -1066,13 +1500,19 @@
     }
 
     function render() {
-      const sorted = [...tasks].sort((a,b) => STATE_ORDER[getState(a.deadline)] - STATE_ORDER[getState(b.deadline)]);
+      const sorted = sortMode === 'priority'
+        ? [...tasks].sort((a,b) => (a.priority||3) - (b.priority||3))
+        : [...tasks].sort((a,b) => STATE_ORDER[getState(a.deadline)] - STATE_ORDER[getState(b.deadline)]);
+
       const urgentN = tasks.filter(t => ["panic","urgent","overdue"].includes(getState(t.deadline))).length;
 
       document.getElementById("task-count").textContent =
         tasks.length === 0 ? "全部完成啦 🎉" :
         urgentN > 0 ? `${tasks.length} 个待完成 · ${urgentN} 个紧急！` :
         `${tasks.length} 个待完成`;
+
+      const btn = document.getElementById("sort-btn");
+      if (btn) btn.textContent = sortMode === 'priority' ? '按优先级' : '按紧急';
 
       const list = document.getElementById("task-list");
       if (tasks.length === 0) {
@@ -1082,6 +1522,7 @@
 
       list.innerHTML = sorted.map(t => {
         const s = getState(t.deadline), c = STATE_CFG[s];
+        const p = t.priority || 3;
         return `
           <div class="task-item state-${s}" id="task-${t.id}">
             <div class="task-bar" style="background:${c.color}"></div>
@@ -1089,6 +1530,7 @@
               <div class="task-top-row">
                 <span class="task-emoji">${c.emoji}</span>
                 <span class="task-name">${t.text}</span>
+                <span class="task-priority p${p}">${P_LABELS[p]}</span>
               </div>
               <div class="task-ddl-row">
                 <span class="task-ddl" style="color:${c.color}">${c.prefix} ${formatTime(t.deadline)}</span>
@@ -1100,6 +1542,18 @@
       }).join("");
     }
 
+    function toggleSortMode() {
+      sortMode = sortMode === 'urgency' ? 'priority' : 'urgency';
+      localStorage.setItem('todo_sort_mode', sortMode);
+      render();
+    }
+
+    function selectPriority(p) {
+      selectedPriority = p;
+      document.querySelectorAll('.ppick').forEach(b => b.classList.remove('sel'));
+      document.querySelectorAll(`.ppick.pp${p}`).forEach(b => b.classList.add('sel'));
+    }
+
     function toggleForm() {
       const f = document.getElementById("add-form");
       const visible = f.style.display !== "none";
@@ -1108,6 +1562,7 @@
         const d = new Date(); d.setHours(23,59,0,0);
         document.getElementById("task-ddl").value = d.toISOString().slice(0,16);
         document.getElementById("task-name").focus();
+        selectPriority(3);
       }
     }
 
@@ -1116,19 +1571,26 @@
       const ddl  = document.getElementById("task-ddl").value;
       if (!name) { showToast("❌ 请输入任务名称"); return; }
       if (!ddl)  { showToast("❌ 请设置截止时间"); return; }
-      tasks.push({ id: Date.now(), text: name, deadline: new Date(ddl).toISOString() });
+      tasks.push({ id: Date.now(), text: name, deadline: new Date(ddl).toISOString(), priority: selectedPriority });
       document.getElementById("task-name").value = "";
       document.getElementById("add-form").style.display = "none";
+      saveTasks();
       render();
       showToast("✅ 任务已添加，加油！");
     }
 
     function completeTask(id) {
+      const task = tasks.find(t => t.id === id);
       const el = document.getElementById("task-" + id);
       el.style.opacity = "0";
       el.style.transform = "translateX(24px) scale(0.95)";
       el.style.transition = "all 0.28s ease";
-      setTimeout(() => { tasks = tasks.filter(t => t.id !== id); render(); showToast("🎉 完成！干得漂亮！"); }, 270);
+      setTimeout(() => {
+        if (task) saveCompletedTask(task);
+        tasks = tasks.filter(t => t.id !== id);
+        saveTasks(); render();
+        showToast(currentLang === 'en' ? "🎉 Done! Great job!" : "🎉 完成！干得漂亮！");
+      }, 270);
     }
 
     // ===== 10-min NOTIFICATIONS =====
@@ -1157,8 +1619,63 @@
     }
 
     // ===== STRETCH TIMER & SESSION LOGIC =====
-    let stretchTime = 3600;
+    let timerDuration = parseInt(localStorage.getItem('todo_timer_duration')) || 3600;
+    let stretchTime = timerDuration;
     let stretchExpired = false;
+    let timerRunning = false;
+
+    function setDuration(mins) {
+      timerDuration = mins * 60;
+      localStorage.setItem('todo_timer_duration', timerDuration);
+      // 只在未运行时立即更新显示
+      if (!timerRunning) {
+        stretchTime = timerDuration;
+        stretchExpired = false;
+      }
+      // 更新按钮高亮
+      document.querySelectorAll('.duration-btn').forEach(b => {
+        b.classList.toggle('sel', parseInt(b.dataset.mins) === mins);
+      });
+      if (!timerRunning) updateStretchDisplay();
+    }
+
+    function startPauseTimer() {
+      timerRunning = !timerRunning;
+      const btn = document.getElementById('start-timer-btn');
+      if (timerRunning) {
+        btn.textContent = '⏸ 暂停';
+        btn.classList.add('running');
+      } else {
+        btn.textContent = '▶ 继续';
+        btn.classList.remove('running');
+      }
+    }
+
+    function updateStretchDisplay() {
+      const mins = Math.floor(stretchTime / 60);
+      const secs = stretchTime % 60;
+      const display = document.getElementById("stretch-countdown");
+      if (display) display.textContent = `${String(mins).padStart(2,'0')}:${String(secs).padStart(2,'0')}`;
+
+      const counterEl = document.getElementById("session-counter");
+      if (counterEl) counterEl.textContent = `(今日专注: ${completedSessions} 次)`;
+
+      const statusLabel = document.getElementById("current-status");
+      if (!statusLabel) return;
+      if (!timerRunning && stretchTime === timerDuration) {
+        statusLabel.textContent = "准备开始 ⏸";
+        statusLabel.style.color = "#fff";
+      } else if (stretchTime <= 0) {
+        statusLabel.textContent = "该拉伸了！🏃‍♂️";
+        statusLabel.style.color = "#ff6b6b";
+      } else if (stretchTime < 300) {
+        statusLabel.textContent = "准备休息 🧘";
+        statusLabel.style.color = "#ffd43b";
+      } else {
+        statusLabel.textContent = timerRunning ? "专注中 🧠" : "已暂停 ⏸";
+        statusLabel.style.color = timerRunning ? "#fff" : "#ffd43b";
+      }
+    }
 
     function todayStr() {
       const d = new Date();
@@ -1187,53 +1704,43 @@
     }, 60 * 1000);
 
     function updateStretchTimer() {
-      const mins = Math.floor(stretchTime / 60);
-      const secs = stretchTime % 60;
-
-      const display = document.getElementById("stretch-countdown");
-      if (display) {
-        display.textContent = `${String(mins).padStart(2,'0')}:${String(secs).padStart(2,'0')}`;
+      if (timerRunning && stretchTime > 0) {
+        stretchTime--;
       }
-
-      const counterEl = document.getElementById("session-counter");
-      if (counterEl) {
-        counterEl.textContent = `(今日专注: ${completedSessions} 次)`;
+      if (timerRunning && stretchTime <= 0 && !stretchExpired) {
+        stretchExpired = true;
+        timerRunning = false;
+        const btn = document.getElementById('start-timer-btn');
+        if (btn) { btn.textContent = '▶ 开始'; btn.classList.remove('running'); }
+        document.getElementById("dino-widget").classList.add("alert");
+        showToast("🔔 站起来动动身体，拉伸一下吧！");
       }
-
-      const statusLabel = document.getElementById("current-status");
-      if (statusLabel) {
-        if (stretchTime <= 0) {
-          statusLabel.textContent = "该拉伸了！🏃‍♂️";
-          statusLabel.style.color = "#ff6b6b";
-          if (!stretchExpired) {
-            stretchExpired = true;
-            document.getElementById("dino-widget").classList.add("alert");
-            showToast("🔔 站起来动动身体，拉伸一下吧！");
-          }
-        } else if (stretchTime < 300) {
-          statusLabel.textContent = "准备休息 🧘";
-          statusLabel.style.color = "#ffd43b";
-        } else {
-          statusLabel.textContent = "专注中 🧠";
-          statusLabel.style.color = "#fff";
-        }
-      }
-
-      if (stretchTime > 0) stretchTime--;
+      updateStretchDisplay();
     }
 
     function resetStretchTimer() {
-      stretchTime = 3600;
+      timerRunning = false;
+      stretchTime = timerDuration;
       stretchExpired = false;
       document.getElementById("dino-widget").classList.remove("alert");
+      const btn = document.getElementById('start-timer-btn');
+      if (btn) { btn.textContent = '▶ 开始'; btn.classList.remove('running'); }
       completedSessions++;
       localStorage.setItem('todo_sessions', completedSessions);
       showToast(`🔄 计时重置！这是你今天的第 ${completedSessions} 次专注，继续保持！`);
-      updateStretchTimer();
+      updateStretchDisplay();
     }
 
     setInterval(updateStretchTimer, 1000);
-    updateStretchTimer();
+
+    // 初始化：高亮已保存的时长按钮
+    (function() {
+      const savedMins = timerDuration / 60;
+      document.querySelectorAll('.duration-btn').forEach(b => {
+        b.classList.toggle('sel', parseInt(b.dataset.mins) === savedMins);
+      });
+      updateStretchDisplay();
+    })();
 
     // ===== NOTEPAD =====
     const NOTEPAD_MAX = 500;
@@ -1303,8 +1810,252 @@
     document.addEventListener("keydown", e => {
       const formVisible = document.getElementById("add-form").style.display !== "none";
       if (e.key === "Enter" && formVisible) addTask();
-      if (e.key === "Escape" && formVisible) document.getElementById("add-form").style.display = "none";
+      if (e.key === "Escape") {
+        if (formVisible) document.getElementById("add-form").style.display = "none";
+        closeMenu(); closeCalendar(); closeReport();
+      }
     });
+
+    // ===== COMPLETED TASKS (for reports) =====
+    let completedTasks = JSON.parse(localStorage.getItem('todo_completed_tasks') || '[]');
+    function saveCompletedTask(task) {
+      completedTasks.push({ ...task, completedAt: new Date().toISOString() });
+      localStorage.setItem('todo_completed_tasks', JSON.stringify(completedTasks));
+    }
+
+    // ===== MENU =====
+    let menuOpen = false;
+    function toggleMenu() {
+      menuOpen = !menuOpen;
+      document.getElementById('side-menu').classList.toggle('open', menuOpen);
+      document.getElementById('menu-overlay').classList.toggle('open', menuOpen);
+    }
+    function closeMenu() {
+      menuOpen = false;
+      document.getElementById('side-menu').classList.remove('open');
+      document.getElementById('menu-overlay').classList.remove('open');
+    }
+
+    // ===== FOCUS MODE =====
+    let focusModeOn = false;
+    function toggleFocusMode() {
+      focusModeOn = !focusModeOn;
+      document.getElementById('desktop').classList.toggle('focus-mode', focusModeOn);
+      document.getElementById('focus-toggle').classList.toggle('on', focusModeOn);
+      document.getElementById('focus-menu-item').classList.toggle('active', focusModeOn);
+    }
+
+    // ===== LANGUAGE =====
+    let currentLang = localStorage.getItem('todo_lang') || 'zh';
+    const I18N = {
+      zh: {
+        menuTitle: '菜单', notepadTitle: '🌿 随想录',
+        notepadPh: '写下一些你今日的灵感吧！让我们效率拉满！',
+        myTasks: '⚡ 我的任务', addTaskTitle: '✨ 新任务',
+        taskNamePh: '任务名称…', submitBtn: '添加 ✓',
+        priorityLabel: '优先级:', sortUrgency: '按紧急', sortPriority: '按优先级',
+        emptyState: '🎯 快开始创建你的第一个任务吧！', emptyStateSub: '点击右上角 + 添加任务',
+        focusMode: '专注模式', focusModeDesc: '隐藏其他模块，只看任务',
+        calendarLabel: '日历视图', calendarDesc: '查看任务日程总览',
+        reportLabel: '工作报告', reportDesc: '查看时间段内的任务情况',
+        customSection: '自定义界面',
+      },
+      en: {
+        menuTitle: 'Menu', notepadTitle: '🌿 Notes',
+        notepadPh: 'Write your inspirations here!',
+        myTasks: '⚡ My Tasks', addTaskTitle: '✨ New Task',
+        taskNamePh: 'Task name…', submitBtn: 'Add ✓',
+        priorityLabel: 'Priority:', sortUrgency: 'By Urgency', sortPriority: 'By Priority',
+        emptyState: '🎯 Create your first task!', emptyStateSub: 'Click + to add a task',
+        focusMode: 'Focus Mode', focusModeDesc: 'Hide other panels, focus on tasks',
+        calendarLabel: 'Calendar', calendarDesc: 'View task schedule overview',
+        reportLabel: 'Work Report', reportDesc: 'View tasks in a time period',
+        customSection: 'Customize',
+      }
+    };
+    function t(key) { return (I18N[currentLang] || I18N.zh)[key] || key; }
+
+    function applyLanguage(lang) {
+      currentLang = lang;
+      localStorage.setItem('todo_lang', lang);
+      document.getElementById('notepad-title-text').textContent = t('notepadTitle');
+      document.getElementById('notepad-textarea').placeholder = t('notepadPh');
+      document.getElementById('add-form-title').textContent = t('addTaskTitle');
+      document.getElementById('task-name').placeholder = t('taskNamePh');
+      document.getElementById('submit-btn').textContent = t('submitBtn');
+      document.querySelector('.w-title').textContent = t('myTasks');
+      document.querySelector('.form-priority-label').textContent = t('priorityLabel');
+      document.getElementById('menu-title-text').textContent = t('menuTitle');
+      document.getElementById('focus-mode-label').textContent = t('focusMode');
+      document.getElementById('focus-mode-desc').textContent = t('focusModeDesc');
+      document.getElementById('calendar-label').textContent = t('calendarLabel');
+      document.getElementById('calendar-desc').textContent = t('calendarDesc');
+      document.getElementById('report-label').textContent = t('reportLabel');
+      document.getElementById('report-desc').textContent = t('reportDesc');
+      document.getElementById('custom-section-title').textContent = t('customSection');
+      document.querySelectorAll('.lang-pill button').forEach(b => {
+        b.classList.toggle('active', b.dataset.lang === lang);
+      });
+      render();
+    }
+
+    // Init language
+    applyLanguage(currentLang);
+
+    // ===== MASCOTS =====
+    const MASCOTS = [
+      { emoji: '🦕', name: '恐龙' },
+      { emoji: '🐱', name: '猫咪' },
+      { emoji: '🐻', name: '熊熊' },
+      { emoji: '🦊', name: '狐狸' },
+      { emoji: '🐼', name: '熊猫' },
+      { emoji: '👾', name: '像素' },
+    ];
+    let currentMascot = localStorage.getItem('todo_mascot') || '🦕';
+
+    function applyMascot(emoji) {
+      currentMascot = emoji;
+      localStorage.setItem('todo_mascot', emoji);
+      document.getElementById('mascot-emoji').textContent = emoji;
+      document.querySelectorAll('.mascot-option').forEach(el => {
+        el.classList.toggle('sel', el.dataset.emoji === emoji);
+      });
+    }
+
+    function initMascotGrid() {
+      const grid = document.getElementById('mascot-grid');
+      grid.innerHTML = MASCOTS.map(m => `
+        <div class="mascot-option ${m.emoji === currentMascot ? 'sel' : ''}" data-emoji="${m.emoji}" onclick="applyMascot('${m.emoji}')">
+          <span class="m-emoji">${m.emoji}</span>
+          <span class="m-name">${m.name}</span>
+        </div>`).join('');
+      document.getElementById('mascot-emoji').textContent = currentMascot;
+    }
+    initMascotGrid();
+
+    // ===== CALENDAR =====
+    let calYear, calMonth, calView = 'month';
+    const CAL_MONTHS = ['一月','二月','三月','四月','五月','六月','七月','八月','九月','十月','十一月','十二月'];
+
+    function openCalendar() {
+      const now = new Date();
+      calYear = now.getFullYear(); calMonth = now.getMonth();
+      renderCalendar();
+      document.getElementById('calendar-modal').classList.add('open');
+      closeMenu();
+    }
+    function closeCalendar() { document.getElementById('calendar-modal').classList.remove('open'); }
+    function calPrev() { calMonth--; if (calMonth < 0) { calMonth = 11; calYear--; } renderCalendar(); }
+    function calNext() { calMonth++; if (calMonth > 11) { calMonth = 0; calYear++; } renderCalendar(); }
+    function setCalView(v) {
+      calView = v;
+      document.querySelectorAll('.cal-tab').forEach(b => b.classList.toggle('active', b.dataset.view === v));
+      renderCalendar();
+    }
+
+    function renderCalendar() {
+      document.getElementById('cal-month-label').textContent = `${calYear} 年 ${CAL_MONTHS[calMonth]}`;
+      const taskMap = {};
+      tasks.forEach(t => {
+        const d = new Date(t.deadline);
+        const k = `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`;
+        if (!taskMap[k]) taskMap[k] = [];
+        taskMap[k].push(t);
+      });
+
+      if (calView === 'week') {
+        const today = new Date();
+        const start = new Date(today); start.setDate(today.getDate() - today.getDay());
+        let html = '';
+        for (let i = 0; i < 7; i++) {
+          const day = new Date(start); day.setDate(start.getDate() + i);
+          const k = `${day.getFullYear()}-${day.getMonth()}-${day.getDate()}`;
+          const dt = taskMap[k] || [];
+          const isToday = day.toDateString() === today.toDateString();
+          const dots = dt.slice(0,4).map(t => `<div class="cal-dot" style="background:${STATE_CFG[getState(t.deadline)].color}"></div>`).join('');
+          html += `<div class="cal-day ${isToday?'today':''} ${dt.length?'has-task':''}" onclick="showCalDayTasks(${JSON.stringify(dt.map(t=>t.text))})">
+            <span class="cal-day-num">${day.getDate()}</span>
+            <div class="cal-dot-row">${dots}</div></div>`;
+        }
+        document.getElementById('cal-grid').innerHTML = html;
+        return;
+      }
+
+      const firstDay = new Date(calYear, calMonth, 1).getDay();
+      const daysInMonth = new Date(calYear, calMonth + 1, 0).getDate();
+      const today = new Date();
+      let html = '';
+      for (let i = 0; i < firstDay; i++) html += '<div class="cal-day" style="opacity:0;pointer-events:none"></div>';
+      for (let d = 1; d <= daysInMonth; d++) {
+        const k = `${calYear}-${calMonth}-${d}`;
+        const dt = taskMap[k] || [];
+        const isToday = today.getFullYear()===calYear && today.getMonth()===calMonth && today.getDate()===d;
+        const dots = dt.slice(0,4).map(t => `<div class="cal-dot" style="background:${STATE_CFG[getState(t.deadline)].color}"></div>`).join('');
+        html += `<div class="cal-day ${isToday?'today':''} ${dt.length?'has-task':''}" onclick="showCalDayTasks(${JSON.stringify(dt.map(t=>t.text))})">
+          <span class="cal-day-num">${d}</span>
+          <div class="cal-dot-row">${dots}</div></div>`;
+      }
+      document.getElementById('cal-grid').innerHTML = html;
+    }
+
+    function showCalDayTasks(names) {
+      if (!names.length) return;
+      showToast('📅 ' + names.join(' · '));
+    }
+
+    // ===== WORK REPORT =====
+    function openReport() {
+      const today = new Date().toISOString().split('T')[0];
+      const weekAgo = new Date(Date.now() - 7*24*3600*1000).toISOString().split('T')[0];
+      document.getElementById('report-from').value = weekAgo;
+      document.getElementById('report-to').value = today;
+      generateReport();
+      document.getElementById('report-modal').classList.add('open');
+      closeMenu();
+    }
+    function closeReport() { document.getElementById('report-modal').classList.remove('open'); }
+
+    function generateReport() {
+      const from = new Date(document.getElementById('report-from').value);
+      const to = new Date(document.getElementById('report-to').value);
+      to.setHours(23,59,59,999);
+
+      const done = completedTasks.filter(t => { const d = new Date(t.completedAt); return d >= from && d <= to; });
+      const active = tasks.filter(t => { const d = new Date(t.deadline); return d >= from && d <= to; });
+      const overdue = active.filter(t => getState(t.deadline) === 'overdue');
+      const pending = active.filter(t => getState(t.deadline) !== 'overdue');
+
+      document.getElementById('report-done-count').textContent = done.length;
+      document.getElementById('report-pending-count').textContent = pending.length;
+      document.getElementById('report-overdue-count').textContent = overdue.length;
+
+      let html = '';
+      if (done.length) {
+        html += '<div class="report-section-label">✅ 已完成</div>';
+        html += done.map(t => `<div class="report-task-item report-task-done">
+          <span>✓</span><span>${t.text}</span>
+          <span style="margin-left:auto;font-size:10px;opacity:0.5">${new Date(t.completedAt).toLocaleDateString()}</span>
+        </div>`).join('');
+      }
+      if (pending.length) {
+        html += '<div class="report-section-label">⏳ 进行中</div>';
+        html += pending.map(t => `<div class="report-task-item">
+          <span class="task-priority p${t.priority||3}">${P_LABELS[t.priority||3]}</span>
+          <span>${t.text}</span>
+          <span style="margin-left:auto;font-size:10px;opacity:0.5">${formatTime(t.deadline)}</span>
+        </div>`).join('');
+      }
+      if (overdue.length) {
+        html += '<div class="report-section-label">⚠️ 已超期</div>';
+        html += overdue.map(t => `<div class="report-task-item" style="background:rgba(255,80,80,0.1)">
+          <span>💀</span><span style="color:#ff8080">${t.text}</span>
+        </div>`).join('');
+      }
+      if (!done.length && !active.length) {
+        html = '<div style="text-align:center;color:rgba(255,255,255,0.28);padding:24px 0;font-size:13px">该时间段内无任务记录</div>';
+      }
+      document.getElementById('report-task-list').innerHTML = html;
+    }
   </script>
 </body>
 </html>
