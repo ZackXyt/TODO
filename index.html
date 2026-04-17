@@ -824,17 +824,30 @@
     }
     .menu-toggle.on::after { left: 16px; }
 
+    /* Mascot collapsible panel */
+    .mascot-panel {
+      max-height: 0; overflow: hidden;
+      transition: max-height 0.32s cubic-bezier(0.4,0,0.2,1);
+    }
+    .mascot-panel.open { max-height: 500px; }
+    .menu-chevron {
+      font-size: 14px; color: rgba(255,255,255,0.35);
+      transition: transform 0.25s ease; flex-shrink: 0; margin-left: auto;
+      line-height: 1;
+    }
+    .menu-item.pet-open .menu-chevron { transform: rotate(90deg); color: rgba(255,255,255,0.7); }
+
     /* Mascot grid */
-    .mascot-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 6px; }
+    .mascot-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 7px; padding: 10px 2px 4px; }
     .mascot-option {
       background: rgba(255,255,255,0.07); border: 1.5px solid transparent;
-      border-radius: 12px; padding: 10px 6px; text-align: center;
+      border-radius: 11px; padding: 9px 4px; text-align: center;
       cursor: pointer; transition: all 0.15s;
     }
     .mascot-option:hover { background: rgba(255,255,255,0.14); }
     .mascot-option.sel { border-color: rgba(255,255,255,0.55); background: rgba(255,255,255,0.16); }
-    .mascot-option .m-emoji { font-size: 26px; display: block; margin-bottom: 3px; }
-    .mascot-option .m-name { font-size: 10px; color: rgba(255,255,255,0.45); font-weight: 600; }
+    .mascot-option .m-emoji { font-size: 22px; display: block; margin-bottom: 3px; }
+    .mascot-option .m-name { font-size: 9px; color: rgba(255,255,255,0.4); font-weight: 600; }
 
     /* Lang pill */
     .lang-pill { display: flex; background: rgba(255,255,255,0.08); border-radius: 20px; padding: 3px; margin-left: auto; }
@@ -1129,8 +1142,17 @@
     </div>
 
     <div class="menu-section">
-      <div class="menu-section-title" id="custom-section-title">自定义界面</div>
-      <div class="mascot-grid" id="mascot-grid"></div>
+      <div class="menu-item" id="pet-trigger" onclick="toggleMascotPanel()" style="cursor:pointer;">
+        <span class="menu-item-icon">🐾</span>
+        <div>
+          <div id="custom-section-title">陪伴小宠</div>
+          <div class="menu-item-desc">选择你的专属伴侣</div>
+        </div>
+        <span class="menu-chevron">›</span>
+      </div>
+      <div class="mascot-panel" id="mascot-panel">
+        <div class="mascot-grid" id="mascot-grid"></div>
+      </div>
     </div>
 
     <div class="menu-section">
@@ -1872,7 +1894,7 @@
         focusMode: '专注模式', focusModeDesc: '隐藏其他模块，只看任务',
         calendarLabel: '日历视图', calendarDesc: '查看任务日程总览',
         reportLabel: '工作报告', reportDesc: '查看时间段内的任务情况',
-        customSection: '自定义界面',
+        customSection: '陪伴小宠',
       },
       en: {
         menuTitle: 'Dock', notepadTitle: '🌿 Notes',
@@ -1884,7 +1906,7 @@
         focusMode: 'Focus Mode', focusModeDesc: 'Hide other panels, focus on tasks',
         calendarLabel: 'Calendar', calendarDesc: 'View task schedule overview',
         reportLabel: 'Work Report', reportDesc: 'View tasks in a time period',
-        customSection: 'Customize',
+        customSection: 'Companions',
       }
     };
     function t(key) { return (I18N[currentLang] || I18N.zh)[key] || key; }
@@ -1919,12 +1941,28 @@
     // ===== MASCOTS =====
     const MASCOTS = [
       { emoji: '🦕', name: '恐龙' },
+      { emoji: '🐶', name: '小狗' },
       { emoji: '🐱', name: '猫咪' },
+      { emoji: '🐰', name: '兔子' },
       { emoji: '🐻', name: '熊熊' },
-      { emoji: '🦊', name: '狐狸' },
       { emoji: '🐼', name: '熊猫' },
+      { emoji: '🦊', name: '狐狸' },
+      { emoji: '🐨', name: '考拉' },
+      { emoji: '🐧', name: '企鹅' },
+      { emoji: '🐸', name: '青蛙' },
+      { emoji: '🦄', name: '独角兽' },
+      { emoji: '🐲', name: '龙' },
+      { emoji: '🦋', name: '蝴蝶' },
+      { emoji: '🌸', name: '樱花' },
       { emoji: '👾', name: '像素' },
     ];
+
+    function toggleMascotPanel() {
+      const panel = document.getElementById('mascot-panel');
+      const trigger = document.getElementById('pet-trigger');
+      const isOpen = panel.classList.toggle('open');
+      trigger.classList.toggle('pet-open', isOpen);
+    }
     let currentMascot = localStorage.getItem('todo_mascot') || '🦕';
 
     function applyMascot(emoji) {
