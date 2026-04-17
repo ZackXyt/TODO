@@ -1164,18 +1164,19 @@
 
     /* ====== RESPONSIVE: MOBILE (< 768px) ====== */
     @media (max-width: 767px) {
-      /* Page becomes scrollable */
-      body { overflow-y: auto; overflow-x: hidden; height: auto; min-height: 100vh; }
+      /* Keep body overflow:hidden so position:fixed works correctly on iOS.
+         #desktop becomes the scroll container instead. */
+      body { overflow: hidden; height: 100vh; }
 
-      /* Reset desktop grid → single column */
+      /* Reset desktop grid → single scrollable column */
       #desktop {
         display: flex;
         flex-direction: column;
-        height: auto;
-        min-height: 100vh;
+        height: 100vh;
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
         padding: 12px;
         gap: 10px;
-        overflow: visible;
       }
 
       /* Visual order: time → weather → todo → notepad */
@@ -1202,10 +1203,10 @@
       .sq-author { font-size: 10px; }
       .sq-info { font-size: 9px; }
 
-      /* Todo widget: natural height, inner list scrollable */
+      /* Todo widget: let content flow naturally, desktop scroll handles it */
       .todo-area { min-height: 0; }
       .widget { overflow: visible; max-height: none; flex: none; }
-      #task-list { overflow-y: auto; max-height: 55vh; flex: none; }
+      #task-list { overflow-y: visible; max-height: none; flex: none; }
 
       /* Timer row: wrap buttons */
       .timer-row { flex-wrap: wrap; gap: 6px; }
@@ -2775,6 +2776,21 @@
     // in case rAF fired before CSS media-query heights were applied (iOS Safari)
     window.addEventListener('load', function() { updateStadiumLayout(); });
     setTimeout(function() { updateStadiumLayout(); }, 400);
+    // Mobile: if stadium-wrap still has no height after CSS applied, force it via JS
+    setTimeout(function() {
+      if (window.innerWidth <= 767) {
+        var sw = document.getElementById('stadium-wrap');
+        var dw = document.getElementById('dino-widget');
+        if (sw && dw) {
+          if (sw.offsetHeight < 10) {
+            dw.style.height = '220px';
+            sw.style.height = '220px';
+            sw.style.width = '100%';
+          }
+          updateStadiumLayout();
+        }
+      }
+    }, 600);
 
     // ===== CALENDAR =====
     let calYear, calMonth, calView = 'month';
