@@ -2785,7 +2785,7 @@
     var _pfLastST = -999;
     var _pfSecTs = 0;
     var _pfEcg = [];
-    var _pfSpike = 0, _pfSpikePh = 0;
+    var _pfSpike = 0, _pfSpikePh = 0, _pfSpikeAmp = 1.0;
 
     function _pfPal() {
       var hx = (localStorage.getItem('todo_wallpaper_color') || '#533483').replace('#','');
@@ -2818,12 +2818,13 @@
           r:r, rb:r, rd:0, sz:sz, col:cs[i%3], t:Math.random()*Math.PI*2, tw:Math.random()*Math.PI*2, twv:.018+Math.random()*.022});
       }
       // Cosmic dust — scattered across whole canvas
-      for(var j=0;j<160;j++){
+      for(var j=0;j<760;j++){
         var x=Math.random()*W, y=Math.random()*H;
-        var szC=Math.random()<.06 ? 1.6+Math.random()*1.2 : (Math.random()<.25 ? .7+Math.random()*.7 : .2+Math.random()*.45);
+        var rnd=Math.random();
+        var szC=rnd<.04 ? 1.5+Math.random()*1.0 : (rnd<.20 ? .6+Math.random()*.6 : .15+Math.random()*.38);
         _pfParts.push({orbital:false, x:x, y:y,
-          vx:(Math.random()-.5)*.08, vy:(Math.random()-.5)*.08,
-          sz:szC, col:cs[j%3], t:Math.random()*Math.PI*2, tw:Math.random()*Math.PI*2, twv:.010+Math.random()*.018, rd:0, rb:0});
+          vx:(Math.random()-.5)*.07, vy:(Math.random()-.5)*.07,
+          sz:szC, col:cs[j%3], t:Math.random()*Math.PI*2, tw:Math.random()*Math.PI*2, twv:.008+Math.random()*.016, rd:0, rb:0});
       }
     }
 
@@ -2831,6 +2832,7 @@
 
     function _pfFire() {
       _pfBeat=1; _pfSpike=1; _pfSpikePh=0;
+      _pfSpikeAmp = 0.55 + Math.random()*0.90; // 0.55–1.45, varies each beat
       _pfParts.forEach(function(p){ p.rd+=10+Math.random()*14; });
     }
 
@@ -2841,10 +2843,10 @@
         var y=Math.sin(t*.00078)*9 + Math.sin(t*.00215)*6 + Math.sin(t*.0088)*3 + Math.sin(t*.024)*1.5;
         if(_pfSpike>.015){
           var ph=_pfSpikePh;
-          if     (ph< 3) y= -16*_pfSpike;          // Q dip
-          else if(ph< 6) y=-115*_pfSpike;           // R peak
-          else if(ph< 9) y=  62*_pfSpike;           // S trough
-          else if(ph<15) y= -22*_pfSpike*((15-ph)/6); // T wave
+          if     (ph< 3) y= -16*_pfSpike*_pfSpikeAmp;
+          else if(ph< 6) y=-115*_pfSpike*_pfSpikeAmp;
+          else if(ph< 9) y=  62*_pfSpike*_pfSpikeAmp;
+          else if(ph<15) y= -22*_pfSpike*_pfSpikeAmp*((15-ph)/6);
           else            y=0;
           _pfSpikePh++; _pfSpike=Math.max(0,_pfSpike-.040);
         }
@@ -2897,7 +2899,9 @@
         var pulseSz=p.orbital ? p.sz*(1+bp*.85) : p.sz;
         ctx.save(); ctx.globalAlpha=alpha;
         ctx.beginPath(); ctx.arc(px,py,pulseSz,0,Math.PI*2);
-        ctx.fillStyle=p.col; ctx.shadowColor=p.col; ctx.shadowBlur=p.sz>1.2?7:3; ctx.fill();
+        ctx.fillStyle=p.col;
+        if(p.sz>0.9){ ctx.shadowColor=p.col; ctx.shadowBlur=p.sz>1.4?8:3; }
+        ctx.fill();
         ctx.restore();
       });
 
@@ -2926,7 +2930,7 @@
       ctx.restore();
 
       // Circle
-      var R=Math.min(W,H)*.135;
+      var R=Math.min(W,H)*.155;
       var circY=cy-H*.05;
       ctx.save(); ctx.translate(cx,circY); ctx.scale(1+bp, 1+bp);
       var gl=ctx.createRadialGradient(0,0,R*.6,0,0,R*1.28);
