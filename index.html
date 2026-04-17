@@ -2818,7 +2818,7 @@
           r:r, rb:r, rd:0, sz:sz, col:cs[i%3], t:Math.random()*Math.PI*2, tw:Math.random()*Math.PI*2, twv:.018+Math.random()*.022});
       }
       // Cosmic dust — scattered across whole canvas
-      for(var j=0;j<760;j++){
+      for(var j=0;j<1520;j++){
         var x=Math.random()*W, y=Math.random()*H;
         var rnd=Math.random();
         var szC=rnd<.04 ? 1.5+Math.random()*1.0 : (rnd<.20 ? .6+Math.random()*.6 : .15+Math.random()*.38);
@@ -2839,8 +2839,9 @@
     function _pfStep() {
       for(var k=0;k<2;k++){
         var t=performance.now();
-        // Layered undulating baseline — breathing + subtle noise
-        var y=Math.sin(t*.00078)*9 + Math.sin(t*.00215)*6 + Math.sin(t*.0088)*3 + Math.sin(t*.024)*1.5;
+        // Angular baseline: triangle waves + square-wave steps
+        var tri=function(p){p=((p%(Math.PI*2))+Math.PI*2)%(Math.PI*2);return p<Math.PI?(p/Math.PI)*2-1:3-(p/Math.PI)*2;};
+        var y=tri(t*.00075)*12 + tri(t*.0022)*7 + Math.sign(Math.sin(t*.011))*2.8 + Math.sign(Math.sin(t*.031))*1.2;
         if(_pfSpike>.015){
           var ph=_pfSpikePh;
           if     (ph< 3) y= -16*_pfSpike*_pfSpikeAmp;
@@ -2897,14 +2898,19 @@
           px=p.x; py=p.y;
         }
         var pulseSz=p.orbital ? p.sz*(1+bp*.85) : p.sz;
-        ctx.save(); ctx.globalAlpha=alpha;
-        ctx.beginPath(); ctx.arc(px,py,pulseSz,0,Math.PI*2);
-        ctx.fillStyle=p.col;
-        if(p.sz>0.9){ ctx.shadowColor=p.col; ctx.shadowBlur=p.sz>1.4?8:3; }
-        ctx.fill();
-        ctx.restore();
+        if(p.sz>0.85){
+          ctx.save(); ctx.globalAlpha=alpha;
+          ctx.beginPath(); ctx.arc(px,py,pulseSz,0,Math.PI*2);
+          ctx.fillStyle=p.col; ctx.shadowColor=p.col; ctx.shadowBlur=p.sz>1.4?8:3;
+          ctx.fill(); ctx.restore();
+        } else {
+          ctx.globalAlpha=alpha*.65;
+          ctx.fillStyle=p.col;
+          ctx.beginPath(); ctx.arc(px,py,pulseSz,0,Math.PI*2); ctx.fill();
+        }
       });
 
+      ctx.globalAlpha=1; // reset after particle loop
       // ECG line — always scroll
       _pfStep();
       var eyBase=H*.68, eHalf=W*.38, eX0=cx-eHalf, eX1=cx+eHalf;
