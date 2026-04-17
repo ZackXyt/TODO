@@ -1340,7 +1340,7 @@
             <div class="w-subtitle" id="task-count">…</div>
           </div>
           <div style="display:flex;align-items:center;gap:6px;">
-            <button class="sort-btn" id="sort-btn" onclick="toggleSortMode()">按紧急</button>
+            <button class="sort-btn" id="sort-btn" onclick="toggleSortMode()">按 DDL</button>
             <button class="add-btn" onclick="toggleForm()">+</button>
           </div>
         </div>
@@ -1862,7 +1862,7 @@
         `${tasks.length} 个待完成`;
 
       const btn = document.getElementById("sort-btn");
-      if (btn) btn.textContent = sortMode === 'priority' ? '按优先级' : '按紧急';
+      if (btn) btn.textContent = sortMode === 'priority' ? '按 P' : '按 DDL';
 
       const list = document.getElementById("task-list");
       if (tasks.length === 0) {
@@ -2351,7 +2351,7 @@
         notepadPh: '写下一些你今日的灵感吧！让我们效率拉满！',
         myTasks: '⚡ 我的任务', addTaskTitle: '✨ 新任务',
         taskNamePh: '任务名称…', submitBtn: '添加 ✓',
-        priorityLabel: '优先级:', sortUrgency: '按紧急', sortPriority: '按优先级',
+        priorityLabel: '优先级:', sortUrgency: '按 DDL', sortPriority: '按 P',
         emptyState: '🎯 快开始创建你的第一个任务吧！', emptyStateSub: '点击右上角 + 添加任务',
         focusMode: '专注模式', focusModeDesc: '隐藏其他模块，只看任务',
         calendarLabel: '日历视图', calendarDesc: '查看任务日程总览',
