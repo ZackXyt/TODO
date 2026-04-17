@@ -1005,14 +1005,6 @@
           <div class="weather-location" id="weather-location"></div>
         </div>
       </div>
-      <div class="wallpaper-controls">
-        <label class="wallpaper-btn" id="wallpaper-label">
-          <span class="icon">🎨</span> Wallpaper
-          <span class="color-dot" id="color-dot"></span>
-          <input type="color" id="wallpaper-color-input" value="#533483" oninput="applyColorWallpaper(this.value)">
-        </label>
-        <button class="reset-btn" onclick="resetWallpaper()">重置</button>
-      </div>
 
       <div class="dino-widget" id="dino-widget">
         <div class="dino-container">
@@ -1106,7 +1098,7 @@
   <!-- SIDE MENU -->
   <div id="side-menu">
     <div class="menu-header">
-      <span class="menu-title" id="menu-title-text">菜单</span>
+      <span class="menu-title" id="menu-title-text">扩展坞</span>
       <button class="menu-close-btn" onclick="closeMenu()">✕</button>
     </div>
 
@@ -1139,6 +1131,23 @@
     <div class="menu-section">
       <div class="menu-section-title" id="custom-section-title">自定义界面</div>
       <div class="mascot-grid" id="mascot-grid"></div>
+    </div>
+
+    <div class="menu-section">
+      <div class="menu-section-title">壁纸</div>
+      <label class="menu-item" for="wallpaper-color-input" style="cursor:pointer;">
+        <span class="menu-item-icon">🎨</span>
+        <div>
+          <div>背景配色</div>
+          <div class="menu-item-desc">点击选择颜色</div>
+        </div>
+        <span id="color-dot" style="width:20px;height:20px;border-radius:50%;border:2px solid rgba(255,255,255,0.35);margin-left:auto;flex-shrink:0;display:block;background:#533483;"></span>
+      </label>
+      <input type="color" id="wallpaper-color-input" value="#533483" oninput="applyColorWallpaper(this.value)" style="position:fixed;top:-999px;left:-999px;opacity:0;">
+      <div class="menu-item" onclick="resetWallpaper()">
+        <span class="menu-item-icon">↩️</span>
+        <div>重置壁纸</div>
+      </div>
     </div>
 
     <div class="menu-section">
@@ -1854,7 +1863,7 @@
     let currentLang = localStorage.getItem('todo_lang') || 'zh';
     const I18N = {
       zh: {
-        menuTitle: '菜单', notepadTitle: '🌿 随想录',
+        menuTitle: '扩展坞', notepadTitle: '🌿 随想录',
         notepadPh: '写下一些你今日的灵感吧！让我们效率拉满！',
         myTasks: '⚡ 我的任务', addTaskTitle: '✨ 新任务',
         taskNamePh: '任务名称…', submitBtn: '添加 ✓',
@@ -1866,7 +1875,7 @@
         customSection: '自定义界面',
       },
       en: {
-        menuTitle: 'Menu', notepadTitle: '🌿 Notes',
+        menuTitle: 'Dock', notepadTitle: '🌿 Notes',
         notepadPh: 'Write your inspirations here!',
         myTasks: '⚡ My Tasks', addTaskTitle: '✨ New Task',
         taskNamePh: 'Task name…', submitBtn: 'Add ✓',
