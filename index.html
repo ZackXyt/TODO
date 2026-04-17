@@ -2808,12 +2808,22 @@
       var W=_pfCanvas.width, H=_pfCanvas.height, cx=W/2, cy=H/2;
       var pal=_pfPal(), cs=[pal.p0,pal.p1,pal.p2];
       _pfParts=[];
-      for(var i=0;i<72;i++){
-        var a=(i/72)*Math.PI*2+(Math.random()-.5)*.2;
-        var rMin=Math.min(W,H)*.17, rMax=Math.min(W,H)*.43;
-        var r=rMin+Math.pow(Math.random(),.65)*(rMax-rMin);
-        _pfParts.push({a:a, av:(Math.random()<.5?1:-1)*(.0003+Math.random()*.0005),
-          r:r, rb:r, rd:0, sz:.5+Math.random()*2.2, col:cs[i%3], t:Math.random()*Math.PI*2});
+      // Orbital ring — beat-reactive
+      for(var i=0;i<60;i++){
+        var a=(i/60)*Math.PI*2+(Math.random()-.5)*.18;
+        var rMin=Math.min(W,H)*.16, rMax=Math.min(W,H)*.44;
+        var r=rMin+Math.pow(Math.random(),.6)*(rMax-rMin);
+        var sz=Math.random()<.12 ? 1.8+Math.random()*1.4 : (Math.random()<.35 ? .9+Math.random()*.8 : .25+Math.random()*.55);
+        _pfParts.push({orbital:true, a:a, av:(Math.random()<.5?1:-1)*(.00025+Math.random()*.00045),
+          r:r, rb:r, rd:0, sz:sz, col:cs[i%3], t:Math.random()*Math.PI*2, tw:Math.random()*Math.PI*2, twv:.018+Math.random()*.022});
+      }
+      // Cosmic dust — scattered across whole canvas
+      for(var j=0;j<160;j++){
+        var x=Math.random()*W, y=Math.random()*H;
+        var szC=Math.random()<.06 ? 1.6+Math.random()*1.2 : (Math.random()<.25 ? .7+Math.random()*.7 : .2+Math.random()*.45);
+        _pfParts.push({orbital:false, x:x, y:y,
+          vx:(Math.random()-.5)*.08, vy:(Math.random()-.5)*.08,
+          sz:szC, col:cs[j%3], t:Math.random()*Math.PI*2, tw:Math.random()*Math.PI*2, twv:.010+Math.random()*.018, rd:0, rb:0});
       }
     }
 
@@ -2826,15 +2836,17 @@
 
     function _pfStep() {
       for(var k=0;k<2;k++){
-        var y=Math.sin(performance.now()*.00112)*2.6+Math.sin(performance.now()*.0058)*1.3;
+        var t=performance.now();
+        // Layered undulating baseline — breathing + subtle noise
+        var y=Math.sin(t*.00078)*9 + Math.sin(t*.00215)*6 + Math.sin(t*.0088)*3 + Math.sin(t*.024)*1.5;
         if(_pfSpike>.015){
           var ph=_pfSpikePh;
-          if     (ph< 4) y=-11*_pfSpike;
-          else if(ph< 7) y=-74*_pfSpike;
-          else if(ph<10) y= 46*_pfSpike;
-          else if(ph<16) y=-14*_pfSpike*((16-ph)/6);
+          if     (ph< 3) y= -16*_pfSpike;          // Q dip
+          else if(ph< 6) y=-115*_pfSpike;           // R peak
+          else if(ph< 9) y=  62*_pfSpike;           // S trough
+          else if(ph<15) y= -22*_pfSpike*((15-ph)/6); // T wave
           else            y=0;
-          _pfSpikePh++; _pfSpike=Math.max(0,_pfSpike-.038);
+          _pfSpikePh++; _pfSpike=Math.max(0,_pfSpike-.040);
         }
         _pfEcg.shift(); _pfEcg.push(y);
       }
@@ -2869,27 +2881,40 @@
 
       // particles
       _pfParts.forEach(function(p){
-        p.a+=p.av; p.t+=.013; p.rd*=.91;
-        var r=p.rb+p.rd+Math.sin(p.t)*3.5;
-        var x=cx+Math.cos(p.a)*r, y=cy+Math.sin(p.a)*r;
-        ctx.save(); ctx.beginPath(); ctx.arc(x,y,p.sz*(1+bp*.9),0,Math.PI*2);
-        ctx.fillStyle=p.col; ctx.shadowColor=p.col; ctx.shadowBlur=5; ctx.fill(); ctx.restore();
+        p.t+=.013; p.tw+=p.twv;
+        var alpha=0.45+Math.sin(p.tw)*0.30; // twinkle
+        var px,py;
+        if(p.orbital){
+          p.a+=p.av; p.rd*=.91;
+          var r=p.rb+p.rd+Math.sin(p.t)*4;
+          px=cx+Math.cos(p.a)*r; py=cy+Math.sin(p.a)*r;
+        } else {
+          p.x+=p.vx; p.y+=p.vy;
+          if(p.x<-4)p.x=W+4; else if(p.x>W+4)p.x=-4;
+          if(p.y<-4)p.y=H+4; else if(p.y>H+4)p.y=-4;
+          px=p.x; py=p.y;
+        }
+        var pulseSz=p.orbital ? p.sz*(1+bp*.85) : p.sz;
+        ctx.save(); ctx.globalAlpha=alpha;
+        ctx.beginPath(); ctx.arc(px,py,pulseSz,0,Math.PI*2);
+        ctx.fillStyle=p.col; ctx.shadowColor=p.col; ctx.shadowBlur=p.sz>1.2?7:3; ctx.fill();
+        ctx.restore();
       });
 
-      // ECG line
-      if(timerRunning||_pfSpike>0) _pfStep();
+      // ECG line — always scroll
+      _pfStep();
       var eyBase=H*.68, eHalf=W*.38, eX0=cx-eHalf, eX1=cx+eHalf;
       ctx.save();
       ctx.beginPath();
       var N=_pfEcg.length;
       for(var i=0;i<N;i++){
-        var ex=eX0+(i/N)*eHalf*2, ey=eyBase+_pfEcg[i]*(1+bp*3.0);
+        var ex=eX0+(i/N)*eHalf*2, ey=eyBase+_pfEcg[i]*(1+bp*2.2);
         i===0?ctx.moveTo(ex,ey):ctx.lineTo(ex,ey);
       }
       var eg=ctx.createLinearGradient(eX0,0,eX1,0);
       eg.addColorStop(0,'transparent'); eg.addColorStop(.07,pal.ecgF);
       eg.addColorStop(.55,pal.ecg);   eg.addColorStop(1,pal.ecg);
-      ctx.strokeStyle=eg; ctx.lineWidth=1.8; ctx.shadowColor=pal.ecg; ctx.shadowBlur=9; ctx.stroke();
+      ctx.strokeStyle=eg; ctx.lineWidth=1.0; ctx.shadowColor=pal.ecg; ctx.shadowBlur=8; ctx.stroke();
       // left baseline
       ctx.beginPath(); ctx.moveTo(0,eyBase); ctx.lineTo(eX0,eyBase);
       var lg=ctx.createLinearGradient(0,0,eX0,0); lg.addColorStop(0,'transparent'); lg.addColorStop(1,pal.ecgF);
