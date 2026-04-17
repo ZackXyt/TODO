@@ -890,6 +890,15 @@
     }
     .duration-btn:hover { background: rgba(255,255,255,0.16); color: rgba(255,255,255,0.9); }
     .duration-btn.sel { background: rgba(255,255,255,0.2); color: white; border-color: rgba(255,255,255,0.38); }
+    .custom-dur-input {
+      display: none; width: 48px; height: 22px;
+      background: rgba(255,255,255,0.12);
+      border: 1px solid rgba(255,255,255,0.35);
+      border-radius: 6px; color: white;
+      font-size: 10px; font-weight: 600; font-family: inherit;
+      text-align: center; outline: none; padding: 0 4px;
+    }
+    .custom-dur-input.show { display: inline-block; }
 
     /* ====== START/PAUSE BUTTON ====== */
     .start-timer-btn {
@@ -1244,11 +1253,14 @@
             </div>
             <div class="stretch-countdown" id="stretch-countdown">60:00</div>
             <div class="timer-row" id="timer-row">
-              <button class="duration-btn" data-mins="15" onclick="setDuration(15)">15分</button>
               <button class="duration-btn" data-mins="25" onclick="setDuration(25)">25分</button>
               <button class="duration-btn" data-mins="45" onclick="setDuration(45)">45分</button>
               <button class="duration-btn sel" data-mins="60" onclick="setDuration(60)">60分</button>
               <button class="duration-btn" data-mins="90" onclick="setDuration(90)">90分</button>
+              <button class="duration-btn" id="custom-dur-btn" data-mins="0" onclick="showCustomDurInput()">自定义</button>
+              <input class="custom-dur-input" id="custom-dur-input" type="number" min="1" max="480" placeholder="分钟"
+                onkeydown="if(event.key==='Enter')applyCustomDur()"
+                onblur="applyCustomDur()" />
             </div>
           </div>
           <div style="display:flex;flex-direction:column;gap:6px;align-items:flex-end;flex-shrink:0;">
@@ -2061,12 +2073,34 @@
 
     setInterval(updateStretchTimer, 1000);
 
-    // 初始化：高亮已保存的时长按钮
+    function showCustomDurInput() {
+      const inp = document.getElementById('custom-dur-input');
+      inp.classList.add('show');
+      inp.value = '';
+      inp.focus();
+    }
+    function applyCustomDur() {
+      const inp = document.getElementById('custom-dur-input');
+      inp.classList.remove('show');
+      const mins = parseInt(inp.value);
+      if (!mins || mins < 1) return;
+      const btn = document.getElementById('custom-dur-btn');
+      btn.dataset.mins = mins;
+      btn.textContent = mins + '分';
+      setDuration(mins);
+    }
+
+    // 初始化：高亮已保存的时长按钮（含自定义）
     (function() {
       const savedMins = timerDuration / 60;
+      let matched = false;
       document.querySelectorAll('.duration-btn').forEach(b => {
-        b.classList.toggle('sel', parseInt(b.dataset.mins) === savedMins);
+        if (parseInt(b.dataset.mins) === savedMins) { b.classList.add('sel'); matched = true; }
       });
+      if (!matched && savedMins > 0) {
+        const btn = document.getElementById('custom-dur-btn');
+        if (btn) { btn.dataset.mins = savedMins; btn.textContent = savedMins + '分'; btn.classList.add('sel'); }
+      }
       updateStretchDisplay();
     })();
 
