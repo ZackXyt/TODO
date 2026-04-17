@@ -720,6 +720,51 @@
     }
     .done-btn:hover { background:rgba(100,220,120,0.42); color:white; transform:scale(1.15); }
 
+    .del-btn {
+      background: transparent; border: none; border-radius: 9px;
+      color: rgba(255,255,255,0.18);
+      font-size: 13px; width: 26px; height: 26px;
+      cursor: pointer; display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0; transition: all 0.2s; padding: 0;
+    }
+    .del-btn:hover { background: rgba(255,70,70,0.18); color: rgba(255,130,110,0.95); transform: scale(1.15); }
+
+    /* Delete confirmation modal */
+    .del-modal-overlay {
+      position: fixed; inset: 0; z-index: 9999;
+      background: rgba(0,0,0,0.45);
+      display: flex; align-items: center; justify-content: center;
+      backdrop-filter: blur(4px);
+      opacity: 0; pointer-events: none;
+      transition: opacity 0.2s;
+    }
+    .del-modal-overlay.show { opacity: 1; pointer-events: all; }
+    .del-modal {
+      background: rgba(28,28,48,0.93);
+      backdrop-filter: blur(24px);
+      border: 1px solid rgba(255,255,255,0.11);
+      border-radius: 20px; padding: 26px 28px;
+      min-width: 260px; max-width: 320px;
+      text-align: center;
+      box-shadow: 0 12px 48px rgba(0,0,0,0.55);
+    }
+    .del-modal-icon { font-size: 34px; margin-bottom: 12px; }
+    .del-modal-title { font-size: 15px; font-weight: 600; color: rgba(255,255,255,0.9); margin-bottom: 5px; }
+    .del-modal-sub { font-size: 12px; color: rgba(255,255,255,0.35); margin-bottom: 22px; line-height: 1.5; }
+    .del-modal-actions { display: flex; gap: 10px; justify-content: center; }
+    .del-modal-cancel {
+      background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.12);
+      color: rgba(255,255,255,0.55); border-radius: 10px;
+      padding: 8px 22px; font-size: 13px; cursor: pointer; transition: all 0.18s;
+    }
+    .del-modal-cancel:hover { background: rgba(255,255,255,0.13); color: white; }
+    .del-modal-confirm {
+      background: rgba(255,65,65,0.22); border: 1px solid rgba(255,100,100,0.28);
+      color: rgba(255,145,130,0.95); border-radius: 10px;
+      padding: 8px 22px; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.18s;
+    }
+    .del-modal-confirm:hover { background: rgba(255,65,65,0.42); color: white; }
+
     /* ====== ADD FORM ====== */
     .add-form {
       background: rgba(255,255,255,0.13);
@@ -1416,6 +1461,19 @@
     </div>
   </div>
 
+  <!-- Delete confirmation modal -->
+  <div class="del-modal-overlay" id="del-modal-overlay" onclick="cancelDelete(event)">
+    <div class="del-modal">
+      <div class="del-modal-icon">🗑️</div>
+      <div class="del-modal-title">确定要永久删除任务吗？</div>
+      <div class="del-modal-sub">删除后将不留任何历史痕迹</div>
+      <div class="del-modal-actions">
+        <button class="del-modal-cancel" onclick="cancelDeleteModal()">取消</button>
+        <button class="del-modal-confirm" onclick="confirmDeleteTask()">删除</button>
+      </div>
+    </div>
+  </div>
+
   <!-- Floating draggable mascot (must be before <script> so DOM is ready) -->
   <div id="mascot-float">
     <div class="dino-container">
@@ -1754,6 +1812,7 @@
               </div>
             </div>
             <button class="done-btn" onclick="completeTask(${t.id})">✓</button>
+            <button class="del-btn" onclick="promptDeleteTask(${t.id})" title="删除任务">🗑</button>
           </div>`;
       }).join("");
     }
@@ -1817,6 +1876,49 @@
         updateStadiumProgress();
         showToast(currentLang === 'en' ? "🎉 Done! Great job!" : "🎉 完成！干得漂亮！");
       }, 270);
+    }
+
+    // ===== DELETE TASK =====
+    var _pendingDeleteId = null;
+
+    function promptDeleteTask(id) {
+      _pendingDeleteId = id;
+      document.getElementById('del-modal-overlay').classList.add('show');
+    }
+    function cancelDeleteModal() {
+      _pendingDeleteId = null;
+      document.getElementById('del-modal-overlay').classList.remove('show');
+    }
+    function cancelDelete(e) {
+      if (e.target === document.getElementById('del-modal-overlay')) cancelDeleteModal();
+    }
+    function confirmDeleteTask() {
+      const id = _pendingDeleteId;
+      if (id === null) return;
+      cancelDeleteModal();
+      const wasActive = tasks.some(t => t.id === id);
+      const wasCompletedToday = getTodayCompleted().some(t => t.id === id);
+      // Remove from active tasks
+      tasks = tasks.filter(t => t.id !== id);
+      saveTasks();
+      // Remove from completed tasks (all history)
+      completedTasks = completedTasks.filter(t => t.id !== id);
+      localStorage.setItem('todo_completed_tasks', JSON.stringify(completedTasks));
+      // Adjust day counters
+      const dk = getDayKey(), dd = getDayData(dk);
+      if (wasActive)         dd.total = Math.max(0, dd.total - 1);
+      if (wasCompletedToday) { dd.done = Math.max(0, dd.done - 1); dd.total = Math.max(0, dd.total - 1); }
+      saveDayData(dk, dd);
+      // Animate out
+      const el = document.getElementById('task-' + id);
+      if (el) {
+        el.style.transition = 'all 0.22s ease';
+        el.style.opacity = '0'; el.style.transform = 'scale(0.9)';
+        setTimeout(() => { render(); renderCompletedList(); updateStadiumProgress(); }, 240);
+      } else {
+        render(); renderCompletedList(); updateStadiumProgress();
+      }
+      showToast('🗑️ 任务已永久删除');
     }
 
     // ===== 10-min NOTIFICATIONS =====
