@@ -30,7 +30,7 @@
       width: 100%; height: 100%;
       padding: 24px;
       display: grid;
-      grid-template-columns: 1fr var(--todo-col-width, 340px);
+      grid-template-columns: minmax(360px, 1fr) var(--todo-col-width, 340px);
       grid-template-rows: auto auto 1fr;
       gap: 16px;
       align-items: start;
@@ -227,7 +227,7 @@
     /* ====== DINO WIDGET → STADIUM CONTAINER ====== */
     .dino-widget {
       flex: 1;
-      min-width: 0;
+      min-width: 180px;
       min-height: 0;
     }
 
@@ -2124,13 +2124,14 @@
     (function() {
       const handle = document.getElementById('todo-resize-handle');
       const desktop = document.getElementById('desktop');
-      const MIN_WIDTH = 260;
-      const MAX_WIDTH = window.innerWidth * 0.7;
+      const MIN_WIDTH = 280;
       let startX, startWidth, dragging = false;
 
       const savedWidth = localStorage.getItem('todo_col_width');
       if (savedWidth) {
-        desktop.style.setProperty('--todo-col-width', savedWidth + 'px');
+        const maxWidth = window.innerWidth - 360 - 64;
+        const clamped = Math.min(maxWidth, Math.max(MIN_WIDTH, parseFloat(savedWidth)));
+        desktop.style.setProperty('--todo-col-width', clamped + 'px');
       }
 
       handle.addEventListener('mousedown', function(e) {
@@ -2147,7 +2148,8 @@
       document.addEventListener('mousemove', function(e) {
         if (!dragging) return;
         const delta = startX - e.clientX;
-        const newWidth = Math.min(MAX_WIDTH, Math.max(MIN_WIDTH, startWidth + delta));
+        const maxWidth = window.innerWidth - 360 - 64; // leave 360px for left column + padding/gap
+        const newWidth = Math.min(maxWidth, Math.max(MIN_WIDTH, startWidth + delta));
         desktop.style.setProperty('--todo-col-width', newWidth + 'px');
       });
 
