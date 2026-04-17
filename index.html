@@ -391,13 +391,14 @@
     }
     .stadium-prog-label {
       position: absolute;
-      bottom: 16px;
-      right: 22px;
+      bottom: 14px;
+      right: 18px;
       font-size: 11px;
       font-weight: 700;
       color: rgba(255,255,255,0.45);
       pointer-events: none;
       letter-spacing: 0.3px;
+      z-index: 2;
     }
 
     /* ====== NOTEPAD (bottom-left) ====== */
@@ -2546,7 +2547,17 @@
     }
     // Layout needs real DOM dimensions — defer one frame
     requestAnimationFrame(initStadium);
-    window.addEventListener('resize', updateStadiumLayout);
+    // ResizeObserver keeps the SVG border in sync whenever the container changes size
+    // (covers both window resize and the drag-to-resize handle)
+    (function() {
+      const wrap = document.getElementById('stadium-wrap');
+      if (!wrap) return;
+      if (typeof ResizeObserver !== 'undefined') {
+        new ResizeObserver(() => updateStadiumLayout()).observe(wrap);
+      } else {
+        window.addEventListener('resize', updateStadiumLayout);
+      }
+    })();
 
     // ===== CALENDAR =====
     let calYear, calMonth, calView = 'month';
