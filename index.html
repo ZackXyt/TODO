@@ -1148,6 +1148,92 @@
     .focus-mode .todo-area { grid-column: 1; }
     .focus-mode #todo-resize-handle { display: none; }
 
+    /* ====== RESPONSIVE: TABLET (768–1199px) ====== */
+    @media (min-width: 768px) and (max-width: 1199px) {
+      #desktop {
+        /* Reset saved desktop resize — keep todo column safe for tablet */
+        --todo-col-width: 290px;
+        grid-template-columns: minmax(260px, 1fr) var(--todo-col-width, 290px);
+        padding: 16px;
+        gap: 12px;
+      }
+      .time-display { font-size: clamp(48px, 8.5vw, 90px); }
+      .dino-emoji { font-size: clamp(60px, 8vw, 100px); }
+      .sq-text { font-size: clamp(11px, 1.5vw, 14px); }
+    }
+
+    /* ====== RESPONSIVE: MOBILE (< 768px) ====== */
+    @media (max-width: 767px) {
+      /* Page becomes scrollable */
+      body { overflow-y: auto; overflow-x: hidden; height: auto; min-height: 100vh; }
+
+      /* Reset desktop grid → single column */
+      #desktop {
+        display: flex;
+        flex-direction: column;
+        height: auto;
+        min-height: 100vh;
+        padding: 12px;
+        gap: 10px;
+        overflow: visible;
+      }
+
+      /* Visual order: time → weather → todo → notepad */
+      .time-widget   { order: 1; width: 100%; }
+      .weather-row   { order: 2; width: 100%; flex-direction: column; }
+      .todo-area     { order: 3; width: 100%; align-self: auto; position: relative; }
+      .wallpaper-area { order: 4; width: 100%; height: auto; align-self: auto; padding-bottom: 80px; }
+
+      /* Time: compact */
+      .time-display { font-size: clamp(52px, 17vw, 90px); letter-spacing: -2px; }
+      .time-seconds { font-size: clamp(26px, 8vw, 48px); }
+      .date-display { font-size: 12px; }
+      .time-card { padding: 16px 20px; }
+
+      /* Weather row: stack weather + stadium vertically */
+      .weather-widget { width: 100%; flex-shrink: 1; }
+      .weather-card { min-width: 0; }
+      .dino-widget { min-width: 0; width: 100%; height: 200px; }
+      /* Fix percentage-height failure inside flexbox */
+      .dino-widget .stadium-wrap { height: 200px; width: 100%; }
+      .dino-widget .stadium-svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+      .dino-emoji { font-size: clamp(50px, 14vw, 76px); }
+      .sq-text { font-size: clamp(11px, 3.2vw, 14px); }
+      .sq-author { font-size: 10px; }
+      .sq-info { font-size: 9px; }
+
+      /* Todo widget: natural height, inner list scrollable */
+      .todo-area { min-height: 0; }
+      .widget { overflow: visible; max-height: none; flex: none; }
+      #task-list { overflow-y: auto; max-height: 55vh; flex: none; }
+
+      /* Timer row: wrap buttons */
+      .timer-row { flex-wrap: wrap; gap: 6px; }
+      .duration-btn { flex-shrink: 0; }
+
+      /* Notepad: fixed height */
+      .notepad-widget { flex: none; min-height: 140px; }
+      .notepad-textarea { min-height: 100px; max-height: 180px; }
+
+      /* Hide resize handle */
+      #todo-resize-handle { display: none !important; }
+
+      /* Mascot: stays but smaller */
+      #mascot-float .dino-emoji { font-size: 40px; }
+
+      /* Watermark: bottom-left, smaller */
+      .watermark { font-size: 10px; bottom: 10px; left: 12px; }
+
+      /* Hamburger menu: always visible (already fixed) */
+      #menu-btn { top: 14px; right: 14px; }
+
+      /* Focus mode on mobile */
+      .focus-mode #desktop { display: flex; flex-direction: column; }
+
+      /* Stadium quote positioning on small height */
+      .stadium-quote { inset: 10% 7%; gap: 6px; }
+    }
+
     /* ====== WATERMARK ====== */
     .watermark {
       position: fixed;
