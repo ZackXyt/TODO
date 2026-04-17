@@ -1446,15 +1446,16 @@
 
     <div class="menu-section">
       <div class="menu-section-title">壁纸</div>
-      <label class="menu-item" for="wallpaper-color-input" style="cursor:pointer;">
+      <div class="menu-item" style="cursor:pointer;" onclick="document.getElementById('wallpaper-color-input').click()">
         <span class="menu-item-icon">🎨</span>
         <div>
           <div>背景配色</div>
           <div class="menu-item-desc">点击选择颜色</div>
         </div>
-        <span id="color-dot" style="width:20px;height:20px;border-radius:50%;border:2px solid rgba(255,255,255,0.35);margin-left:auto;flex-shrink:0;display:block;background:#533483;"></span>
-      </label>
-      <input type="color" id="wallpaper-color-input" value="#533483" oninput="applyColorWallpaper(this.value)" style="position:fixed;top:-999px;left:-999px;opacity:0;">
+        <span id="color-dot" style="width:20px;height:20px;border-radius:50%;border:2px solid rgba(255,255,255,0.35);margin-left:auto;flex-shrink:0;display:block;background:#533483;position:relative;">
+          <input type="color" id="wallpaper-color-input" value="#533483" oninput="applyColorWallpaper(this.value)" style="position:absolute;inset:0;opacity:0;width:100%;height:100%;cursor:pointer;border:none;padding:0;">
+        </span>
+      </div>
       <div class="menu-item" onclick="resetWallpaper()">
         <span class="menu-item-icon">↩️</span>
         <div>重置壁纸</div>
