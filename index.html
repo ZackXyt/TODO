@@ -2346,6 +2346,8 @@
       document.getElementById('desktop').classList.toggle('focus-mode', focusModeOn);
       document.getElementById('focus-toggle').classList.toggle('on', focusModeOn);
       document.getElementById('focus-menu-item').classList.toggle('active', focusModeOn);
+      const mf = document.getElementById('mascot-float');
+      if (mf) mf.style.display = focusModeOn ? 'none' : '';
     }
 
     // ===== LANGUAGE =====
