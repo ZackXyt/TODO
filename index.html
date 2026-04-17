@@ -748,18 +748,23 @@
     .ppick.pp4 { background: rgba(100,200,100,0.25); color: #80d080; }
     .ppick.pp5 { background: rgba(100,160,255,0.25); color: #80b0ff; }
 
-    /* ====== MENU BUTTON ====== */
+    /* ====== MENU TRIGGER (right-edge bar) ====== */
     #menu-btn {
-      position: fixed; bottom: 20px; right: 24px; z-index: 200;
-      background: rgba(255,255,255,0.15);
-      backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
-      border: 1.5px solid rgba(255,255,255,0.25); border-radius: 14px;
-      width: 42px; height: 42px;
-      display: flex; flex-direction: column; align-items: center; justify-content: center;
-      gap: 5px; cursor: pointer; transition: all 0.2s;
+      position: fixed;
+      right: 0; top: 50%;
+      transform: translateY(-50%);
+      width: 3px; height: 48px;
+      background: rgba(255,255,255,0.22);
+      border-radius: 3px 0 0 3px;
+      border: none; padding: 0; cursor: pointer;
+      z-index: 200;
+      transition: width 0.22s ease, height 0.22s ease, background 0.22s ease;
     }
-    #menu-btn:hover { background: rgba(255,255,255,0.28); transform: scale(1.06); }
-    #menu-btn span { width: 18px; height: 2px; background: rgba(255,255,255,0.85); border-radius: 2px; }
+    #menu-btn:hover {
+      width: 5px; height: 72px;
+      background: rgba(255,255,255,0.55);
+    }
+    #menu-btn span { display: none; }
 
     /* ====== SIDE MENU ====== */
     #menu-overlay {
