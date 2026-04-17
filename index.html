@@ -221,13 +221,14 @@
     }
     .weather-candidate-btn:hover { background: rgba(255,255,255,0.22); color: white; }
 
-    /* ====== DINO WIDGET ====== */
+    /* ====== DINO WIDGET → STADIUM CONTAINER ====== */
     .dino-widget {
       flex: 1;
       display: flex;
-      align-items: flex-end;
+      align-items: center;
       justify-content: center;
-      padding-bottom: 2px;
+      padding: 4px 4px 4px 0;
+      min-height: 0;
     }
 
     .dino-container {
@@ -306,14 +307,75 @@
       to   { transform: translateX(-50%) translateY(-5px); }
     }
 
-    /* Alert state */
-    .dino-widget.alert .dino-emoji { animation: dino-jump 0.45s ease-in-out infinite; }
-    .dino-widget.alert .dino-zzz   { display: none; }
-    .dino-widget.alert .dino-speech { display: block; }
+    /* Alert state (on floating mascot) */
+    #mascot-float.alert .dino-emoji { animation: dino-jump 0.45s ease-in-out infinite; }
+    #mascot-float.alert .dino-zzz   { display: none; }
+    #mascot-float.alert .dino-speech { display: block; }
 
     @keyframes dino-jump {
       0%,100% { transform: translateY(0) scale(1) rotate(0deg); }
       50%     { transform: translateY(-14px) scale(1.12) rotate(-5deg); }
+    }
+
+    /* ====== FLOATING MASCOT ====== */
+    #mascot-float {
+      position: fixed;
+      z-index: 50;
+      cursor: grab;
+      user-select: none;
+      touch-action: none;
+    }
+    #mascot-float:active { cursor: grabbing; }
+    #mascot-float .dino-zzz { pointer-events: none; }
+    #mascot-float .dino-speech { pointer-events: none; }
+
+    /* ====== STADIUM WIDGET ====== */
+    .stadium-wrap {
+      position: relative;
+      width: min(100%, calc(100vh - 340px));
+      max-width: 230px;
+      aspect-ratio: 1;
+    }
+    .stadium-svg { width: 100%; height: 100%; display: block; overflow: visible; }
+    .stadium-quote {
+      position: absolute;
+      inset: 24% 16%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      pointer-events: none;
+      gap: 6px;
+    }
+    .sq-text {
+      font-size: clamp(8.5px, 1.05vw, 11px);
+      color: rgba(255,255,255,0.78);
+      font-style: italic;
+      line-height: 1.6;
+      font-weight: 400;
+      letter-spacing: 0.15px;
+    }
+    .sq-attr {
+      font-size: clamp(7px, 0.82vw, 9px);
+      color: rgba(255,255,255,0.35);
+      font-weight: 600;
+      letter-spacing: 0.4px;
+      line-height: 1.5;
+      text-transform: uppercase;
+    }
+    .stadium-prog-label {
+      position: absolute;
+      bottom: 4%;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 9px;
+      font-weight: 700;
+      color: rgba(255,255,255,0.35);
+      pointer-events: none;
+      letter-spacing: 0.8px;
+      text-transform: uppercase;
+      white-space: nowrap;
     }
 
     /* ====== NOTEPAD (bottom-left) ====== */
@@ -1020,12 +1082,39 @@
       </div>
 
       <div class="dino-widget" id="dino-widget">
-        <div class="dino-container">
-          <div class="dino-speech" id="dino-speech">该去拉伸啦！🏃</div>
-          <div class="dino-emoji" id="mascot-emoji">🦕</div>
-          <div class="dino-zzz">
-            <span>z</span><span>z</span><span>z</span>
+        <div class="stadium-wrap" id="stadium-wrap">
+          <svg class="stadium-svg" viewBox="0 0 300 300" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <linearGradient id="arcGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#60C8FF" stop-opacity="0.95"/>
+                <stop offset="100%" stop-color="#A78BFA" stop-opacity="0.95"/>
+              </linearGradient>
+            </defs>
+            <!-- Track background ring -->
+            <circle cx="150" cy="150" r="121" fill="none" stroke="rgba(255,255,255,0.055)" stroke-width="22"/>
+            <!-- Lane edge markers -->
+            <circle cx="150" cy="150" r="110" fill="none" stroke="rgba(255,255,255,0.07)" stroke-width="0.6"/>
+            <circle cx="150" cy="150" r="132" fill="none" stroke="rgba(255,255,255,0.07)" stroke-width="0.6"/>
+            <!-- Progress arc (JS sets stroke-dasharray) -->
+            <circle cx="150" cy="150" r="121" fill="none" stroke="url(#arcGrad)" stroke-width="20"
+              stroke-linecap="round" transform="rotate(-90 150 150)" id="progress-arc"
+              stroke-dasharray="0 760" style="transition: stroke-dasharray 0.9s ease;"/>
+            <!-- Inner field -->
+            <ellipse cx="150" cy="150" rx="102" ry="82" fill="rgba(35,90,45,0.18)" stroke="rgba(90,180,70,0.1)" stroke-width="1"/>
+            <!-- Field center line -->
+            <line x1="48" y1="150" x2="252" y2="150" stroke="rgba(255,255,255,0.06)" stroke-width="0.7"/>
+            <!-- Field center circle -->
+            <circle cx="150" cy="150" r="24" fill="none" stroke="rgba(255,255,255,0.09)" stroke-width="0.8"/>
+            <!-- Center spot -->
+            <circle cx="150" cy="150" r="2.5" fill="rgba(255,255,255,0.22)"/>
+            <!-- Penalty box -->
+            <rect x="104" y="116" width="92" height="68" rx="4" fill="none" stroke="rgba(255,255,255,0.05)" stroke-width="0.7"/>
+          </svg>
+          <div class="stadium-quote" id="stadium-quote">
+            <div class="sq-text" id="sq-text"></div>
+            <div class="sq-attr" id="sq-attr"></div>
           </div>
+          <div class="stadium-prog-label" id="stadium-prog-label">今日进度</div>
         </div>
       </div>
     </div>
@@ -1246,6 +1335,17 @@
         </div>
       </div>
       <div id="report-task-list"></div>
+    </div>
+  </div>
+
+  <!-- Floating draggable mascot (must be before <script> so DOM is ready) -->
+  <div id="mascot-float">
+    <div class="dino-container">
+      <div class="dino-speech" id="dino-speech">该去拉伸啦！🏃</div>
+      <div class="dino-emoji" id="mascot-emoji">🦕</div>
+      <div class="dino-zzz">
+        <span>z</span><span>z</span><span>z</span>
+      </div>
     </div>
   </div>
 
@@ -1556,6 +1656,7 @@
         return;
       }
 
+      if (typeof updateStadiumProgress === 'function') updateStadiumProgress();
       list.innerHTML = sorted.map(t => {
         const s = getState(t.deadline), c = STATE_CFG[s];
         const p = t.priority || 3;
@@ -1748,7 +1849,7 @@
         timerRunning = false;
         const btn = document.getElementById('start-timer-btn');
         if (btn) { btn.textContent = '▶ 开始'; btn.classList.remove('running'); }
-        document.getElementById("dino-widget").classList.add("alert");
+        document.getElementById("mascot-float").classList.add("alert");
         showToast("🔔 站起来动动身体，拉伸一下吧！");
       }
       updateStretchDisplay();
@@ -1758,7 +1859,7 @@
       timerRunning = false;
       stretchTime = timerDuration;
       stretchExpired = false;
-      document.getElementById("dino-widget").classList.remove("alert");
+      document.getElementById("mascot-float").classList.remove("alert");
       const btn = document.getElementById('start-timer-btn');
       if (btn) { btn.textContent = '▶ 开始'; btn.classList.remove('running'); }
       completedSessions++;
@@ -1984,6 +2085,113 @@
       document.getElementById('mascot-emoji').textContent = currentMascot;
     }
     initMascotGrid();
+
+    // ===== DRAGGABLE MASCOT =====
+    (function() {
+      const el = document.getElementById('mascot-float');
+      const CIRC = 2 * Math.PI * 121; // SVG progress arc circumference
+
+      // Set initial position (saved or default center-ish)
+      const saved = JSON.parse(localStorage.getItem('todo_mascot_pos') || 'null');
+      if (saved) {
+        el.style.left = saved.x + 'px';
+        el.style.top  = saved.y + 'px';
+      } else {
+        el.style.left = Math.max(0, window.innerWidth  * 0.42 - 60) + 'px';
+        el.style.top  = Math.max(0, window.innerHeight * 0.35 - 60) + 'px';
+      }
+
+      let dragging = false, ox = 0, oy = 0;
+
+      function startDrag(cx, cy) {
+        dragging = true;
+        const r = el.getBoundingClientRect();
+        ox = cx - r.left;
+        oy = cy - r.top;
+        el.style.transition = 'none';
+      }
+      function moveDrag(cx, cy) {
+        if (!dragging) return;
+        const x = Math.min(Math.max(0, cx - ox), window.innerWidth  - el.offsetWidth);
+        const y = Math.min(Math.max(0, cy - oy), window.innerHeight - el.offsetHeight);
+        el.style.left = x + 'px';
+        el.style.top  = y + 'px';
+      }
+      function endDrag() {
+        if (!dragging) return;
+        dragging = false;
+        localStorage.setItem('todo_mascot_pos', JSON.stringify({
+          x: parseInt(el.style.left), y: parseInt(el.style.top)
+        }));
+      }
+
+      // Mouse
+      el.addEventListener('mousedown',  e => { startDrag(e.clientX, e.clientY); e.preventDefault(); });
+      document.addEventListener('mousemove', e => moveDrag(e.clientX, e.clientY));
+      document.addEventListener('mouseup',   () => endDrag());
+
+      // Touch
+      el.addEventListener('touchstart', e => { const t = e.touches[0]; startDrag(t.clientX, t.clientY); }, { passive: true });
+      document.addEventListener('touchmove',  e => { if (!dragging) return; const t = e.touches[0]; moveDrag(t.clientX, t.clientY); e.preventDefault(); }, { passive: false });
+      document.addEventListener('touchend',   () => endDrag());
+    })();
+
+    // ===== STADIUM WIDGET (progress ring + daily quote) =====
+    const DAILY_QUOTES = [
+      { text: "Stay hungry, stay foolish.", author: "Steve Jobs", info: "🇺🇸 美国 · 2005年斯坦福演讲" },
+      { text: "One child, one teacher, one book, one pen can change the world.", author: "Malala Yousafzai", info: "🇵🇰 巴基斯坦 · 2013年联合国演讲" },
+      { text: "When they go low, we go high.", author: "Michelle Obama", info: "🇺🇸 美国 · 2016年民主党大会" },
+      { text: "It always seems impossible until it's done.", author: "Nelson Mandela", info: "🇿🇦 南非 · 1994年就职演讲" },
+      { text: "Vulnerability is not weakness. It's our greatest measure of courage.", author: "Brené Brown", info: "🇺🇸 美国 · 2010年TED演讲" },
+      { text: "If something is important enough, even if the odds are against you, you should still do it.", author: "Elon Musk", info: "🇺🇸 美国 · 2013年采访" },
+      { text: "It is impossible to live without failing at something, unless you live so cautiously that you might as well not have lived at all.", author: "J.K. Rowling", info: "🇬🇧 英国 · 2008年哈佛演讲" },
+      { text: "Change will not come if we wait for some other person or some other time.", author: "Barack Obama", info: "🇺🇸 美国 · 2008年竞选演讲" },
+      { text: "If not me, who? If not now, when?", author: "Emma Watson", info: "🇬🇧 英国 · 2014年联合国HeForShe" },
+      { text: "Purpose is the essential element of you. It is the reason you are on the planet at this particular time.", author: "Chadwick Boseman", info: "🇺🇸 美国 · 2018年霍华德大学毕业演讲" },
+      { text: "Our industry does not respect tradition — it only respects innovation.", author: "Satya Nadella", info: "🇮🇳 印度 · 2014年微软CEO就任演讲" },
+      { text: "Today is cruel, tomorrow is crueler, and the day after tomorrow is beautiful.", author: "Jack Ma / 马云", info: "🇨🇳 中国 · 2015年阿里巴巴峰会" },
+      { text: "You say you love your children above all else, yet you are stealing their future in front of their very eyes.", author: "Greta Thunberg", info: "🇸🇪 瑞典 · 2019年联合国气候峰会" },
+      { text: "A new day is on the horizon. And when that new day finally dawns, it will be because of a lot of magnificent women.", author: "Oprah Winfrey", info: "🇺🇸 美国 · 2018年金球奖致辞" },
+      { text: "A champion is defined not by their wins but by how they can recover when they fall.", author: "Serena Williams", info: "🇺🇸 美国 · 2016年《时代》专访" },
+      { text: "The most important thing is to try and inspire people so that they can be great in whatever they want to do.", author: "Kobe Bryant", info: "🇺🇸 美国 · 2016年退役感言" },
+      { text: "Believe you can and you're halfway there.", author: "BTS · RM", info: "🇰🇷 韩国 · 2018年联合国演讲" },
+      { text: "Dreams are not what you see in sleep. Dreams are the things that do not let you sleep.", author: "A.P.J. Abdul Kalam", info: "🇮🇳 印度 · 2002年总统就职演讲" },
+      { text: "In the middle of every difficulty lies opportunity.", author: "Angela Merkel", info: "🇩🇪 德国 · 2015年难民危机演讲" },
+      { text: "The function of education is to teach one to think intensively and to think critically.", author: "Chimamanda Ngozi Adichie", info: "🇳🇬 尼日利亚 · 2012年TED演讲" },
+    ];
+
+    function getDailyQuote() {
+      // Same quote all day, rotates each calendar day
+      const dayIndex = Math.floor(Date.now() / 86400000);
+      return DAILY_QUOTES[dayIndex % DAILY_QUOTES.length];
+    }
+
+    function updateStadiumProgress() {
+      const arc = document.getElementById('progress-arc');
+      const label = document.getElementById('stadium-prog-label');
+      if (!arc) return;
+      const total = tasks.length;
+      const done  = (JSON.parse(localStorage.getItem('todo_completed') || '[]'))
+        .filter(t => {
+          const d = new Date(t.completedAt || t.deadline || 0);
+          const now = new Date();
+          return d.toDateString() === now.toDateString();
+        }).length;
+      const CIRC = 760.3;
+      const progress = total > 0 ? Math.min(done / total, 1) : 0;
+      const dash = progress > 0 ? Math.max(progress * CIRC, 8) : 0;
+      arc.setAttribute('stroke-dasharray', `${dash} ${CIRC}`);
+      const pct = total > 0 ? Math.round(progress * 100) : 0;
+      if (label) label.textContent = total > 0 ? `今日进度  ${done}/${total}  ${pct}%` : '今日进度';
+    }
+
+    function initStadium() {
+      const q = getDailyQuote();
+      document.getElementById('sq-text').textContent = `"${q.text}"`;
+      document.getElementById('sq-attr').textContent = `— ${q.author}\n${q.info}`;
+      updateStadiumProgress();
+    }
+    initStadium();
 
     // ===== CALENDAR =====
     let calYear, calMonth, calView = 'month';
