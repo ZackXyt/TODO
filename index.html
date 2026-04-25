@@ -927,6 +927,44 @@
     }
     .myday-empty .myday-empty-icon { font-size: 36px; display: block; margin-bottom: 10px; }
 
+    /* ====== REPEAT CHIPS ====== */
+    .repeat-pick {
+      flex-shrink: 0; padding: 4px 9px; border-radius: 8px;
+      border: 1.5px solid rgba(255,255,255,0.14);
+      background: rgba(255,255,255,0.07);
+      color: rgba(255,255,255,0.48); font-size: 11px; font-weight: 600;
+      cursor: pointer; transition: all 0.18s; font-family: inherit;
+    }
+    .repeat-pick.sel {
+      background: rgba(120,200,255,0.2); color: rgba(160,220,255,0.95);
+      border-color: rgba(120,200,255,0.45);
+    }
+    .repeat-pick:hover { color: white; border-color: rgba(255,255,255,0.4); }
+    .form-repeat-row {
+      display: flex; align-items: center; gap: 6px; margin-bottom: 8px; flex-wrap: wrap;
+    }
+    .form-reminder-row {
+      display: flex; align-items: center; gap: 8px; margin-bottom: 8px;
+    }
+    .form-reminder-input {
+      flex: 1; background: rgba(255,255,255,0.12); border: 1.5px solid rgba(255,255,255,0.22);
+      border-radius: 10px; padding: 8px 10px; color: white; font-size: 12px;
+      font-family: inherit; outline: none; cursor: pointer;
+    }
+    .form-reminder-input::-webkit-calendar-picker-indicator { filter: invert(0.7); }
+
+    /* Task card badges */
+    .repeat-badge {
+      font-size: 10px; color: rgba(120,200,255,0.85);
+      background: rgba(120,200,255,0.12); padding: 1px 6px; border-radius: 4px;
+      flex-shrink: 0; font-weight: 500;
+    }
+    .reminder-badge {
+      font-size: 10px; color: rgba(255,200,80,0.85);
+      background: rgba(255,200,80,0.11); padding: 1px 5px; border-radius: 4px;
+      flex-shrink: 0; cursor: default;
+    }
+
     /* Delete confirmation modal */
     .del-modal-overlay {
       position: fixed; inset: 0; z-index: 9999;
@@ -1673,6 +1711,11 @@
           <div class="form-title" id="add-form-title">✨ 新任务</div>
           <input class="form-input" type="text" id="task-name" placeholder="任务名称…" />
           <input class="form-input" type="datetime-local" id="task-ddl" />
+          <div class="form-reminder-row">
+            <span class="form-priority-label">🔔 提醒:</span>
+            <input class="form-reminder-input" type="datetime-local" id="task-reminder" />
+            <button class="repeat-pick" onclick="document.getElementById('task-reminder').value=''" style="opacity:0.55;padding:4px 8px;">清除</button>
+          </div>
           <div class="form-list-row">
             <span class="form-priority-label">清单:</span>
             <select class="form-list-select" id="task-list-select"></select>
@@ -1684,6 +1727,13 @@
             <button class="ppick pp3 sel" onclick="selectPriority(3)">P3 中</button>
             <button class="ppick pp4" onclick="selectPriority(4)">P4 低</button>
             <button class="ppick pp5" onclick="selectPriority(5)">P5 可选</button>
+          </div>
+          <div class="form-repeat-row">
+            <span class="form-priority-label">🔁 重复:</span>
+            <button class="repeat-pick sel" id="rpick-none"    onclick="selectRepeat('none')">不重复</button>
+            <button class="repeat-pick"     id="rpick-daily"   onclick="selectRepeat('daily')">每天</button>
+            <button class="repeat-pick"     id="rpick-weekly"  onclick="selectRepeat('weekly')">每周</button>
+            <button class="repeat-pick"     id="rpick-monthly" onclick="selectRepeat('monthly')">每月</button>
           </div>
           <button class="submit-btn" id="submit-btn" onclick="addTask()">添加 ✓</button>
         </div>
@@ -2136,6 +2186,7 @@
     var expandedTasks = {};
     var _creatingList = false;
     let searchQuery = '';
+    let selectedRepeat = 'none';
 
     // ===== LISTS =====
     function getDefaultLists() {
@@ -2304,15 +2355,18 @@
           const arr = JSON.parse(s);
           // Migrate: ensure all tasks have listId and steps fields
           arr.forEach(t => {
-            if (!t.listId)              t.listId  = 'inbox';
-            if (!t.steps)               t.steps   = [];
-            if (t.starred === undefined) t.starred = false;
-            if (t.note    === undefined) t.note    = '';
+            if (!t.listId)                   t.listId       = 'inbox';
+            if (!t.steps)                    t.steps        = [];
+            if (t.starred  === undefined)    t.starred      = false;
+            if (t.note     === undefined)    t.note         = '';
+            if (!t.repeat)                   t.repeat       = 'none';
+            if (t.reminder === undefined)    t.reminder     = '';
+            if (t.reminderFired === undefined) t.reminderFired = false;
           });
           return arr;
         } catch(e) {}
       }
-      return getDefaultTasks().map(t => ({ ...t, listId: 'inbox', steps: [], starred: false, note: '' }));
+      return getDefaultTasks().map(t => ({ ...t, listId: 'inbox', steps: [], starred: false, note: '', repeat: 'none', reminder: '', reminderFired: false }));
     }
     let tasks = loadTasksFromStorage();
 
@@ -2454,6 +2508,9 @@
         const isExp = !!expandedTasks[t.id];
         const listObj = activeListId === 'all' ? lists.find(l => l.id === t.listId) : null;
         const listLbl = listObj ? `<span class="task-list-label">${listObj.icon} ${listObj.name}</span>` : '';
+        const repeatLbl = (t.repeat && t.repeat !== 'none') ? `<span class="repeat-badge">🔁 ${REPEAT_LABEL[t.repeat]}</span>` : '';
+        const remFmt = t.reminder && !t.reminderFired ? (() => { const rd = new Date(t.reminder); return `${rd.getMonth()+1}/${rd.getDate()} ${String(rd.getHours()).padStart(2,'0')}:${String(rd.getMinutes()).padStart(2,'0')}`; })() : '';
+        const reminderLbl = remFmt ? `<span class="reminder-badge" title="提醒：${remFmt}">🔔 ${remFmt}</span>` : '';
         return `
           <div class="task-item state-${s}" id="task-${t.id}">
             <div class="task-item-header">
@@ -2467,7 +2524,7 @@
                 <div class="task-ddl-row">
                   <span class="task-ddl" style="color:${c.color}">${c.prefix} ${formatTime(t.deadline)}</span>
                   ${c.quip ? `<span class="task-quip" style="color:${c.color}">${c.quip}</span>` : ""}
-                  ${listLbl}
+                  ${listLbl}${repeatLbl}${reminderLbl}
                   <button class="steps-toggle${totN>0?' has-steps':''}" id="steps-toggle-${t.id}"
                           onclick="toggleTaskExpand(${t.id})">${stepsLbl}</button>
                 </div>
@@ -2568,8 +2625,19 @@
         document.getElementById("task-ddl").value = d.toISOString().slice(0,16);
         document.getElementById("task-name").focus();
         selectPriority(3);
+        selectRepeat('none');
+        const remInp = document.getElementById('task-reminder');
+        if (remInp) remInp.value = '';
         updateListSelect();
       }
+    }
+
+    function selectRepeat(r) {
+      selectedRepeat = r;
+      ['none','daily','weekly','monthly'].forEach(v => {
+        const b = document.getElementById('rpick-' + v);
+        if (b) b.classList.toggle('sel', v === r);
+      });
     }
 
     function addTask() {
@@ -2579,7 +2647,10 @@
       if (!ddl)  { showToast("❌ 请设置截止时间"); return; }
       const selList = document.getElementById('task-list-select');
       const chosenList = selList ? selList.value : (lists[0] ? lists[0].id : 'inbox');
-      tasks.push({ id: Date.now(), text: name, deadline: new Date(ddl).toISOString(), priority: selectedPriority, myDay: false, starred: false, steps: [], note: '', listId: chosenList });
+      const remInp = document.getElementById('task-reminder');
+      const reminder = (remInp && remInp.value) ? new Date(remInp.value).toISOString() : '';
+      if (reminder && Notification.permission === 'default') Notification.requestPermission();
+      tasks.push({ id: Date.now(), text: name, deadline: new Date(ddl).toISOString(), priority: selectedPriority, myDay: false, starred: false, steps: [], note: '', listId: chosenList, repeat: selectedRepeat, reminder, reminderFired: false });
       document.getElementById("task-name").value = "";
       document.getElementById("add-form").style.display = "none";
       saveTasks();
@@ -2590,18 +2661,37 @@
       showToast("✅ 任务已添加，加油！");
     }
 
+    const REPEAT_LABEL = { daily:'每天', weekly:'每周', monthly:'每月' };
+
     function completeTask(id) {
       const task = tasks.find(t => t.id === id);
       const el = document.getElementById("task-" + id);
-      el.style.opacity = "0";
-      el.style.transform = "translateX(24px) scale(0.95)";
-      el.style.transition = "all 0.28s ease";
+      if (el) {
+        el.style.opacity = "0";
+        el.style.transform = "translateX(24px) scale(0.95)";
+        el.style.transition = "all 0.28s ease";
+      }
       setTimeout(() => {
-        if (task) {
-          saveCompletedTask(task);                   // work-report log
+        // ---- REPEAT TASK: advance deadline, keep active ----
+        if (task && task.repeat && task.repeat !== 'none') {
+          const newDdl = new Date(task.deadline);
+          if (task.repeat === 'daily')   newDdl.setDate(newDdl.getDate() + 1);
+          if (task.repeat === 'weekly')  newDdl.setDate(newDdl.getDate() + 7);
+          if (task.repeat === 'monthly') newDdl.setMonth(newDdl.getMonth() + 1);
+          task.deadline = newDdl.toISOString();
+          task.reminderFired = false;
+          saveCompletedTask(task);
           const dk = getDayKey(), dd = getDayData(dk);
-          dd.done++;
-          saveDayData(dk, dd);
+          dd.done++; saveDayData(dk, dd);
+          saveTasks(); render(); renderCompletedList(); updateStadiumProgress();
+          showToast(`🔁 完成！${REPEAT_LABEL[task.repeat]}重置，下次 ${formatTime(task.deadline)}`);
+          return;
+        }
+        // ---- NORMAL TASK: remove from active ----
+        if (task) {
+          saveCompletedTask(task);
+          const dk = getDayKey(), dd = getDayData(dk);
+          dd.done++; saveDayData(dk, dd);
         }
         tasks = tasks.filter(t => t.id !== id);
         saveTasks(); render();
@@ -2654,7 +2744,27 @@
       showToast('🗑️ 任务已永久删除');
     }
 
-    // ===== 10-min NOTIFICATIONS =====
+    // ===== REMINDER NOTIFICATIONS =====
+    function checkReminders() {
+      const now = Date.now();
+      let changed = false;
+      tasks.forEach(t => {
+        if (t.reminder && !t.reminderFired && now >= new Date(t.reminder).getTime()) {
+          if (Notification.permission === 'granted') {
+            new Notification('心流 · 任务提醒 🔔', { body: t.text, icon: '' });
+          }
+          showToast(`🔔 提醒：${t.text}`);
+          t.reminderFired = true;
+          changed = true;
+        }
+      });
+      if (changed) { saveTasks(); render(); }
+    }
+    // Check reminders every 30 seconds + once after page load
+    setInterval(checkReminders, 30000);
+    setTimeout(checkReminders, 1500);
+
+    // ===== URGENCY NOTIFICATIONS (10-min interval) =====
     function checkNotify() {
       const urgent = tasks.filter(t => ["panic","urgent","overdue"].includes(getState(t.deadline)));
       if (!urgent.length) return;
@@ -2666,8 +2776,6 @@
       });
       showToast(`${STATE_CFG[getState(urgent[0].deadline)].emoji} ${urgent[0].text} — ${STATE_CFG[getState(urgent[0].deadline)].quip}`);
     }
-
-    if (Notification.permission === "default") Notification.requestPermission();
 
     // ===== TOAST =====
     let toastTimer;
