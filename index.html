@@ -864,6 +864,58 @@
     }
     .myday-btn:hover { opacity: 0.8; transform: scale(1.2); }
     .myday-btn.on { opacity: 1; filter: drop-shadow(0 0 4px rgba(255,220,80,0.7)); }
+
+    /* ====== STAR (IMPORTANT) ====== */
+    .star-btn {
+      background: none; border: none; font-size: 14px;
+      cursor: pointer; opacity: 0.22; padding: 3px 4px;
+      transition: opacity 0.18s, transform 0.18s; flex-shrink: 0;
+      line-height: 1;
+    }
+    .star-btn:hover { opacity: 0.7; transform: scale(1.2); }
+    .star-btn.on { opacity: 1; filter: drop-shadow(0 0 4px rgba(255,220,40,0.85)); }
+
+    /* ====== NOTE FIELD ====== */
+    .note-area {
+      margin-top: 8px; padding-top: 6px;
+      border-top: 1px solid rgba(255,255,255,0.07);
+    }
+    .note-textarea {
+      width: 100%; background: rgba(255,255,255,0.07);
+      border: 1px solid rgba(255,255,255,0.13); border-radius: 8px;
+      padding: 7px 9px; color: rgba(255,255,255,0.72);
+      font-size: 11px; font-family: inherit; outline: none;
+      resize: vertical; min-height: 48px; max-height: 120px;
+      transition: border-color 0.2s; display: block;
+    }
+    .note-textarea::placeholder { color: rgba(255,255,255,0.25); }
+    .note-textarea:focus { border-color: rgba(255,255,255,0.3); background: rgba(255,255,255,0.11); }
+
+    /* ====== SEARCH BAR ====== */
+    .search-bar-wrap {
+      position: relative; margin-bottom: 8px;
+    }
+    .search-input {
+      width: 100%; background: rgba(255,255,255,0.09);
+      border: 1.5px solid rgba(255,255,255,0.13);
+      border-radius: 10px; padding: 7px 28px 7px 30px;
+      color: white; font-size: 12px; font-family: inherit; outline: none;
+      transition: border-color 0.2s;
+    }
+    .search-input::placeholder { color: rgba(255,255,255,0.3); }
+    .search-input:focus { border-color: rgba(255,255,255,0.35); background: rgba(255,255,255,0.13); }
+    .search-icon {
+      position: absolute; left: 9px; top: 50%; transform: translateY(-50%);
+      font-size: 13px; opacity: 0.4; pointer-events: none; line-height: 1;
+    }
+    .search-clear {
+      position: absolute; right: 8px; top: 50%; transform: translateY(-50%);
+      background: none; border: none; color: rgba(255,255,255,0.4);
+      font-size: 16px; cursor: pointer; padding: 0 3px; line-height: 1;
+      display: none; transition: color 0.15s;
+    }
+    .search-clear.visible { display: block; }
+    .search-clear:hover { color: rgba(255,255,255,0.85); }
     .myday-greeting {
       padding: 10px 4px 6px; font-size: 13px; font-weight: 700;
       color: rgba(255,255,255,0.85); letter-spacing: 0.2px;
@@ -1603,10 +1655,18 @@
         <!-- LIST CHIPS -->
         <div class="list-chips" id="list-chips"></div>
 
-        <!-- VIEW TABS: 全部 / 我的一天 -->
+        <!-- VIEW TABS: 全部 / 我的一天 / 重要 -->
         <div class="view-tabs">
           <button class="view-tab active" id="tab-all" onclick="setViewMode('all')">全部任务</button>
-          <button class="view-tab" id="tab-myday" onclick="setViewMode('myDay')">☀️ 我的一天</button>
+          <button class="view-tab" id="tab-myday" onclick="setViewMode('myDay')">☀️ 今日</button>
+          <button class="view-tab" id="tab-starred" onclick="setViewMode('starred')">⭐ 重要</button>
+        </div>
+
+        <!-- SEARCH BAR -->
+        <div class="search-bar-wrap">
+          <span class="search-icon">🔍</span>
+          <input class="search-input" id="task-search" placeholder="搜索任务…" oninput="onTaskSearch(this.value)" />
+          <button class="search-clear" id="search-clear" onclick="clearSearch()">×</button>
         </div>
 
         <div class="add-form" id="add-form" style="display:none;">
@@ -2075,6 +2135,7 @@
     let selectedPriority = 3;
     var expandedTasks = {};
     var _creatingList = false;
+    let searchQuery = '';
 
     // ===== LISTS =====
     function getDefaultLists() {
@@ -2160,16 +2221,23 @@
     }
 
     function _stepsHTML(t) {
-      return (t.steps||[]).map(st => `
+      const stepsHtml = (t.steps||[]).map(st => `
         <div class="step-item">
           <button class="step-check${st.done?' done':''}" onclick="toggleStep(${t.id},${st.id})">${st.done?'✓':''}</button>
           <span class="step-text${st.done?' done':''}">${st.text.replace(/</g,'&lt;')}</span>
           <button class="step-del" onclick="deleteStep(${t.id},${st.id})">×</button>
-        </div>`).join('') +
+        </div>`).join('');
+      const noteVal = (t.note||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+      return stepsHtml +
         `<div class="step-add-row">
           <input class="step-input" id="step-input-${t.id}" placeholder="添加步骤…"
                  onkeydown="if(event.key==='Enter')addStep(${t.id})"/>
           <button class="step-add-btn" onclick="addStep(${t.id})">+</button>
+        </div>
+        <div class="note-area">
+          <textarea class="note-textarea" id="note-input-${t.id}"
+                    placeholder="📝 备注…"
+                    onblur="saveNote(${t.id})">${noteVal}</textarea>
         </div>`;
     }
 
@@ -2236,13 +2304,15 @@
           const arr = JSON.parse(s);
           // Migrate: ensure all tasks have listId and steps fields
           arr.forEach(t => {
-            if (!t.listId) t.listId = 'inbox';
-            if (!t.steps)  t.steps  = [];
+            if (!t.listId)              t.listId  = 'inbox';
+            if (!t.steps)               t.steps   = [];
+            if (t.starred === undefined) t.starred = false;
+            if (t.note    === undefined) t.note    = '';
           });
           return arr;
         } catch(e) {}
       }
-      return getDefaultTasks().map(t => ({ ...t, listId: 'inbox', steps: [] }));
+      return getDefaultTasks().map(t => ({ ...t, listId: 'inbox', steps: [], starred: false, note: '' }));
     }
     let tasks = loadTasksFromStorage();
 
@@ -2275,14 +2345,21 @@
     function render() {
       renderListChips();
       // Update tab active state
-      const tabAll = document.getElementById('tab-all');
-      const tabMyday = document.getElementById('tab-myday');
-      if (tabAll)   tabAll.classList.toggle('active', viewMode === 'all');
-      if (tabMyday) tabMyday.classList.toggle('active', viewMode === 'myDay');
+      const tabAll     = document.getElementById('tab-all');
+      const tabMyday   = document.getElementById('tab-myday');
+      const tabStarred = document.getElementById('tab-starred');
+      if (tabAll)     tabAll.classList.toggle('active',     viewMode === 'all');
+      if (tabMyday)   tabMyday.classList.toggle('active',   viewMode === 'myDay');
+      if (tabStarred) tabStarred.classList.toggle('active', viewMode === 'starred');
 
-      // Filter by active list, then by My Day
+      // Filter by active list → view mode → search query
       const listFiltered = activeListId === 'all' ? tasks : tasks.filter(t => t.listId === activeListId);
-      const base = viewMode === 'myDay' ? listFiltered.filter(t => t.myDay) : listFiltered;
+      const viewFiltered = viewMode === 'myDay'   ? listFiltered.filter(t => t.myDay)
+                         : viewMode === 'starred' ? tasks.filter(t => t.starred)   // starred is global
+                         : listFiltered;
+      const base = searchQuery
+        ? viewFiltered.filter(t => t.text.toLowerCase().includes(searchQuery))
+        : viewFiltered;
       const sorted = sortMode === 'priority'
         ? [...base].sort((a,b) => (a.priority||3) - (b.priority||3))
         : [...base].sort((a,b) => STATE_ORDER[getState(a.deadline)] - STATE_ORDER[getState(b.deadline)]);
@@ -2296,6 +2373,12 @@
           base.length === 0 ? "今日还没有安排 ☀️" :
           urgentN > 0 ? `今日 ${base.length} 件 · ${urgentN} 个紧急！` :
           `今日 ${base.length} 件任务`;
+      } else if (viewMode === 'starred') {
+        document.getElementById("task-count").textContent =
+          base.length === 0 ? "还没有重要任务 ⭐" : `${base.length} 个重要任务`;
+      } else if (searchQuery) {
+        document.getElementById("task-count").textContent =
+          base.length === 0 ? `没有找到"${searchQuery}"` : `找到 ${base.length} 个任务`;
       } else {
         document.getElementById("task-count").textContent =
           tasks.length === 0 ? "全部完成啦 🎉" :
@@ -2329,8 +2412,26 @@
           </div>`;
         return;
       }
+      if (viewMode === 'starred' && base.length === 0) {
+        list.innerHTML = `
+          <div class="myday-empty">
+            <span class="myday-empty-icon">⭐</span>
+            还没有标记重要的任务<br>
+            <span style="font-size:11px">点击任务上的 ⭐ 标为重要</span>
+          </div>`;
+        return;
+      }
+      if (searchQuery && base.length === 0) {
+        list.innerHTML = `
+          <div class="myday-empty">
+            <span class="myday-empty-icon">🔍</span>
+            没有找到匹配的任务<br>
+            <span style="font-size:11px">试试其他关键词</span>
+          </div>`;
+        return;
+      }
 
-      // My Day greeting header
+      // View header
       let header = '';
       if (viewMode === 'myDay') {
         const now = new Date();
@@ -2338,6 +2439,10 @@
         const greeting = h < 12 ? '早上好' : h < 18 ? '下午好' : '晚上好';
         const weekdays = ['周日','周一','周二','周三','周四','周五','周六'];
         header = `<div class="myday-greeting">☀️ ${greeting}，今天有 ${base.length} 件事<span>${now.getMonth()+1}月${now.getDate()}日 · ${weekdays[now.getDay()]}</span></div>`;
+      } else if (viewMode === 'starred') {
+        header = `<div class="myday-greeting">⭐ 重要任务<span>${base.length} 个</span></div>`;
+      } else if (searchQuery) {
+        header = `<div class="myday-greeting">🔍 搜索：${searchQuery.replace(/</g,'&lt;')}<span>共 ${base.length} 个</span></div>`;
       }
 
       list.innerHTML = header + sorted.map(t => {
@@ -2367,6 +2472,7 @@
                           onclick="toggleTaskExpand(${t.id})">${stepsLbl}</button>
                 </div>
               </div>
+              <button class="star-btn ${t.starred ? 'on' : ''}" onclick="toggleStarred(${t.id})" title="${t.starred ? '取消重要' : '标为重要'}">⭐</button>
               <button class="myday-btn ${t.myDay ? 'on' : ''}" onclick="toggleMyDay(${t.id})" title="${t.myDay ? '移出今日' : '加入今日'}">☀️</button>
               <button class="done-btn" onclick="completeTask(${t.id})">✓</button>
               <button class="del-btn" onclick="promptDeleteTask(${t.id})" title="删除任务">🗑</button>
@@ -2385,6 +2491,14 @@
     function setViewMode(mode) {
       viewMode = mode;
       localStorage.setItem('todo_view_mode', mode);
+      // Clear search when switching views
+      if (searchQuery) {
+        searchQuery = '';
+        const inp = document.getElementById('task-search');
+        if (inp) inp.value = '';
+        const clr = document.getElementById('search-clear');
+        if (clr) clr.classList.remove('visible');
+      }
       render();
     }
 
@@ -2395,6 +2509,48 @@
       saveTasks();
       render();
       showToast(t.myDay ? '☀️ 已加入今日清单' : '移出今日清单');
+    }
+
+    function toggleStarred(id) {
+      const t = tasks.find(t => t.id === id);
+      if (!t) return;
+      t.starred = !t.starred;
+      saveTasks();
+      // Only partial re-render: update star button appearance
+      const btn = document.querySelector(`#task-${id} .star-btn`);
+      if (btn) {
+        btn.classList.toggle('on', !!t.starred);
+        btn.title = t.starred ? '取消重要' : '标为重要';
+      }
+      // If in starred view and un-starring, remove the card
+      if (viewMode === 'starred' && !t.starred) render();
+      showToast(t.starred ? '⭐ 标为重要' : '取消重要标记');
+    }
+
+    function saveNote(taskId) {
+      const t = tasks.find(t => t.id === taskId);
+      if (!t) return;
+      const inp = document.getElementById('note-input-' + taskId);
+      if (!inp) return;
+      t.note = inp.value;
+      saveTasks();
+    }
+
+    // ===== SEARCH =====
+    function onTaskSearch(val) {
+      searchQuery = val.trim().toLowerCase();
+      const clr = document.getElementById('search-clear');
+      if (clr) clr.classList.toggle('visible', searchQuery.length > 0);
+      render();
+    }
+
+    function clearSearch() {
+      searchQuery = '';
+      const inp = document.getElementById('task-search');
+      if (inp) inp.value = '';
+      const clr = document.getElementById('search-clear');
+      if (clr) clr.classList.remove('visible');
+      render();
     }
 
     function selectPriority(p) {
@@ -2423,7 +2579,7 @@
       if (!ddl)  { showToast("❌ 请设置截止时间"); return; }
       const selList = document.getElementById('task-list-select');
       const chosenList = selList ? selList.value : (lists[0] ? lists[0].id : 'inbox');
-      tasks.push({ id: Date.now(), text: name, deadline: new Date(ddl).toISOString(), priority: selectedPriority, myDay: false, steps: [], listId: chosenList });
+      tasks.push({ id: Date.now(), text: name, deadline: new Date(ddl).toISOString(), priority: selectedPriority, myDay: false, starred: false, steps: [], note: '', listId: chosenList });
       document.getElementById("task-name").value = "";
       document.getElementById("add-form").style.display = "none";
       saveTasks();
