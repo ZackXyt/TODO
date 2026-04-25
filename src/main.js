@@ -1825,3 +1825,21 @@
     }
     document.addEventListener('keydown',function(e){ if(e.key==='Escape'&&_pfRunning) exitPureFocus(); });
 
+
+    // ===== EXPOSE TO WINDOW =====
+    // Inline onclick="..." handlers in HTML need these as globals.
+    // (ES modules scope declarations to the module by default.)
+    Object.assign(window, {
+      addStep, addTask, adjustResetHour, applyColorWallpaper, applyCustomDur,
+      applyLanguage, applyMascot, calNext, calPrev, cancelCreateList,
+      cancelDelete, cancelDeleteModal, clearSearch, closeCalendar, closeMenu,
+      closeReport, completeTask, confirmCreateList, confirmDeleteTask,
+      deleteList, deleteStep, enterPureFocus, exitPureFocus, generateReport,
+      onTaskSearch, openCalendar, openReport, promptDeleteTask,
+      resetStretchTimer, resetWallpaper, restoreTask, saveNote, searchCity,
+      selectPriority, selectRepeat, setActiveList, setCalView, setDuration,
+      setViewMode, showCalDayTasks, showCreateList, showCustomDurInput,
+      startPauseTimer, toggleCityEdit, toggleCompletedPanel, toggleFocusMode,
+      toggleForm, toggleMascotPanel, toggleMenu, toggleMyDay, toggleSortMode,
+      toggleStarred, toggleStep, toggleTaskExpand,
+    });
