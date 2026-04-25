@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>心流 · HeartFlow</title>
+  <script type="module" crossorigin src="/TODO/assets/index-DbgNMGID.js"></script>
+  <link rel="stylesheet" crossorigin href="/TODO/assets/index-Bk3c4hcU.css">
+</head>
+<body>
+  <div id="wallpaper"></div>
+  <div class="toast" id="toast"></div>
+  <div class="watermark">Zzzack's first creativity!!!</div>
+
+  <div id="desktop">
+
+    <!-- TIME WIDGET -->
+    <div class="time-widget">
+      <div class="time-card">
+        <div class="time-display">
+          <span id="time-hm">--:--</span><span class="time-seconds" id="time-s">:--</span>
+        </div>
+        <div class="date-display" id="date-display">加载中…</div>
+      </div>
+    </div>
+
+    <!-- WEATHER + WALLPAPER ROW -->
+    <div class="weather-row">
+      <div class="weather-widget">
+        <div class="weather-card">
+          <div class="weather-top-row">
+            <div class="weather-sky" id="weather-sky">获取天气中…</div>
+            <button class="weather-edit-btn" onclick="toggleCityEdit()" title="切换城市">📍</button>
+          </div>
+          <div class="weather-edit-form" id="weather-edit-form">
+            <input class="weather-input" id="weather-city-input" placeholder="城市名 / City name…" />
+            <button class="weather-search-btn" onclick="searchCity()">搜索</button>
+          </div>
+          <div class="weather-candidates" id="weather-candidates"></div>
+          <div class="weather-stats">
+            <span class="weather-temp" id="weather-temp">--°</span>
+            <span class="weather-humidity" id="weather-humidity">湿度 --%</span>
+          </div>
+          <div class="weather-location" id="weather-location"></div>
+        </div>
+      </div>
+
+      <div class="dino-widget" id="dino-widget">
+        <div class="stadium-wrap" id="stadium-wrap">
+          <svg class="stadium-svg" id="stadium-svg" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <linearGradient id="arcGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#60C8FF" stop-opacity="0.95"/>
+                <stop offset="100%" stop-color="#A78BFA" stop-opacity="0.95"/>
+              </linearGradient>
+            </defs>
+            <!-- Background fill (JS-driven rounded rect) -->
+            <path id="stadium-bg-fill" fill="rgba(255,255,255,0.07)" stroke="none"/>
+            <!-- Track background stroke -->
+            <path id="stadium-track-bg" fill="none" stroke="rgba(255,255,255,0.09)" stroke-width="5" stroke-linecap="round"/>
+            <!-- Progress arc (clockwise from top-center, JS sets dasharray) -->
+            <path id="progress-arc" fill="none" stroke="url(#arcGrad)" stroke-width="5" stroke-linecap="round"
+              stroke-dasharray="0 9999" style="transition: stroke-dasharray 0.85s ease;"/>
+          </svg>
+          <div class="stadium-quote" id="stadium-quote">
+            <div class="sq-text" id="sq-text"></div>
+            <div class="sq-author" id="sq-author"></div>
+            <div class="sq-info" id="sq-info"></div>
+          </div>
+          <div class="stadium-prog-label" id="stadium-prog-label">—</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- NOTEPAD -->
+    <div class="wallpaper-area">
+      <div class="notepad-widget">
+        <div class="notepad-header">
+          <span class="notepad-title" id="notepad-title-text">🌿 随想录</span>
+          <span class="notepad-count" id="notepad-count">500</span>
+        </div>
+        <textarea class="notepad-textarea" id="notepad-textarea" maxlength="500" placeholder="写下一些你今日的灵感吧！让我们效率拉满！"></textarea>
+      </div>
+    </div>
+
+    <!-- TODO WIDGET -->
+    <div class="todo-area">
+      <div id="todo-resize-handle"></div>
+      <div class="widget">
+
+        <!-- 专注与拉伸提醒卡片 -->
+        <div class="status-card" id="stretch-timer-card">
+          <div class="status-info" style="flex:1;min-width:0;">
+            <div class="status-label">
+              <span id="current-status">准备开始 ⏸</span>
+              <span id="session-counter" style="margin-left:8px;opacity:0.7;font-weight:400;">(今日专注: 0 次)</span>
+            </div>
+            <div class="stretch-countdown" id="stretch-countdown">60:00</div>
+            <div class="timer-row" id="timer-row">
+              <button class="duration-btn" data-mins="15" onclick="setDuration(15)">15分</button>
+              <button class="duration-btn" data-mins="30" onclick="setDuration(30)">30分</button>
+              <button class="duration-btn sel" data-mins="60" onclick="setDuration(60)">60分</button>
+              <button class="duration-btn" id="custom-dur-btn" data-mins="0" onclick="showCustomDurInput()">自定义：—</button>
+              <input class="custom-dur-input" id="custom-dur-input" type="number" min="1" max="480" placeholder="分钟"
+                onkeydown="if(event.key==='Enter')applyCustomDur()"
+                onblur="applyCustomDur()" />
+            </div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:6px;align-items:flex-end;flex-shrink:0;">
+            <button class="start-timer-btn" id="start-timer-btn" onclick="startPauseTimer()">▶ 开始</button>
+            <button class="reset-stretch-btn" id="reset-timer-btn" onclick="resetStretchTimer()">重置</button>
+            <button class="pf-enter-btn" onclick="enterPureFocus()" title="进入纯享专注模式">纯享</button>
+          </div>
+        </div>
+
+        <div class="header">
+          <div>
+            <div class="w-title">⚡ 我的任务</div>
+            <div class="w-subtitle" id="task-count">…</div>
+          </div>
+          <div style="display:flex;align-items:center;gap:6px;">
+            <button class="sort-btn" id="sort-btn" onclick="toggleSortMode()">按 DDL</button>
+            <button class="add-btn" onclick="toggleForm()">+</button>
+          </div>
+        </div>
+
+        <!-- LIST CHIPS -->
+        <div class="list-chips" id="list-chips"></div>
+
+        <!-- VIEW TABS: 全部 / 我的一天 / 重要 -->
+        <div class="view-tabs">
+          <button class="view-tab active" id="tab-all" onclick="setViewMode('all')">全部任务</button>
+          <button class="view-tab" id="tab-myday" onclick="setViewMode('myDay')">☀️ 今日</button>
+          <button class="view-tab" id="tab-starred" onclick="setViewMode('starred')">⭐ 重要</button>
+        </div>
+
+        <!-- SEARCH BAR -->
+        <div class="search-bar-wrap">
+          <span class="search-icon">🔍</span>
+          <input class="search-input" id="task-search" placeholder="搜索任务…" oninput="onTaskSearch(this.value)" />
+          <button class="search-clear" id="search-clear" onclick="clearSearch()">×</button>
+        </div>
+
+        <div class="add-form" id="add-form" style="display:none;">
+          <div class="form-title" id="add-form-title">✨ 新任务</div>
+          <input class="form-input" type="text" id="task-name" placeholder="任务名称…" />
+          <input class="form-input" type="datetime-local" id="task-ddl" />
+          <div class="form-reminder-row">
+            <span class="form-priority-label">🔔 提醒:</span>
+            <input class="form-reminder-input" type="datetime-local" id="task-reminder" />
+            <button class="repeat-pick" onclick="document.getElementById('task-reminder').value=''" style="opacity:0.55;padding:4px 8px;">清除</button>
+          </div>
+          <div class="form-list-row">
+            <span class="form-priority-label">清单:</span>
+            <select class="form-list-select" id="task-list-select"></select>
+          </div>
+          <div class="form-priority-row">
+            <span class="form-priority-label">优先级:</span>
+            <button class="ppick pp1" onclick="selectPriority(1)">P1 紧急</button>
+            <button class="ppick pp2" onclick="selectPriority(2)">P2 高</button>
+            <button class="ppick pp3 sel" onclick="selectPriority(3)">P3 中</button>
+            <button class="ppick pp4" onclick="selectPriority(4)">P4 低</button>
+            <button class="ppick pp5" onclick="selectPriority(5)">P5 可选</button>
+          </div>
+          <div class="form-repeat-row">
+            <span class="form-priority-label">🔁 重复:</span>
+            <button class="repeat-pick sel" id="rpick-none"    onclick="selectRepeat('none')">不重复</button>
+            <button class="repeat-pick"     id="rpick-daily"   onclick="selectRepeat('daily')">每天</button>
+            <button class="repeat-pick"     id="rpick-weekly"  onclick="selectRepeat('weekly')">每周</button>
+            <button class="repeat-pick"     id="rpick-monthly" onclick="selectRepeat('monthly')">每月</button>
+          </div>
+          <button class="submit-btn" id="submit-btn" onclick="addTask()">添加 ✓</button>
+        </div>
+
+        <div id="task-list"></div>
+
+        <!-- Completed tasks collapsible -->
+        <div class="completed-toggle" id="completed-toggle" onclick="toggleCompletedPanel()">
+          ✓ 已完成
+          <span class="c-badge" id="c-badge">0</span>
+          <span class="c-chevron" id="c-chevron">›</span>
+        </div>
+        <div class="completed-panel" id="completed-panel">
+          <div id="completed-list"></div>
+        </div>
+
+      </div>
+    </div>
+
+  </div><!-- /desktop -->
+
+  <!-- HAMBURGER MENU BUTTON -->
+  <button id="menu-btn" onclick="toggleMenu()">
+    <span></span><span></span><span></span>
+  </button>
+
+  <!-- MENU OVERLAY -->
+  <div id="menu-overlay" onclick="closeMenu()"></div>
+
+  <!-- SIDE MENU -->
+  <div id="side-menu">
+    <div class="menu-header">
+      <span class="menu-title" id="menu-title-text">扩展坞</span>
+      <button class="menu-close-btn" onclick="closeMenu()">✕</button>
+    </div>
+
+    <div class="menu-section">
+      <div class="menu-section-title">工具</div>
+      <div class="menu-item" id="focus-menu-item" onclick="toggleFocusMode()">
+        <span class="menu-item-icon">🎯</span>
+        <div>
+          <div id="focus-mode-label">专注模式</div>
+          <div class="menu-item-desc" id="focus-mode-desc">隐藏其他模块，只看任务</div>
+        </div>
+        <div class="menu-toggle" id="focus-toggle"></div>
+      </div>
+      <div class="menu-item" onclick="openCalendar()">
+        <span class="menu-item-icon">📅</span>
+        <div>
+          <div id="calendar-label">日历视图</div>
+          <div class="menu-item-desc" id="calendar-desc">查看任务日程总览</div>
+        </div>
+      </div>
+      <div class="menu-item" onclick="openReport()">
+        <span class="menu-item-icon">📊</span>
+        <div>
+          <div id="report-label">工作报告</div>
+          <div class="menu-item-desc" id="report-desc">查看时间段内的任务情况</div>
+        </div>
+      </div>
+      <div class="menu-item" style="cursor:default;">
+        <span class="menu-item-icon">⏰</span>
+        <div>
+          <div>每日进度重置</div>
+          <div class="menu-item-desc">每天到点清零进度计数</div>
+        </div>
+        <div class="hour-picker">
+          <button class="hour-btn" onclick="adjustResetHour(-1)">‹</button>
+          <span id="reset-hour-display">07:00</span>
+          <button class="hour-btn" onclick="adjustResetHour(1)">›</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="menu-section">
+      <div class="menu-item" id="pet-trigger" onclick="toggleMascotPanel()" style="cursor:pointer;">
+        <span class="menu-item-icon">🐾</span>
+        <div>
+          <div id="custom-section-title">陪伴小宠</div>
+          <div class="menu-item-desc">选择你的专属伴侣</div>
+        </div>
+        <span class="menu-chevron">›</span>
+      </div>
+      <div class="mascot-panel" id="mascot-panel">
+        <div class="mascot-grid" id="mascot-grid"></div>
+      </div>
+    </div>
+
+    <div class="menu-section">
+      <div class="menu-section-title">壁纸</div>
+      <div class="menu-item" style="cursor:pointer;" onclick="document.getElementById('wallpaper-color-input').click()">
+        <span class="menu-item-icon">🎨</span>
+        <div>
+          <div>背景配色</div>
+          <div class="menu-item-desc">点击选择颜色</div>
+        </div>
+        <span id="color-dot" style="width:20px;height:20px;border-radius:50%;border:2px solid rgba(255,255,255,0.35);margin-left:auto;flex-shrink:0;display:block;background:#533483;position:relative;">
+          <input type="color" id="wallpaper-color-input" value="#533483" oninput="applyColorWallpaper(this.value)" style="position:absolute;inset:0;opacity:0;width:100%;height:100%;cursor:pointer;border:none;padding:0;">
+        </span>
+      </div>
+      <div class="menu-item" onclick="resetWallpaper()">
+        <span class="menu-item-icon">↩️</span>
+        <div>重置壁纸</div>
+      </div>
+    </div>
+
+    <div class="menu-section">
+      <div class="menu-item" style="cursor:default;">
+        <span class="menu-item-icon">🌐</span>
+        <div>语言 / Language</div>
+        <div class="lang-pill">
+          <button data-lang="zh" onclick="applyLanguage('zh')">中文</button>
+          <button data-lang="en" onclick="applyLanguage('en')">EN</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="menu-section">
+      <div class="menu-section-title">其他</div>
+      <div class="menu-item" style="opacity:0.35;cursor:default;">
+        <span class="menu-item-icon">👤</span>
+        <div>
+          <div>账号设置</div>
+          <div class="menu-item-desc">（开发中）</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CALENDAR MODAL -->
+  <div id="calendar-modal">
+    <div class="calendar-panel">
+      <div class="calendar-header">
+        <button class="cal-nav-btn" onclick="calPrev()">‹</button>
+        <span class="cal-title" id="cal-month-label"></span>
+        <button class="cal-nav-btn" onclick="calNext()">›</button>
+        <button class="cal-close-btn" onclick="closeCalendar()">✕</button>
+      </div>
+      <div class="cal-view-tabs">
+        <button class="cal-tab active" data-view="month" onclick="setCalView('month')">月视图</button>
+        <button class="cal-tab" data-view="week" onclick="setCalView('week')">周视图</button>
+      </div>
+      <div class="cal-weekdays">
+        <div class="cal-weekday">日</div><div class="cal-weekday">一</div>
+        <div class="cal-weekday">二</div><div class="cal-weekday">三</div>
+        <div class="cal-weekday">四</div><div class="cal-weekday">五</div>
+        <div class="cal-weekday">六</div>
+      </div>
+      <div class="cal-grid" id="cal-grid"></div>
+    </div>
+  </div>
+
+  <!-- REPORT MODAL -->
+  <div id="report-modal">
+    <div class="report-panel">
+      <div class="report-header">
+        <span class="report-title">📊 工作报告</span>
+        <button class="report-close-btn" onclick="closeReport()">✕</button>
+      </div>
+      <div class="report-date-row">
+        <input type="date" class="report-date-input" id="report-from" />
+        <span style="color:rgba(255,255,255,0.35);font-size:13px;">至</span>
+        <input type="date" class="report-date-input" id="report-to" />
+        <button class="report-gen-btn" onclick="generateReport()">生成报告</button>
+      </div>
+      <div class="report-stats">
+        <div class="report-stat-box">
+          <div class="report-stat-num" id="report-done-count">0</div>
+          <div class="report-stat-label">已完成</div>
+        </div>
+        <div class="report-stat-box">
+          <div class="report-stat-num" id="report-pending-count">0</div>
+          <div class="report-stat-label">进行中</div>
+        </div>
+        <div class="report-stat-box">
+          <div class="report-stat-num" id="report-overdue-count">0</div>
+          <div class="report-stat-label">已超期</div>
+        </div>
+      </div>
+      <div id="report-task-list"></div>
+    </div>
+  </div>
+
+  <!-- Delete confirmation modal -->
+  <div class="del-modal-overlay" id="del-modal-overlay" onclick="cancelDelete(event)">
+    <div class="del-modal">
+      <div class="del-modal-icon">🗑️</div>
+      <div class="del-modal-title">确定要永久删除任务吗？</div>
+      <div class="del-modal-sub">删除后将不留任何历史痕迹</div>
+      <div class="del-modal-actions">
+        <button class="del-modal-cancel" onclick="cancelDeleteModal()">取消</button>
+        <button class="del-modal-confirm" onclick="confirmDeleteTask()">删除</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Floating draggable mascot (must be before <script> so DOM is ready) -->
+  <div id="mascot-float">
+    <div class="dino-container">
+      <div class="dino-speech" id="dino-speech">该去拉伸啦！🏃</div>
+      <div class="dino-emoji" id="mascot-emoji">🦕</div>
+      <div class="dino-zzz">
+        <span>z</span><span>z</span><span>z</span>
+      </div>
+    </div>
+  </div>
+
+
+  <div id="pf-overlay">
+    <canvas id="pf-cv"></canvas>
+    <div id="pf-time-wrap">
+      <div id="pf-tm">00:00</div>
+      <div id="pf-cs">.00</div>
+    </div>
+    <button id="pf-exit-btn" onclick="exitPureFocus()">✕</button>
+  </div>
+</body>
+</html>
