@@ -689,9 +689,10 @@
       border-radius: 14px;
       padding: 10px 12px;
       margin-bottom: 8px;
-      display: flex; align-items: center; gap: 10px;
+      display: flex; flex-direction: column; gap: 0;
       position: relative;
     }
+    .task-item-header { display: flex; align-items: center; gap: 10px; }
     .task-item:last-child { margin-bottom: 0; }
     .task-item.state-soon    { animation: pulse-glow 2.5s ease-in-out infinite; }
     .task-item.state-urgent  { animation: jump 1.4s ease-in-out infinite; }
@@ -729,6 +730,116 @@
       flex-shrink: 0; transition: all 0.2s; padding: 0;
     }
     .del-btn:hover { background: rgba(255,70,70,0.18); color: rgba(255,130,110,0.95); transform: scale(1.15); }
+
+    /* ====== STEPS (SUB-TASKS) ====== */
+    .steps-toggle {
+      font-size: 10px; color: rgba(255,255,255,0.38);
+      background: none; border: 1px solid rgba(255,255,255,0.14);
+      border-radius: 6px; padding: 2px 7px; cursor: pointer;
+      transition: all 0.15s; font-family: inherit; flex-shrink: 0; line-height: 1.4;
+    }
+    .steps-toggle:hover { color: white; border-color: rgba(255,255,255,0.4); }
+    .steps-toggle.has-steps { color: rgba(255,220,100,0.85); border-color: rgba(255,220,100,0.3); }
+    .steps-panel {
+      display: none; margin-top: 8px;
+      padding: 6px 6px 4px 14px;
+      border-top: 1px solid rgba(255,255,255,0.08);
+    }
+    .steps-panel.open { display: block; }
+    .step-item {
+      display: flex; align-items: center; gap: 8px;
+      padding: 5px 0; border-bottom: 1px solid rgba(255,255,255,0.05);
+    }
+    .step-item:last-of-type { border-bottom: none; }
+    .step-check {
+      width: 17px; height: 17px; border-radius: 50%; flex-shrink: 0;
+      border: 1.5px solid rgba(255,255,255,0.28); background: none;
+      cursor: pointer; color: rgba(100,220,120,0.95); font-size: 10px;
+      display: flex; align-items: center; justify-content: center;
+      transition: all 0.18s;
+    }
+    .step-check.done { background: rgba(100,220,120,0.28); border-color: rgba(100,220,120,0.6); }
+    .step-check:hover { border-color: rgba(100,220,120,0.8); }
+    .step-text {
+      flex: 1; font-size: 12px; color: rgba(255,255,255,0.72);
+      min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    }
+    .step-text.done { text-decoration: line-through; opacity: 0.4; }
+    .step-del {
+      background: none; border: none; color: rgba(255,255,255,0.18);
+      font-size: 15px; cursor: pointer; padding: 0 3px; flex-shrink: 0;
+      transition: color 0.15s; line-height: 1;
+    }
+    .step-del:hover { color: rgba(255,100,100,0.9); }
+    .step-add-row {
+      display: flex; gap: 6px; margin-top: 6px; padding-top: 5px;
+      border-top: 1px solid rgba(255,255,255,0.07);
+    }
+    .step-input {
+      flex: 1; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.18);
+      border-radius: 8px; padding: 5px 9px; color: white; font-size: 11px;
+      font-family: inherit; outline: none;
+    }
+    .step-input::placeholder { color: rgba(255,255,255,0.32); }
+    .step-input:focus { border-color: rgba(255,255,255,0.42); }
+    .step-add-btn {
+      background: rgba(255,255,255,0.14); border: 1px solid rgba(255,255,255,0.22);
+      border-radius: 8px; color: white; font-size: 16px; width: 28px; height: 28px;
+      cursor: pointer; display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0; transition: background 0.15s;
+    }
+    .step-add-btn:hover { background: rgba(255,255,255,0.26); }
+
+    /* ====== LISTS / CATEGORIES ====== */
+    .list-chips {
+      display: flex; gap: 6px; margin-bottom: 8px;
+      overflow-x: auto; scrollbar-width: none; padding-bottom: 2px;
+    }
+    .list-chips::-webkit-scrollbar { display: none; }
+    .list-chip {
+      flex-shrink: 0; padding: 5px 11px; border-radius: 20px;
+      border: 1.5px solid rgba(255,255,255,0.14);
+      background: rgba(255,255,255,0.07);
+      color: rgba(255,255,255,0.48); font-size: 11px; font-weight: 600;
+      cursor: pointer; transition: all 0.18s; font-family: inherit; white-space: nowrap;
+      display: flex; align-items: center; gap: 4px;
+    }
+    .list-chip.active {
+      background: rgba(255,255,255,0.2); color: white;
+      border-color: rgba(255,255,255,0.36);
+    }
+    .list-chip-del {
+      display: none; font-size: 13px; opacity: 0.5; margin-left: 2px;
+      line-height: 1; transition: opacity 0.15s;
+    }
+    .list-chip.active .list-chip-del { display: inline; }
+    .list-chip-del:hover { opacity: 1; }
+    .list-chip-add {
+      flex-shrink: 0; padding: 5px 11px; border-radius: 20px;
+      border: 1.5px dashed rgba(255,255,255,0.18); background: none;
+      color: rgba(255,255,255,0.32); font-size: 11px; cursor: pointer;
+      font-family: inherit; transition: all 0.18s; white-space: nowrap;
+    }
+    .list-chip-add:hover { color: white; border-color: rgba(255,255,255,0.48); }
+    .list-name-input {
+      flex-shrink: 0; width: 86px; background: rgba(255,255,255,0.12);
+      border: 1.5px solid rgba(255,255,255,0.35); border-radius: 20px;
+      padding: 4px 10px; color: white; font-size: 11px; font-family: inherit; outline: none;
+    }
+    .task-list-label {
+      font-size: 10px; color: rgba(255,255,255,0.38); font-weight: 500;
+      background: rgba(255,255,255,0.08); padding: 1px 6px; border-radius: 4px;
+      flex-shrink: 0;
+    }
+    .form-list-row {
+      display: flex; align-items: center; gap: 8px; margin-bottom: 8px; flex-wrap: wrap;
+    }
+    .form-list-select {
+      flex: 1; background: rgba(255,255,255,0.12); border: 1.5px solid rgba(255,255,255,0.22);
+      border-radius: 10px; padding: 8px 10px; color: white; font-size: 12px;
+      font-family: inherit; outline: none; cursor: pointer;
+    }
+    .form-list-select option { background: #1a1a2e; color: white; }
 
     /* ====== MY DAY VIEW ====== */
     .view-tabs {
@@ -1489,6 +1600,9 @@
           </div>
         </div>
 
+        <!-- LIST CHIPS -->
+        <div class="list-chips" id="list-chips"></div>
+
         <!-- VIEW TABS: 全部 / 我的一天 -->
         <div class="view-tabs">
           <button class="view-tab active" id="tab-all" onclick="setViewMode('all')">全部任务</button>
@@ -1499,6 +1613,10 @@
           <div class="form-title" id="add-form-title">✨ 新任务</div>
           <input class="form-input" type="text" id="task-name" placeholder="任务名称…" />
           <input class="form-input" type="datetime-local" id="task-ddl" />
+          <div class="form-list-row">
+            <span class="form-priority-label">清单:</span>
+            <select class="form-list-select" id="task-list-select"></select>
+          </div>
           <div class="form-priority-row">
             <span class="form-priority-label">优先级:</span>
             <button class="ppick pp1" onclick="selectPriority(1)">P1 紧急</button>
@@ -1951,9 +2069,148 @@
     }
 
     // ===== TASKS =====
-    let sortMode = localStorage.getItem('todo_sort_mode') || 'urgency';
-    let viewMode = localStorage.getItem('todo_view_mode') || 'all';
+    let sortMode     = localStorage.getItem('todo_sort_mode')   || 'urgency';
+    let viewMode     = localStorage.getItem('todo_view_mode')   || 'all';
+    let activeListId = localStorage.getItem('todo_active_list') || 'all';
     let selectedPriority = 3;
+    var expandedTasks = {};
+    var _creatingList = false;
+
+    // ===== LISTS =====
+    function getDefaultLists() {
+      return [
+        { id: 'inbox', name: '收集箱', icon: '📥' },
+        { id: 'work',  name: '工作',   icon: '💼' },
+        { id: 'life',  name: '生活',   icon: '🌱' },
+      ];
+    }
+    function loadLists() {
+      const s = localStorage.getItem('todo_lists');
+      if (s) try { return JSON.parse(s); } catch(e) {}
+      return getDefaultLists();
+    }
+    var lists = loadLists();
+    function saveLists() { localStorage.setItem('todo_lists', JSON.stringify(lists)); }
+
+    function setActiveList(id) {
+      activeListId = id;
+      localStorage.setItem('todo_active_list', id);
+      renderListChips();
+      updateListSelect();
+      render();
+    }
+
+    function renderListChips() {
+      const c = document.getElementById('list-chips');
+      if (!c) return;
+      let h = `<button class="list-chip${activeListId==='all'?' active':''}" onclick="setActiveList('all')">全部</button>`;
+      lists.forEach(l => {
+        const isActive = activeListId === l.id;
+        h += `<button class="list-chip${isActive?' active':''}" onclick="setActiveList('${l.id}')">
+          ${l.icon} ${l.name}
+          <span class="list-chip-del" onclick="event.stopPropagation();deleteList('${l.id}')">×</span>
+        </button>`;
+      });
+      h += _creatingList
+        ? `<input class="list-name-input" id="list-name-input" maxlength="10" placeholder="清单名…"
+                  onkeydown="if(event.key==='Enter')confirmCreateList();if(event.key==='Escape')cancelCreateList()"
+                  onblur="setTimeout(cancelCreateList,200)"/>`
+        : `<button class="list-chip-add" onclick="showCreateList()">＋ 新建</button>`;
+      c.innerHTML = h;
+      if (_creatingList) setTimeout(() => { const el = document.getElementById('list-name-input'); if (el) el.focus(); }, 30);
+    }
+
+    function showCreateList()   { _creatingList = true;  renderListChips(); }
+    function cancelCreateList() { _creatingList = false; renderListChips(); }
+
+    function confirmCreateList() {
+      const inp = document.getElementById('list-name-input');
+      if (!inp) return;
+      const name = inp.value.trim();
+      if (!name) { cancelCreateList(); return; }
+      const icons = ['📋','🎯','⭐','🔥','💡','📚','🏃','🎨','🎵','🛒'];
+      const id = 'list_' + Date.now();
+      lists.push({ id, name, icon: icons[lists.length % icons.length] });
+      saveLists();
+      _creatingList = false;
+      setActiveList(id);
+    }
+
+    function deleteList(id) {
+      const count = tasks.filter(t => t.listId === id).length;
+      if (count > 0) { showToast(`❌ 请先移除此清单中的 ${count} 个任务`); return; }
+      lists = lists.filter(l => l.id !== id);
+      saveLists();
+      if (activeListId === id) setActiveList('all');
+      else renderListChips();
+    }
+
+    function updateListSelect() {
+      const sel = document.getElementById('task-list-select');
+      if (!sel) return;
+      sel.innerHTML = lists.map(l => `<option value="${l.id}">${l.icon} ${l.name}</option>`).join('');
+      if (activeListId !== 'all' && lists.find(l => l.id === activeListId)) sel.value = activeListId;
+    }
+
+    // ===== STEPS (SUB-TASKS) =====
+    function toggleTaskExpand(id) {
+      expandedTasks[id] = !expandedTasks[id];
+      const panel = document.getElementById('steps-' + id);
+      if (panel) panel.classList.toggle('open', !!expandedTasks[id]);
+    }
+
+    function _stepsHTML(t) {
+      return (t.steps||[]).map(st => `
+        <div class="step-item">
+          <button class="step-check${st.done?' done':''}" onclick="toggleStep(${t.id},${st.id})">${st.done?'✓':''}</button>
+          <span class="step-text${st.done?' done':''}">${st.text.replace(/</g,'&lt;')}</span>
+          <button class="step-del" onclick="deleteStep(${t.id},${st.id})">×</button>
+        </div>`).join('') +
+        `<div class="step-add-row">
+          <input class="step-input" id="step-input-${t.id}" placeholder="添加步骤…"
+                 onkeydown="if(event.key==='Enter')addStep(${t.id})"/>
+          <button class="step-add-btn" onclick="addStep(${t.id})">+</button>
+        </div>`;
+    }
+
+    function _rerenderSteps(taskId) {
+      const t = tasks.find(t => t.id === taskId);
+      if (!t) return;
+      const panel  = document.getElementById('steps-' + taskId);
+      const toggle = document.getElementById('steps-toggle-' + taskId);
+      if (panel)  panel.innerHTML  = _stepsHTML(t);
+      if (toggle) {
+        const done = (t.steps||[]).filter(s=>s.done).length, tot = (t.steps||[]).length;
+        toggle.textContent = tot > 0 ? `${done}/${tot} 步骤` : '+ 步骤';
+        toggle.classList.toggle('has-steps', tot > 0);
+      }
+    }
+
+    function addStep(taskId) {
+      const inp = document.getElementById('step-input-' + taskId);
+      if (!inp) return;
+      const text = inp.value.trim();
+      if (!text) return;
+      const t = tasks.find(t => t.id === taskId);
+      if (!t) return;
+      if (!t.steps) t.steps = [];
+      t.steps.push({ id: Date.now(), text, done: false });
+      saveTasks(); inp.value = ''; _rerenderSteps(taskId);
+    }
+
+    function toggleStep(taskId, stepId) {
+      const t = tasks.find(t => t.id === taskId);
+      if (!t || !t.steps) return;
+      const s = t.steps.find(s => s.id === stepId);
+      if (s) { s.done = !s.done; saveTasks(); _rerenderSteps(taskId); }
+    }
+
+    function deleteStep(taskId, stepId) {
+      const t = tasks.find(t => t.id === taskId);
+      if (!t) return;
+      t.steps = (t.steps||[]).filter(s => s.id !== stepId);
+      saveTasks(); _rerenderSteps(taskId);
+    }
 
     const P_COLORS = { 1:'#ff8080', 2:'#ffaa50', 3:'#ffd060', 4:'#80d080', 5:'#80b0ff' };
     const P_LABELS = { 1:'P1', 2:'P2', 3:'P3', 4:'P4', 5:'P5' };
@@ -1974,8 +2231,18 @@
     function saveTasks() { localStorage.setItem('todo_tasks', JSON.stringify(tasks)); }
     function loadTasksFromStorage() {
       const s = localStorage.getItem('todo_tasks');
-      if (s) { try { return JSON.parse(s); } catch(e) {} }
-      return getDefaultTasks();
+      if (s) {
+        try {
+          const arr = JSON.parse(s);
+          // Migrate: ensure all tasks have listId and steps fields
+          arr.forEach(t => {
+            if (!t.listId) t.listId = 'inbox';
+            if (!t.steps)  t.steps  = [];
+          });
+          return arr;
+        } catch(e) {}
+      }
+      return getDefaultTasks().map(t => ({ ...t, listId: 'inbox', steps: [] }));
     }
     let tasks = loadTasksFromStorage();
 
@@ -2006,14 +2273,16 @@
     }
 
     function render() {
+      renderListChips();
       // Update tab active state
       const tabAll = document.getElementById('tab-all');
       const tabMyday = document.getElementById('tab-myday');
       if (tabAll)   tabAll.classList.toggle('active', viewMode === 'all');
       if (tabMyday) tabMyday.classList.toggle('active', viewMode === 'myDay');
 
-      // Determine which tasks to show
-      const base = viewMode === 'myDay' ? tasks.filter(t => t.myDay) : tasks;
+      // Filter by active list, then by My Day
+      const listFiltered = activeListId === 'all' ? tasks : tasks.filter(t => t.listId === activeListId);
+      const base = viewMode === 'myDay' ? listFiltered.filter(t => t.myDay) : listFiltered;
       const sorted = sortMode === 'priority'
         ? [...base].sort((a,b) => (a.priority||3) - (b.priority||3))
         : [...base].sort((a,b) => STATE_ORDER[getState(a.deadline)] - STATE_ORDER[getState(b.deadline)]);
@@ -2074,23 +2343,35 @@
       list.innerHTML = header + sorted.map(t => {
         const s = getState(t.deadline), c = STATE_CFG[s];
         const p = t.priority || 3;
+        const doneN = (t.steps||[]).filter(st=>st.done).length;
+        const totN  = (t.steps||[]).length;
+        const stepsLbl = totN > 0 ? `${doneN}/${totN} 步骤` : '+ 步骤';
+        const isExp = !!expandedTasks[t.id];
+        const listObj = activeListId === 'all' ? lists.find(l => l.id === t.listId) : null;
+        const listLbl = listObj ? `<span class="task-list-label">${listObj.icon} ${listObj.name}</span>` : '';
         return `
           <div class="task-item state-${s}" id="task-${t.id}">
-            <div class="task-bar" style="background:${c.color}"></div>
-            <div class="task-content">
-              <div class="task-top-row">
-                <span class="task-emoji">${c.emoji}</span>
-                <span class="task-name">${t.text}</span>
-                <span class="task-priority p${p}">${P_LABELS[p]}</span>
+            <div class="task-item-header">
+              <div class="task-bar" style="background:${c.color}"></div>
+              <div class="task-content">
+                <div class="task-top-row">
+                  <span class="task-emoji">${c.emoji}</span>
+                  <span class="task-name">${t.text}</span>
+                  <span class="task-priority p${p}">${P_LABELS[p]}</span>
+                </div>
+                <div class="task-ddl-row">
+                  <span class="task-ddl" style="color:${c.color}">${c.prefix} ${formatTime(t.deadline)}</span>
+                  ${c.quip ? `<span class="task-quip" style="color:${c.color}">${c.quip}</span>` : ""}
+                  ${listLbl}
+                  <button class="steps-toggle${totN>0?' has-steps':''}" id="steps-toggle-${t.id}"
+                          onclick="toggleTaskExpand(${t.id})">${stepsLbl}</button>
+                </div>
               </div>
-              <div class="task-ddl-row">
-                <span class="task-ddl" style="color:${c.color}">${c.prefix} ${formatTime(t.deadline)}</span>
-                ${c.quip ? `<span class="task-quip" style="color:${c.color}">${c.quip}</span>` : ""}
-              </div>
+              <button class="myday-btn ${t.myDay ? 'on' : ''}" onclick="toggleMyDay(${t.id})" title="${t.myDay ? '移出今日' : '加入今日'}">☀️</button>
+              <button class="done-btn" onclick="completeTask(${t.id})">✓</button>
+              <button class="del-btn" onclick="promptDeleteTask(${t.id})" title="删除任务">🗑</button>
             </div>
-            <button class="myday-btn ${t.myDay ? 'on' : ''}" onclick="toggleMyDay(${t.id})" title="${t.myDay ? '移出今日' : '加入今日'}">☀️</button>
-            <button class="done-btn" onclick="completeTask(${t.id})">✓</button>
-            <button class="del-btn" onclick="promptDeleteTask(${t.id})" title="删除任务">🗑</button>
+            <div class="steps-panel${isExp?' open':''}" id="steps-${t.id}">${_stepsHTML(t)}</div>
           </div>`;
       }).join("");
     }
@@ -2131,6 +2412,7 @@
         document.getElementById("task-ddl").value = d.toISOString().slice(0,16);
         document.getElementById("task-name").focus();
         selectPriority(3);
+        updateListSelect();
       }
     }
 
@@ -2139,7 +2421,9 @@
       const ddl  = document.getElementById("task-ddl").value;
       if (!name) { showToast("❌ 请输入任务名称"); return; }
       if (!ddl)  { showToast("❌ 请设置截止时间"); return; }
-      tasks.push({ id: Date.now(), text: name, deadline: new Date(ddl).toISOString(), priority: selectedPriority, myDay: false });
+      const selList = document.getElementById('task-list-select');
+      const chosenList = selList ? selList.value : (lists[0] ? lists[0].id : 'inbox');
+      tasks.push({ id: Date.now(), text: name, deadline: new Date(ddl).toISOString(), priority: selectedPriority, myDay: false, steps: [], listId: chosenList });
       document.getElementById("task-name").value = "";
       document.getElementById("add-form").style.display = "none";
       saveTasks();
