@@ -730,6 +730,40 @@
     }
     .del-btn:hover { background: rgba(255,70,70,0.18); color: rgba(255,130,110,0.95); transform: scale(1.15); }
 
+    /* ====== MY DAY VIEW ====== */
+    .view-tabs {
+      display: flex; gap: 6px; margin-bottom: 10px;
+    }
+    .view-tab {
+      flex: 1; padding: 7px 10px; border-radius: 10px;
+      border: 1.5px solid rgba(255,255,255,0.15);
+      background: rgba(255,255,255,0.07);
+      color: rgba(255,255,255,0.5); font-size: 12px; font-weight: 600;
+      cursor: pointer; transition: all 0.2s; font-family: inherit;
+    }
+    .view-tab.active {
+      background: rgba(255,255,255,0.2); color: white;
+      border-color: rgba(255,255,255,0.38);
+    }
+    .myday-btn {
+      background: none; border: none; font-size: 14px;
+      cursor: pointer; opacity: 0.25; padding: 3px 4px;
+      transition: opacity 0.18s, transform 0.18s; flex-shrink: 0;
+      line-height: 1;
+    }
+    .myday-btn:hover { opacity: 0.8; transform: scale(1.2); }
+    .myday-btn.on { opacity: 1; filter: drop-shadow(0 0 4px rgba(255,220,80,0.7)); }
+    .myday-greeting {
+      padding: 10px 4px 6px; font-size: 13px; font-weight: 700;
+      color: rgba(255,255,255,0.85); letter-spacing: 0.2px;
+    }
+    .myday-greeting span { font-size: 11px; font-weight: 400; color: rgba(255,255,255,0.45); margin-left: 6px; }
+    .myday-empty {
+      text-align: center; padding: 32px 16px; color: rgba(255,255,255,0.4);
+      font-size: 13px; line-height: 1.9;
+    }
+    .myday-empty .myday-empty-icon { font-size: 36px; display: block; margin-bottom: 10px; }
+
     /* Delete confirmation modal */
     .del-modal-overlay {
       position: fixed; inset: 0; z-index: 9999;
@@ -1455,6 +1489,12 @@
           </div>
         </div>
 
+        <!-- VIEW TABS: 全部 / 我的一天 -->
+        <div class="view-tabs">
+          <button class="view-tab active" id="tab-all" onclick="setViewMode('all')">全部任务</button>
+          <button class="view-tab" id="tab-myday" onclick="setViewMode('myDay')">☀️ 我的一天</button>
+        </div>
+
         <div class="add-form" id="add-form" style="display:none;">
           <div class="form-title" id="add-form-title">✨ 新任务</div>
           <input class="form-input" type="text" id="task-name" placeholder="任务名称…" />
@@ -1912,6 +1952,7 @@
 
     // ===== TASKS =====
     let sortMode = localStorage.getItem('todo_sort_mode') || 'urgency';
+    let viewMode = localStorage.getItem('todo_view_mode') || 'all';
     let selectedPriority = 3;
 
     const P_COLORS = { 1:'#ff8080', 2:'#ffaa50', 3:'#ffd060', 4:'#80d080', 5:'#80b0ff' };
@@ -1965,29 +2006,72 @@
     }
 
     function render() {
+      // Update tab active state
+      const tabAll = document.getElementById('tab-all');
+      const tabMyday = document.getElementById('tab-myday');
+      if (tabAll)   tabAll.classList.toggle('active', viewMode === 'all');
+      if (tabMyday) tabMyday.classList.toggle('active', viewMode === 'myDay');
+
+      // Determine which tasks to show
+      const base = viewMode === 'myDay' ? tasks.filter(t => t.myDay) : tasks;
       const sorted = sortMode === 'priority'
-        ? [...tasks].sort((a,b) => (a.priority||3) - (b.priority||3))
-        : [...tasks].sort((a,b) => STATE_ORDER[getState(a.deadline)] - STATE_ORDER[getState(b.deadline)]);
+        ? [...base].sort((a,b) => (a.priority||3) - (b.priority||3))
+        : [...base].sort((a,b) => STATE_ORDER[getState(a.deadline)] - STATE_ORDER[getState(b.deadline)]);
 
-      const urgentN = tasks.filter(t => ["panic","urgent","overdue"].includes(getState(t.deadline))).length;
+      const urgentN = base.filter(t => ["panic","urgent","overdue"].includes(getState(t.deadline))).length;
+      const mydayN  = tasks.filter(t => t.myDay).length;
 
-      document.getElementById("task-count").textContent =
-        tasks.length === 0 ? "全部完成啦 🎉" :
-        urgentN > 0 ? `${tasks.length} 个待完成 · ${urgentN} 个紧急！` :
-        `${tasks.length} 个待完成`;
+      // Task count subtitle
+      if (viewMode === 'myDay') {
+        document.getElementById("task-count").textContent =
+          base.length === 0 ? "今日还没有安排 ☀️" :
+          urgentN > 0 ? `今日 ${base.length} 件 · ${urgentN} 个紧急！` :
+          `今日 ${base.length} 件任务`;
+      } else {
+        document.getElementById("task-count").textContent =
+          tasks.length === 0 ? "全部完成啦 🎉" :
+          urgentN > 0 ? `${tasks.length} 个待完成 · ${urgentN} 个紧急！` :
+          `${tasks.length} 个待完成`;
+      }
 
       const btn = document.getElementById("sort-btn");
       if (btn) btn.textContent = sortMode === 'priority' ? '按 P' : '按 DDL';
 
       const list = document.getElementById("task-list");
+
+      if (typeof updateStadiumProgress === 'function') updateStadiumProgress();
+      if (typeof renderCompletedList === 'function') renderCompletedList();
+
+      // Empty states
       if (tasks.length === 0) {
         list.innerHTML = '<div class="empty-state">🎯 快开始创建你的第一个任务吧！<br><span style="font-size:11px;opacity:0.7">点击右上角 + 添加任务</span></div>';
         return;
       }
+      if (viewMode === 'myDay' && base.length === 0) {
+        const now = new Date();
+        const weekdays = ['周日','周一','周二','周三','周四','周五','周六'];
+        const dateStr = `${now.getMonth()+1}月${now.getDate()}日 · ${weekdays[now.getDay()]}`;
+        list.innerHTML = `
+          <div class="myday-greeting">☀️ 今天想专注什么？<span>${dateStr}</span></div>
+          <div class="myday-empty">
+            <span class="myday-empty-icon">🌤</span>
+            今天还没有安排任务<br>
+            <span style="font-size:11px">点击任意任务上的 ☀️ 加入今日清单</span>
+          </div>`;
+        return;
+      }
 
-      if (typeof updateStadiumProgress === 'function') updateStadiumProgress();
-      if (typeof renderCompletedList === 'function') renderCompletedList();
-      list.innerHTML = sorted.map(t => {
+      // My Day greeting header
+      let header = '';
+      if (viewMode === 'myDay') {
+        const now = new Date();
+        const h = now.getHours();
+        const greeting = h < 12 ? '早上好' : h < 18 ? '下午好' : '晚上好';
+        const weekdays = ['周日','周一','周二','周三','周四','周五','周六'];
+        header = `<div class="myday-greeting">☀️ ${greeting}，今天有 ${base.length} 件事<span>${now.getMonth()+1}月${now.getDate()}日 · ${weekdays[now.getDay()]}</span></div>`;
+      }
+
+      list.innerHTML = header + sorted.map(t => {
         const s = getState(t.deadline), c = STATE_CFG[s];
         const p = t.priority || 3;
         return `
@@ -2004,6 +2088,7 @@
                 ${c.quip ? `<span class="task-quip" style="color:${c.color}">${c.quip}</span>` : ""}
               </div>
             </div>
+            <button class="myday-btn ${t.myDay ? 'on' : ''}" onclick="toggleMyDay(${t.id})" title="${t.myDay ? '移出今日' : '加入今日'}">☀️</button>
             <button class="done-btn" onclick="completeTask(${t.id})">✓</button>
             <button class="del-btn" onclick="promptDeleteTask(${t.id})" title="删除任务">🗑</button>
           </div>`;
@@ -2014,6 +2099,21 @@
       sortMode = sortMode === 'urgency' ? 'priority' : 'urgency';
       localStorage.setItem('todo_sort_mode', sortMode);
       render();
+    }
+
+    function setViewMode(mode) {
+      viewMode = mode;
+      localStorage.setItem('todo_view_mode', mode);
+      render();
+    }
+
+    function toggleMyDay(id) {
+      const t = tasks.find(t => t.id === id);
+      if (!t) return;
+      t.myDay = !t.myDay;
+      saveTasks();
+      render();
+      showToast(t.myDay ? '☀️ 已加入今日清单' : '移出今日清单');
     }
 
     function selectPriority(p) {
@@ -2039,7 +2139,7 @@
       const ddl  = document.getElementById("task-ddl").value;
       if (!name) { showToast("❌ 请输入任务名称"); return; }
       if (!ddl)  { showToast("❌ 请设置截止时间"); return; }
-      tasks.push({ id: Date.now(), text: name, deadline: new Date(ddl).toISOString(), priority: selectedPriority });
+      tasks.push({ id: Date.now(), text: name, deadline: new Date(ddl).toISOString(), priority: selectedPriority, myDay: false });
       document.getElementById("task-name").value = "";
       document.getElementById("add-form").style.display = "none";
       saveTasks();
