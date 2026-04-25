@@ -1,0 +1,16 @@
+{
+  "name": "heartflow",
+  "version": "2.0.0",
+  "description": "心流 HeartFlow — 专注任务管理应用",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "keywords": [],
+  "author": "Yiting Xu",
+  "license": "ISC",
+  "devDependencies": {
+    "vite": "^8.0.10"
+  }
+}
