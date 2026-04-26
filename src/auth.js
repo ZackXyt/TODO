@@ -58,6 +58,7 @@ export function closeAuthModal() {
 export function setAuthMode(mode /* 'signin' | 'signup' | 'reset' */) {
   const root = document.getElementById('auth-modal-overlay');
   if (!root) return;
+  const oldMode = root.dataset.mode;
   root.dataset.mode = mode;
   // Update title + button labels via dataset so CSS picks it up
   const titles = { signin: '🔐 登录', signup: '✨ 创建账号', reset: '🔑 重置密码' };
@@ -70,10 +71,15 @@ export function setAuthMode(mode /* 'signin' | 'signup' | 'reset' */) {
   document.getElementById('auth-modal-title').textContent = titles[mode] || '🔐 登录';
   document.getElementById('auth-modal-sub').textContent  = subs[mode] || '';
   document.getElementById('auth-submit-btn').textContent = submitLabels[mode] || '提交 →';
-  closeAuthError();
+  // Only clear error when actually changing modes (so errors persist on the same form)
+  if (oldMode && oldMode !== mode) closeAuthError();
 }
 
 // ---- Form submit ----
+
+// Submit-button labels per mode (kept here so finally-block can restore without
+// calling setAuthMode, which would also wipe the error message)
+const SUBMIT_LABELS = { signin: '登录 →', signup: '注册 →', reset: '发送重置邮件 →' };
 
 export async function submitAuthForm() {
   const ov  = document.getElementById('auth-modal-overlay');
@@ -82,9 +88,13 @@ export async function submitAuthForm() {
   const pw    = document.getElementById('auth-password').value;
   const btn   = document.getElementById('auth-submit-btn');
 
-  if (!email)  return showAuthError('请输入邮箱');
-  if (mode !== 'reset' && !pw) return showAuthError('请输入密码');
-  if (mode === 'signup' && pw.length < 6) return showAuthError('密码至少 6 位');
+  // Clear any previous error from a prior submit
+  closeAuthError();
+
+  // Local validation (synchronous)
+  if (!email) { showAuthError('请输入邮箱'); return; }
+  if (mode !== 'reset' && !pw) { showAuthError('请输入密码'); return; }
+  if (mode === 'signup' && pw.length < 6) { showAuthError('密码至少 6 位'); return; }
 
   btn.disabled = true;
   btn.textContent = '处理中…';
@@ -95,10 +105,7 @@ export async function submitAuthForm() {
       window.showToast?.('🎉 登录成功');
     } else if (mode === 'signup') {
       const cred = await createUserWithEmailAndPassword(auth, email, pw);
-      // Default display name = part before @
-      try {
-        await updateProfile(cred.user, { displayName: email.split('@')[0] });
-      } catch {}
+      try { await updateProfile(cred.user, { displayName: email.split('@')[0] }); } catch {}
       closeAuthModal();
       window.showToast?.('✨ 注册成功，欢迎加入心流！');
     } else if (mode === 'reset') {
@@ -110,7 +117,8 @@ export async function submitAuthForm() {
     showAuthError(translateAuthError(err));
   } finally {
     btn.disabled = false;
-    setAuthMode(ov.dataset.mode); // restore button label
+    // Restore button label WITHOUT calling setAuthMode (which would clear error)
+    btn.textContent = SUBMIT_LABELS[ov.dataset.mode] || '提交 →';
   }
 }
 

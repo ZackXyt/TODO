@@ -2505,4 +2505,6 @@
       quickAddTask, toggleQuickAddHint, parseQuickAdd,
       // Layout customization
       setDensity, setModuleVisible, applyLayoutPreset,
+      // Toast (so other modules like auth.js can call window.showToast)
+      showToast,
     });
