@@ -1,6 +1,6 @@
 {
   "name": "heartflow",
-  "version": "2.1.3",
+  "version": "2.1.4",
   "description": "心流 HeartFlow — 专注任务管理应用",
   "scripts": {
     "dev": "vite",

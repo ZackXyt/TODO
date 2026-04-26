@@ -25,6 +25,7 @@ export default defineConfig({
         'favicon.ico',
         'apple-touch-icon-180x180.png',
         'heartflow.svg',
+        'release-notes.json',
       ],
       manifest: {
         name: '心流 HeartFlow',
@@ -51,7 +52,7 @@ export default defineConfig({
       },
       workbox: {
         // Cache all built assets + index.html, with version-based cache busting
-        globPatterns: ['**/*.{js,css,html,ico,png,svg,woff,woff2}'],
+        globPatterns: ['**/*.{js,css,html,ico,png,svg,woff,woff2,json}'],
         // When a new SW takes over, claim clients immediately so users get fresh code on next nav
         clientsClaim: true,
         skipWaiting: false, // we'll prompt the user instead of forcing
