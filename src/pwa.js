@@ -101,42 +101,67 @@ async function fetchReleaseNotes() {
   } catch { return null; }
 }
 
-function showReleaseNotesModal(notes, mode /* 'preview' | 'celebration' */) {
+function showReleaseNotesModal(data, mode /* 'preview' | 'celebration' */) {
   // Remove if already shown
   const existing = document.getElementById('release-notes-modal');
   if (existing) existing.remove();
 
+  // Resolve versions array (supports both new {versions:[]} and legacy single-version structure)
+  let versions = [];
+  if (Array.isArray(data && data.versions)) {
+    versions = data.versions.slice(0, 2);
+  } else if (data && data.version && data.highlights) {
+    versions = [data];
+  }
+  if (!versions.length) return;
+
+  const current  = versions[0];
+  const previous = versions[1];
   const isCelebration = mode === 'celebration';
+
+  const renderHighlights = v => (v.highlights || []).map(h => `
+    <div class="rn-item">
+      <div class="rn-item-emoji">${h.emoji || '✨'}</div>
+      <div class="rn-item-body">
+        <div class="rn-item-title">${escapeHtml(h.title || '')}</div>
+        ${h.what ? `<div class="rn-item-what">${escapeHtml(h.what)}</div>` : ''}
+        ${h.how  ? `<div class="rn-item-how">💡 ${escapeHtml(h.how)}</div>` : ''}
+      </div>
+    </div>
+  `).join('');
+
   const overlay = document.createElement('div');
   overlay.id = 'release-notes-modal';
   overlay.className = 'rn-overlay' + (isCelebration ? ' celebration' : '');
   overlay.innerHTML = `
     <div class="rn-modal">
       <div class="rn-hero">
-        <div class="rn-hero-emoji">${notes.emoji || (isCelebration ? '🎉' : '📦')}</div>
+        <div class="rn-hero-emoji">${current.emoji || (isCelebration ? '🎉' : '📦')}</div>
         <div class="rn-hero-title">${
-          isCelebration ? `升级成功！🎉` : `${notes.title || '更新日志'}`
+          isCelebration ? `升级成功！🎉` : escapeHtml(current.title || '更新日志')
         }</div>
-        <div class="rn-hero-version">v${notes.version}</div>
+        <div class="rn-hero-version">v${current.version}</div>
         <div class="rn-hero-tagline">${
           isCelebration
-            ? '这是你升级的第 N 次，感谢一路陪伴 🙇'
-            : (notes.tagline || '')
+            ? '感谢一路陪伴，作者跪谢 🙇'
+            : escapeHtml(current.tagline || '')
         }</div>
       </div>
-      <div class="rn-list">
-        ${(notes.highlights || []).map(h => `
-          <div class="rn-item">
-            <div class="rn-item-emoji">${h.emoji || '✨'}</div>
-            <div class="rn-item-body">
-              <div class="rn-item-title">${escapeHtml(h.title || '')}</div>
-              ${h.what ? `<div class="rn-item-what">${escapeHtml(h.what)}</div>` : ''}
-              ${h.how  ? `<div class="rn-item-how">💡 ${escapeHtml(h.how)}</div>` : ''}
-            </div>
+      <div class="rn-list">${renderHighlights(current)}</div>
+      ${current.footer ? `<div class="rn-footer">${escapeHtml(current.footer)}</div>` : ''}
+
+      ${previous ? `
+        <div class="rn-prev-divider"></div>
+        <div class="rn-prev-section">
+          <div class="rn-prev-header">
+            <span class="rn-prev-label">⏪ 上次更新</span>
+            <span class="rn-prev-version">v${previous.version}</span>
+            <span class="rn-prev-title">${escapeHtml(previous.title || '')}</span>
           </div>
-        `).join('')}
-      </div>
-      ${notes.footer ? `<div class="rn-footer">${escapeHtml(notes.footer)}</div>` : ''}
+          <div class="rn-list rn-list-prev">${renderHighlights(previous)}</div>
+        </div>
+      ` : ''}
+
       <div class="rn-actions">
         ${isCelebration
           ? `<button class="pwa-banner-btn pwa-btn-primary" id="rn-close-btn">继续使用 →</button>`
@@ -148,7 +173,6 @@ function showReleaseNotesModal(notes, mode /* 'preview' | 'celebration' */) {
   `;
   document.body.appendChild(overlay);
   ensureNotesStyles();
-  // Animate in
   requestAnimationFrame(() => overlay.classList.add('show'));
 
   overlay.addEventListener('click', e => {
@@ -158,13 +182,11 @@ function showReleaseNotesModal(notes, mode /* 'preview' | 'celebration' */) {
   if (!isCelebration) {
     document.getElementById('rn-update-now').onclick = () => {
       closeReleaseNotes();
-      // Remove banner if still around, then trigger update
       const bar = document.getElementById('pwa-update-banner');
       if (bar) bar.remove();
       if (_pendingReload) _pendingReload();
     };
   } else {
-    // Confetti celebration
     setTimeout(() => burstCelebration(), 200);
   }
 }
@@ -196,9 +218,10 @@ async function checkPostUpdateCelebration() {
     localStorage.setItem('todo_last_seen_version', current);
   }
 
-  const notes = await fetchReleaseNotes();
-  if (notes && notes.version === current) {
-    showReleaseNotesModal(notes, 'celebration');
+  const data = await fetchReleaseNotes();
+  const topVersion = data && (Array.isArray(data.versions) ? data.versions[0]?.version : data.version);
+  if (data && topVersion === current) {
+    showReleaseNotesModal(data, 'celebration');
   } else {
     burstCelebration();
     if (typeof window.showToast === 'function') {
@@ -366,6 +389,40 @@ function ensureNotesStyles() {
       border-top: 1px solid rgba(255,255,255,0.06);
       font-size: 11px; color: rgba(255,180,220,0.7); font-style: italic;
     }
+    .rn-prev-divider {
+      height: 1px; margin: 18px 0 14px;
+      background: linear-gradient(to right,
+        transparent, rgba(180,140,255,0.25), transparent);
+    }
+    .rn-prev-section { opacity: 0.78; }
+    .rn-prev-header {
+      display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+      margin-bottom: 8px; padding: 0 2px;
+    }
+    .rn-prev-label {
+      font-size: 11px; font-weight: 700; color: rgba(180,140,255,0.85);
+      letter-spacing: 0.5px;
+    }
+    .rn-prev-version {
+      background: rgba(180,140,255,0.12);
+      border: 1px solid rgba(180,140,255,0.28);
+      border-radius: 6px; padding: 1px 7px;
+      font-family: 'SF Mono', Menlo, monospace;
+      font-size: 10px; font-weight: 600;
+      color: rgba(220,200,255,0.9);
+    }
+    .rn-prev-title {
+      font-size: 11.5px; color: rgba(255,255,255,0.6);
+      font-style: italic;
+    }
+    .rn-list-prev .rn-item {
+      background: rgba(255,255,255,0.025);
+      border-color: rgba(255,255,255,0.04);
+    }
+    .rn-list-prev .rn-item-title { font-size: 12px; }
+    .rn-list-prev .rn-item-what  { font-size: 11px; }
+    .rn-list-prev .rn-item-how   { font-size: 10.5px; }
+    .rn-list-prev .rn-item-emoji { font-size: 20px; }
     .rn-actions {
       display: flex; gap: 10px; margin-top: 18px;
       justify-content: center; flex-wrap: wrap;
