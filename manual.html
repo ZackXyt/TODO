@@ -1,0 +1,514 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8">
+  <title>TODO App 用户手册</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700&display=swap');
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Noto Sans SC', -apple-system, 'PingFang SC', sans-serif;
+      background: #f5f5f0;
+      color: #1a1a1a;
+      line-height: 1.7;
+    }
+
+    .page {
+      width: 794px;
+      margin: 40px auto;
+      background: white;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 4px 40px rgba(0,0,0,0.10);
+    }
+
+    /* ── 封面 ── */
+    .cover {
+      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 40%, #0f3460 70%, #533483 100%);
+      color: white;
+      padding: 72px 64px 56px;
+      position: relative;
+      overflow: hidden;
+    }
+    .cover::before {
+      content: '';
+      position: absolute;
+      top: -80px; right: -80px;
+      width: 320px; height: 320px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.04);
+    }
+    .cover::after {
+      content: '';
+      position: absolute;
+      bottom: -40px; left: 40px;
+      width: 180px; height: 180px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.03);
+    }
+    .cover-tag {
+      display: inline-block;
+      font-size: 10px;
+      font-weight: 500;
+      letter-spacing: 2.5px;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.5);
+      border: 1px solid rgba(255,255,255,0.2);
+      border-radius: 20px;
+      padding: 4px 12px;
+      margin-bottom: 28px;
+    }
+    .cover h1 {
+      font-size: 48px;
+      font-weight: 300;
+      letter-spacing: -1px;
+      line-height: 1.15;
+      margin-bottom: 14px;
+    }
+    .cover h1 strong { font-weight: 700; }
+    .cover-sub {
+      font-size: 15px;
+      color: rgba(255,255,255,0.55);
+      font-weight: 300;
+      margin-bottom: 48px;
+    }
+    .cover-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      border-top: 1px solid rgba(255,255,255,0.12);
+      padding-top: 20px;
+      font-size: 11px;
+      color: rgba(255,255,255,0.35);
+      letter-spacing: 0.3px;
+    }
+    .cover-watermark {
+      font-size: 13px;
+      color: rgba(255,255,255,0.45);
+      font-weight: 500;
+    }
+
+    /* ── 正文区域 ── */
+    .content {
+      padding: 56px 64px;
+    }
+
+    /* ── 章节标题 ── */
+    .section {
+      margin-bottom: 44px;
+    }
+    .section-header {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 20px;
+      padding-bottom: 12px;
+      border-bottom: 1.5px solid #f0f0f0;
+    }
+    .section-icon {
+      width: 36px; height: 36px;
+      border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 18px;
+      flex-shrink: 0;
+    }
+    .icon-blue   { background: #e8f0fe; }
+    .icon-green  { background: #e6f4ea; }
+    .icon-orange { background: #fef3e2; }
+    .icon-purple { background: #f3e8fd; }
+    .icon-pink   { background: #fce8f0; }
+    .icon-teal   { background: #e0f5f5; }
+    .icon-yellow { background: #fefbe6; }
+
+    .section-title {
+      font-size: 18px;
+      font-weight: 600;
+      color: #111;
+      letter-spacing: -0.3px;
+    }
+    .section-num {
+      font-size: 11px;
+      font-weight: 500;
+      color: #aaa;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      margin-bottom: 2px;
+    }
+
+    /* ── 步骤卡片 ── */
+    .steps {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .step {
+      display: flex;
+      align-items: flex-start;
+      gap: 14px;
+      padding: 12px 16px;
+      background: #fafafa;
+      border-radius: 10px;
+      border: 1px solid #f0f0f0;
+    }
+    .step-num {
+      width: 22px; height: 22px;
+      border-radius: 50%;
+      background: #1a1a2e;
+      color: white;
+      font-size: 11px;
+      font-weight: 600;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+    .step p { font-size: 13.5px; color: #333; }
+    .step strong { color: #111; font-weight: 600; }
+
+    /* ── 平台安装卡片 ── */
+    .platform-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+    .platform-card {
+      border: 1.5px solid #f0f0f0;
+      border-radius: 12px;
+      padding: 16px 18px;
+    }
+    .platform-name {
+      font-size: 12px;
+      font-weight: 700;
+      color: #555;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .platform-name span { font-size: 16px; }
+    .platform-steps { font-size: 12.5px; color: #555; line-height: 1.9; }
+    .platform-steps b { color: #222; font-weight: 600; }
+
+    /* ── 功能说明 ── */
+    .feature-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .feature-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      font-size: 13.5px;
+      color: #444;
+      padding: 10px 14px;
+      background: #fafafa;
+      border-radius: 10px;
+    }
+    .feature-dot {
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: #533483;
+      flex-shrink: 0;
+      margin-top: 7px;
+    }
+
+    /* ── 提示框 ── */
+    .tip {
+      background: #f0f7ff;
+      border-left: 3px solid #4a90d9;
+      border-radius: 0 10px 10px 0;
+      padding: 12px 16px;
+      font-size: 13px;
+      color: #2c5282;
+      margin-top: 14px;
+    }
+    .tip strong { font-weight: 600; }
+
+    .warn {
+      background: #fff8e6;
+      border-left: 3px solid #f6ad55;
+      border-radius: 0 10px 10px 0;
+      padding: 12px 16px;
+      font-size: 13px;
+      color: #744210;
+      margin-top: 14px;
+    }
+
+    /* ── 分隔线 ── */
+    .divider {
+      height: 1px;
+      background: #f0f0f0;
+      margin: 40px 0;
+    }
+
+    /* ── 页脚 ── */
+    .footer {
+      background: #fafafa;
+      border-top: 1px solid #f0f0f0;
+      padding: 24px 64px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 11.5px;
+      color: #aaa;
+    }
+    .footer-logo {
+      font-weight: 700;
+      font-size: 13px;
+      color: #444;
+      letter-spacing: -0.3px;
+    }
+
+    /* ── 快捷链接高亮 ── */
+    .url-box {
+      background: linear-gradient(135deg, #1a1a2e, #533483);
+      border-radius: 10px;
+      padding: 14px 20px;
+      font-size: 14px;
+      font-weight: 500;
+      color: white;
+      letter-spacing: 0.3px;
+      margin: 14px 0;
+      text-align: center;
+    }
+
+    /* ── 打印优化 ── */
+    @media print {
+      body { background: white; }
+      .page {
+        width: 100%;
+        margin: 0;
+        border-radius: 0;
+        box-shadow: none;
+      }
+      .section { page-break-inside: avoid; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="page">
+
+  <!-- 封面 -->
+  <div class="cover">
+    <div class="cover-tag">User Manual · 用户手册</div>
+    <h1><strong>TODO</strong><br>Desktop Widget</h1>
+    <p class="cover-sub">你的专属效率工具 · 专注 · 记录 · 完成</p>
+    <div class="cover-footer">
+      <div class="cover-watermark">Zzzack's first creativity!!!</div>
+      <div>2026 · v1.0</div>
+    </div>
+  </div>
+
+  <!-- 正文 -->
+  <div class="content">
+
+    <!-- 第一步：打开 App -->
+    <div class="section">
+      <div class="section-header">
+        <div class="section-icon icon-blue">🌐</div>
+        <div>
+          <div class="section-num">Step 01</div>
+          <div class="section-title">打开 App</div>
+        </div>
+      </div>
+      <p style="font-size:13.5px;color:#444;margin-bottom:12px;">直接在任意浏览器中打开以下链接，无需下载、无需注册，即开即用：</p>
+      <div class="url-box">https://zackxyt.github.io/TODO/</div>
+      <div class="tip"><strong>💡 提示：</strong>电脑、手机、平板均可使用，推荐在电脑上使用以获得最佳体验。</div>
+    </div>
+
+    <!-- 第二步：添加到桌面 -->
+    <div class="section">
+      <div class="section-header">
+        <div class="section-icon icon-green">📌</div>
+        <div>
+          <div class="section-num">Step 02</div>
+          <div class="section-title">添加到桌面（可选但推荐）</div>
+        </div>
+      </div>
+      <p style="font-size:13.5px;color:#444;margin-bottom:14px;">将 App 添加到桌面后，可像原生应用一样使用，没有浏览器工具栏干扰。</p>
+      <div class="platform-grid">
+        <div class="platform-card">
+          <div class="platform-name"><span>🍎</span> Mac · Safari</div>
+          <div class="platform-steps">
+            1. 用 Safari 打开链接<br>
+            2. 顶部菜单 → <b>文件</b><br>
+            3. 点击 <b>添加到程序坞</b><br>
+            4. 从 Dock 直接打开
+          </div>
+        </div>
+        <div class="platform-card">
+          <div class="platform-name"><span>🪟</span> Windows · Chrome</div>
+          <div class="platform-steps">
+            1. 用 Chrome 打开链接<br>
+            2. 地址栏右侧点 <b>安装图标</b><br>
+            3. 或菜单 → <b>安装此网站为应用</b><br>
+            4. 桌面出现快捷方式
+          </div>
+        </div>
+        <div class="platform-card">
+          <div class="platform-name"><span>📱</span> iPhone · Safari</div>
+          <div class="platform-steps">
+            1. 用 Safari 打开链接<br>
+            2. 底部点击 <b>分享按钮</b> □↑<br>
+            3. 选择 <b>添加到主屏幕</b><br>
+            4. 像 App 一样出现在桌面
+          </div>
+        </div>
+        <div class="platform-card">
+          <div class="platform-name"><span>🤖</span> Android · Chrome</div>
+          <div class="platform-steps">
+            1. 用 Chrome 打开链接<br>
+            2. 右上角点 <b>⋮ 菜单</b><br>
+            3. 选择 <b>添加到主屏幕</b><br>
+            4. 桌面出现快捷方式
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- 功能介绍标题 -->
+    <p style="font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#aaa;margin-bottom:28px;">功能介绍 · Features</p>
+
+    <!-- 任务清单 -->
+    <div class="section">
+      <div class="section-header">
+        <div class="section-icon icon-purple">✅</div>
+        <div>
+          <div class="section-num">Feature 01</div>
+          <div class="section-title">任务清单</div>
+        </div>
+      </div>
+      <div class="steps">
+        <div class="step">
+          <div class="step-num">+</div>
+          <p>点击右上角 <strong>＋ 按钮</strong> 新建任务，填写任务名称，可选填截止时间和优先级</p>
+        </div>
+        <div class="step">
+          <div class="step-num">✓</div>
+          <p>点击任务右侧的 <strong>✓</strong> 标记完成，任务自动置灰并划线</p>
+        </div>
+        <div class="step">
+          <div class="step-num">✕</div>
+          <p>点击任务右侧的 <strong>✕</strong> 删除任务</p>
+        </div>
+      </div>
+      <div class="feature-list" style="margin-top:12px;">
+        <div class="feature-item"><div class="feature-dot"></div><span>🔴 紧急 · 🟡 重要 · 🟢 普通，三级优先级一目了然</span></div>
+        <div class="feature-item"><div class="feature-dot"></div><span>截止时间越近，自动显示倒计时提醒（如"24分钟后 快跑！"）</span></div>
+        <div class="feature-item"><div class="feature-dot"></div><span>任务栏左边缘可拖拽调整宽度，满足不同使用习惯</span></div>
+      </div>
+      <div class="tip"><strong>💾 自动保存：</strong>所有任务保存在你的浏览器本地，关闭后重新打开依然存在。</div>
+    </div>
+
+    <!-- 专注计时器 -->
+    <div class="section">
+      <div class="section-header">
+        <div class="section-icon icon-teal">🧠</div>
+        <div>
+          <div class="section-num">Feature 02</div>
+          <div class="section-title">专注计时器</div>
+        </div>
+      </div>
+      <div class="feature-list">
+        <div class="feature-item"><div class="feature-dot"></div><span>打开 App 后自动开始 <strong>60 分钟倒计时</strong></span></div>
+        <div class="feature-item"><div class="feature-dot"></div><span>倒计时结束时，小恐龙会醒来并弹出提醒：<strong>该站起来拉伸了！</strong></span></div>
+        <div class="feature-item"><div class="feature-dot"></div><span>拉伸完毕后点击 <strong>"拉伸完成 / 重置"</strong> 按钮，计时重新开始</span></div>
+        <div class="feature-item"><div class="feature-dot"></div><span>今日专注次数自动累计，每天零点清零</span></div>
+      </div>
+    </div>
+
+    <!-- 天气 -->
+    <div class="section">
+      <div class="section-header">
+        <div class="section-icon icon-orange">🌤</div>
+        <div>
+          <div class="section-num">Feature 03</div>
+          <div class="section-title">天气 · 时区时钟</div>
+        </div>
+      </div>
+      <div class="steps">
+        <div class="step">
+          <div class="step-num">1</div>
+          <p>点击天气卡片右上角的 <strong>✏️ 图标</strong></p>
+        </div>
+        <div class="step">
+          <div class="step-num">2</div>
+          <p>输入城市名（支持中文如"北京"，或英文如"Shanghai"）</p>
+        </div>
+        <div class="step">
+          <div class="step-num">3</div>
+          <p>从搜索结果列表中选择你的城市，顶部时钟自动切换为该城市时区</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- 随想录 -->
+    <div class="section">
+      <div class="section-header">
+        <div class="section-icon icon-pink">📝</div>
+        <div>
+          <div class="section-num">Feature 04</div>
+          <div class="section-title">随想录</div>
+        </div>
+      </div>
+      <div class="feature-list">
+        <div class="feature-item"><div class="feature-dot"></div><span>位于页面左下角，随时记录灵感、想法、备忘</span></div>
+        <div class="feature-item"><div class="feature-dot"></div><span>最多支持 <strong>500 字</strong>，右上角实时显示剩余字数</span></div>
+        <div class="feature-item"><div class="feature-dot"></div><span>边写边自动保存，关闭页面后内容不丢失</span></div>
+      </div>
+    </div>
+
+    <!-- 壁纸 -->
+    <div class="section">
+      <div class="section-header">
+        <div class="section-icon icon-yellow">🎨</div>
+        <div>
+          <div class="section-num">Feature 05</div>
+          <div class="section-title">壁纸换色</div>
+        </div>
+      </div>
+      <div class="feature-list">
+        <div class="feature-item"><div class="feature-dot"></div><span>点击 <strong>Wallpaper</strong> 按钮，调色盘选择你喜欢的颜色</span></div>
+        <div class="feature-item"><div class="feature-dot"></div><span>背景自动生成与所选颜色匹配的渐变壁纸</span></div>
+        <div class="feature-item"><div class="feature-dot"></div><span>点击 <strong>重置</strong> 按钮恢复默认深蓝背景</span></div>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- 数据说明 -->
+    <div class="section">
+      <div class="section-header">
+        <div class="section-icon icon-blue">💾</div>
+        <div>
+          <div class="section-num">重要说明</div>
+          <div class="section-title">关于你的数据</div>
+        </div>
+      </div>
+      <div class="feature-list">
+        <div class="feature-item"><div class="feature-dot"></div><span>所有数据（任务、随想录、城市、壁纸）保存在 <strong>你自己的浏览器</strong> 里</span></div>
+        <div class="feature-item"><div class="feature-dot"></div><span>开发者和其他用户 <strong>完全看不到</strong> 你的任何内容</span></div>
+        <div class="feature-item"><div class="feature-dot"></div><span>每位用户的数据相互独立，互不影响</span></div>
+      </div>
+      <div class="warn"><strong>⚠️ 注意：</strong>数据存在当前浏览器本地，换设备或清除浏览器缓存后数据会丢失。建议固定在同一台设备、同一浏览器上使用。</div>
+    </div>
+
+  </div>
+
+  <!-- 页脚 -->
+  <div class="footer">
+    <div class="footer-logo">TODO · Desktop Widget</div>
+    <div>Zzzack's first creativity!!! · 2026</div>
+  </div>
+
+</div>
+
+</body>
+</html>
