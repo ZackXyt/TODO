@@ -1,6 +1,27 @@
 {
   "versions": [
     {
+      "version": "3.0.9",
+      "emoji": "🛡",
+      "title": "底部断层三层兜底",
+      "tagline": "html + body + #wallpaper 三层都铺 gradient，再也不会露出黑底",
+      "highlights": [
+        {
+          "emoji": "🌌",
+          "title": "三层壁纸保险",
+          "what": "html、body、#wallpaper 各自都设上同款 gradient",
+          "how": "任何一层渲染成功就能铺满，iOS PWA 安全区不再露黑"
+        },
+        {
+          "emoji": "📐",
+          "title": "多重高度回退",
+          "what": "100% / 100vh / 100dvh / -webkit-fill-available 全部尝试",
+          "how": "iOS Safari 专属的 -webkit-fill-available 是兜底王炸"
+        }
+      ],
+      "footer": "如果还有断层 → 强制退出 PWA 重开（Service Worker 缓存可能顽固）"
+    },
+    {
       "version": "3.0.8",
       "emoji": "🤫",
       "title": "再也不弹密码栏了",

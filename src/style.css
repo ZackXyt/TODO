@@ -2,24 +2,34 @@
 
     /* Root background: 让 iOS PWA 整个屏幕（包括刘海/Home 指示器周围安全区）
        都染上壁纸色，不露出系统黑底。
-       注意：不能用 background-attachment: fixed，iOS PWA 下会被裁切。
-       html 用 100dvh 撑满动态视口，gradient 直接画在 html 上。 */
+       三层兜底：html + body + #wallpaper 都铺 gradient
+       任何一层渲染成功就能填满，不再有断层 */
     html {
       width: 100%;
       min-height: 100%;
+      min-height: 100vh;
       min-height: 100dvh;
+      min-height: -webkit-fill-available;     /* iOS Safari 专属，最可靠 */
       background: linear-gradient(135deg, #1a1a2e 0%, #16213e 40%, #0f3460 70%, #533483 100%);
       background-color: #1a1a2e;
+      background-repeat: no-repeat;
+      background-attachment: scroll;
     }
 
     body {
       width: 100vw;
+      min-height: 100vh;
+      min-height: 100dvh;
+      min-height: -webkit-fill-available;
       height: 100vh;
       height: 100dvh;
       overflow: hidden;
       font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'PingFang SC', sans-serif;
       position: relative;
-      background: transparent;
+      /* body 自己也铺壁纸 gradient，作为底层兜底 */
+      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 40%, #0f3460 70%, #533483 100%);
+      background-color: #1a1a2e;
+      background-repeat: no-repeat;
     }
 
     /* ====== WALLPAPER ====== */
