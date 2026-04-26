@@ -2312,15 +2312,18 @@
       #mascot-float .dino-emoji { font-size: 40px; }
 
       /* Watermark: bottom-left, smaller */
-      /* 水印手机端居中显示，避开 Home 指示器 */
+      /* 水印手机端居中显示，避开 Home 指示器
+         用 !important 确保不被任何后续/外层 .watermark 规则覆盖 */
       .watermark {
-        font-size: 10px;
-        bottom: calc(8px + env(safe-area-inset-bottom));
-        left: 50%;
-        right: auto;
-        transform: translateX(-50%);
-        text-align: center;
-        white-space: nowrap;
+        font-size: 10px !important;
+        bottom: calc(8px + env(safe-area-inset-bottom)) !important;
+        left: 50% !important;
+        right: auto !important;
+        transform: translateX(-50%) !important;
+        text-align: center !important;
+        white-space: nowrap !important;
+        max-width: calc(100vw - 32px);
+        overflow: visible;
       }
 
       /* Menu button: large tappable tab at middle-right */

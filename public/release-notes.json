@@ -1,6 +1,26 @@
 {
   "versions": [
     {
+      "version": "3.0.7",
+      "emoji": "📍",
+      "title": "水印居中真·生效",
+      "tagline": "v3.0.6 的 CSS 没赢过基础规则，这次用 !important 强制居中",
+      "highlights": [
+        {
+          "emoji": "🐛",
+          "title": "CSS 优先级 bug",
+          "what": "基础 .watermark 规则在文件里位置较后，没 !important 时会反向覆盖手机端规则",
+          "how": "手机端水印规则全部加 !important，强制顶到最前"
+        },
+        {
+          "emoji": "📍",
+          "title": "现在水印真的居中",
+          "what": "手机底部「Zzzack's first creativity!!!」横居中显示",
+          "how": "并避开 Home 指示器 + iPhone 屏幕圆角不再切到字"
+        }
+      ]
+    },
+    {
       "version": "3.0.6",
       "emoji": "🪞",
       "title": "壁纸彻底铺满 + 水印手机端居中",
