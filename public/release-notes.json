@@ -1,6 +1,33 @@
 {
   "versions": [
     {
+      "version": "3.0.14",
+      "emoji": "✨",
+      "title": "底部 Home 指示器区美化条",
+      "tagline": "iOS PWA 底部那条暗带不能删（系统强保留），但能用毛玻璃蒙版盖成 iOS 原生 tab bar 的样子",
+      "highlights": [
+        {
+          "emoji": "🪞",
+          "title": "底部毛玻璃条",
+          "what": "在 safe-area-inset-bottom 区贴一层 backdrop-filter 磨砂蒙版，视觉上像 iOS 原生 tab bar",
+          "how": "rgba(255,255,255,0.07) + blur(20px) saturate(160%)，顶部 12px 用 mask 渐隐，与上方 widget 平滑过渡"
+        },
+        {
+          "emoji": "🎨",
+          "title": "自动跟随用户配色",
+          "what": "你换什么壁纸颜色，蒙版条颜色就跟着变",
+          "how": "蒙版本身是半透明，底色完全由后面的 html gradient 决定——所以无需 JS 维护，纯 CSS 自动同步"
+        },
+        {
+          "emoji": "📲",
+          "title": "只在 PWA 模式生效",
+          "what": "Safari 里打开 env(safe-area-inset-bottom)=0，蒙版高度也是 0，自动隐身",
+          "how": "桌面浏览器和未安装的 Safari 里完全看不到这条，只有装成 PWA 才显示"
+        }
+      ],
+      "footer": "苹果不让删那块强保留区，咱就把它做漂亮 ✨"
+    },
+    {
       "version": "3.0.13",
       "emoji": "🧹",
       "title": "壁纸 / 安全区代码大回滚",
