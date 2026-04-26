@@ -2124,15 +2124,12 @@
 
     /* ====== TABLET PORTRAIT (single column) ====== */
     @media (min-width: 768px) and (max-width: 1023px) and (orientation: portrait) {
-      /* 同样用 body 层级吸收 safe-area，更可靠 */
+      /* 同手机端策略：body 不吃 safe-area，让 #desktop 铺满屏幕、内部 padding 自动避让 */
       body {
         overflow: hidden;
         height: 100vh;
         height: 100dvh;
-        padding-top:    env(safe-area-inset-top, 0px);
-        padding-bottom: env(safe-area-inset-bottom, 0px);
-        padding-left:   env(safe-area-inset-left, 0px);
-        padding-right:  env(safe-area-inset-right, 0px);
+        padding: 0;
         box-sizing: border-box;
       }
       #desktop {
@@ -2146,7 +2143,10 @@
         overscroll-behavior: contain;
         touch-action: pan-y;
         gap: 14px;
-        padding: 18px;
+        padding-top:    calc(18px + env(safe-area-inset-top, 0px));
+        padding-bottom: calc(28px + env(safe-area-inset-bottom, 0px));
+        padding-left:   calc(18px + env(safe-area-inset-left, 0px));
+        padding-right:  calc(18px + env(safe-area-inset-right, 0px));
       }
       .time-widget, .weather-row, .todo-area, .wallpaper-area {
         width: 100% !important;
@@ -2240,37 +2240,39 @@
 
     /* ====== RESPONSIVE: MOBILE (< 768px) ====== */
     @media (max-width: 767px) {
-      /* Body 层级吸收 safe-area，让所有子元素自动避开刘海 / 灵动岛 / Home 指示器
-         （比在 #desktop 上设置更可靠——iOS PWA 某些情况会把 #desktop 的 env() 算成 0）*/
+      /* body 不再吃 safe-area —— 让 #desktop 自己当滚动+避让容器，UI 才能在视觉上
+         真·铺满全屏（含安全区），而不是上下各留一截空带 */
       body {
         overflow: hidden;
         height: 100vh;
         height: 100dvh;                        /* 动态视口高度，处理 Safari URL 栏伸缩 */
-        padding-top:    env(safe-area-inset-top, 0px);
-        padding-bottom: env(safe-area-inset-bottom, 0px);
-        padding-left:   env(safe-area-inset-left, 0px);
-        padding-right:  env(safe-area-inset-right, 0px);
+        padding: 0;
         box-sizing: border-box;
       }
-      /* 顶部托底：env() 万一被某些容器吞掉，至少保证 28px 不重叠（够避开早期刘海机型） */
-      @supports not (padding: env(safe-area-inset-top)) {
-        body { padding-top: 28px; }
-      }
 
-      /* Reset desktop grid → single scrollable column */
+      /* #desktop 直接顶到 body 边缘（含刘海 / Home 指示器 / 圆角区），padding 里再吸收
+         safe-area，让滚动内容自动避让。这样 gradient 和 UI 视觉上是连续一整片，
+         不会出现「内容到这里就断、底下是空白条」的断层。 */
       #desktop {
         display: flex;
         flex-direction: column;
         width: 100%;
-        height: 100%;                          /* 填满 body 的内容区（body 已抠掉 safe-area）*/
+        height: 100%;                          /* 填满整个 body（即整个屏幕）*/
         overflow-y: auto;
         overflow-x: hidden;
         -webkit-overflow-scrolling: touch;
         overscroll-behavior: contain;          /* 防止滚到尽头时把外层网页一起拖动 */
         touch-action: pan-y;                   /* 强制只接受垂直滑动手势 */
-        padding: 12px;                         /* safe-area 已在 body 处理，这里就纯 12 */
+        padding-top:    calc(12px + env(safe-area-inset-top, 0px));
+        padding-bottom: calc(24px + env(safe-area-inset-bottom, 0px));
+        padding-left:   calc(12px + env(safe-area-inset-left, 0px));
+        padding-right:  calc(12px + env(safe-area-inset-right, 0px));
         gap: 10px;
-        scroll-padding-bottom: 80px;
+        scroll-padding-bottom: 24px;
+      }
+      /* 老浏览器兜底：不支持 env() 时给个固定 28px，避开早期刘海机型 */
+      @supports not (padding: env(safe-area-inset-top)) {
+        #desktop { padding-top: 28px; padding-bottom: 28px; }
       }
       /* 各区块都不要内嵌滚动，避免和外层 #desktop 抢手势 */
       .time-widget, .weather-row, .notepad-widget, .todo-area {
@@ -2283,7 +2285,7 @@
       .time-widget   { order: 1; width: 100%; }
       .weather-row   { order: 2; width: 100%; flex-direction: column; }
       .todo-area     { order: 3; width: 100%; align-self: auto; position: relative; }
-      .wallpaper-area { order: 4; width: 100%; height: auto; align-self: auto; padding-bottom: 24px; }
+      .wallpaper-area { order: 4; width: 100%; height: auto; align-self: auto; padding-bottom: 0; }
 
       /* Time: compact */
       .time-display { font-size: clamp(52px, 17vw, 90px); letter-spacing: -2px; }
