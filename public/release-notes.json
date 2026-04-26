@@ -1,6 +1,27 @@
 {
   "versions": [
     {
+      "version": "3.0.6",
+      "emoji": "🪞",
+      "title": "壁纸彻底铺满 + 水印手机端居中",
+      "tagline": "底部断层消失，水印不再藏在角落",
+      "highlights": [
+        {
+          "emoji": "🌌",
+          "title": "壁纸全屏无断层",
+          "what": "底部 Home 指示器周围不再露出深色断层",
+          "how": "html + #wallpaper 双层保险，且把 background-attachment: fixed 移除（iOS PWA 兼容）"
+        },
+        {
+          "emoji": "📍",
+          "title": "水印手机端居中底部",
+          "what": "手机上「Zzzack's first creativity!!!」水印移到屏幕底部居中",
+          "how": "并自动避开 Home 指示器，看起来更平衡"
+        }
+      ],
+      "footer": "桌面端水印仍在左下角，不变"
+    },
+    {
       "version": "3.0.5",
       "emoji": "🌌",
       "title": "壁纸真·铺满全屏",

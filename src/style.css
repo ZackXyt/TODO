@@ -1,17 +1,21 @@
     * { margin: 0; padding: 0; box-sizing: border-box; }
 
-    /* Root background: 让 iOS PWA 安全区（刘海/Home 指示器周围）也染上壁纸色，
-       而不是露出系统的黑色。#wallpaper 在内部继续画 gradient，但底色已经对了。
-       gradient 同步设到 html 防止任何容器边界把 #wallpaper 限制在 body 区域内。 */
+    /* Root background: 让 iOS PWA 整个屏幕（包括刘海/Home 指示器周围安全区）
+       都染上壁纸色，不露出系统黑底。
+       注意：不能用 background-attachment: fixed，iOS PWA 下会被裁切。
+       html 用 100dvh 撑满动态视口，gradient 直接画在 html 上。 */
     html {
+      width: 100%;
+      min-height: 100%;
+      min-height: 100dvh;
       background: linear-gradient(135deg, #1a1a2e 0%, #16213e 40%, #0f3460 70%, #533483 100%);
       background-color: #1a1a2e;
-      background-attachment: fixed;
-      min-height: 100%;
     }
 
     body {
-      width: 100vw; height: 100vh;
+      width: 100vw;
+      height: 100vh;
+      height: 100dvh;
       overflow: hidden;
       font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'PingFang SC', sans-serif;
       position: relative;
@@ -20,7 +24,11 @@
 
     /* ====== WALLPAPER ====== */
     #wallpaper {
-      position: fixed; inset: 0;
+      position: fixed;
+      /* 用负 inset 强制突破 body padding 边界，铺满整个物理视口 */
+      top: 0; left: 0; right: 0; bottom: 0;
+      width: 100vw; height: 100vh; height: 100dvh;
+      margin: 0; padding: 0;
       background: linear-gradient(135deg, #1a1a2e 0%, #16213e 40%, #0f3460 70%, #533483 100%);
       background-size: cover;
       background-position: center;
@@ -2304,7 +2312,16 @@
       #mascot-float .dino-emoji { font-size: 40px; }
 
       /* Watermark: bottom-left, smaller */
-      .watermark { font-size: 10px; bottom: 10px; left: 12px; }
+      /* 水印手机端居中显示，避开 Home 指示器 */
+      .watermark {
+        font-size: 10px;
+        bottom: calc(8px + env(safe-area-inset-bottom));
+        left: 50%;
+        right: auto;
+        transform: translateX(-50%);
+        text-align: center;
+        white-space: nowrap;
+      }
 
       /* Menu button: large tappable tab at middle-right */
       #menu-btn {
