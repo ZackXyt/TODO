@@ -2096,13 +2096,20 @@
         flex-direction: column !important;
         height: 100vh !important;
         overflow-y: auto;
+        overflow-x: hidden;
+        -webkit-overflow-scrolling: touch;
+        overscroll-behavior: contain;
+        touch-action: pan-y;
         gap: 14px; padding: 18px;
       }
       .time-widget, .weather-row, .todo-area, .wallpaper-area {
         width: 100% !important;
         grid-column: unset !important;
+        flex-shrink: 0;
       }
       .todo-area { min-height: 60vh; }
+      /* iPad 上 task-list 也要原生滚动（嵌套滚动需要单独允许） */
+      #task-list { -webkit-overflow-scrolling: touch; }
     }
 
     /* =====================================================
@@ -2130,17 +2137,46 @@
 
     /* Module visibility — set via data attrs to allow CSS-only toggling */
     html[data-show-weather="off"]   .weather-widget,
-    html[data-show-quotes="off"]    .dino-widget .stadium-quote,
     html[data-show-stadium="off"]   .dino-widget,
     html[data-show-notepad="off"]   .notepad-widget,
     html[data-show-pomodoro="off"]  .stretch-timer-card,
     html[data-show-mascot="off"]    #mascot-container { display: none !important; }
 
-    /* When stadium is hidden but quotes still on (rare), just collapse the wrap */
-    html[data-show-stadium="off"] .weather-row .dino-widget { display: none !important; }
+    /* Hide the wallpaper-area (notepad container) when notepad is off, so
+       grid doesn't reserve a 1fr empty row at the bottom-left */
+    html[data-show-notepad="off"]   .wallpaper-area { display: none !important; }
 
     /* When BOTH stadium+weather hidden, hide entire weather row to reclaim space */
     html[data-show-weather="off"][data-show-stadium="off"] .weather-row { display: none !important; }
+
+    /* When ONLY weather is shown (stadium hidden), make weather expand to full width */
+    html[data-show-stadium="off"][data-show-weather="on"] .weather-widget {
+      width: 100%; flex: 1 1 auto;
+    }
+    html[data-show-stadium="off"][data-show-weather="on"] .weather-card {
+      width: 100%;
+    }
+    /* When ONLY stadium is shown (weather hidden), it already takes flex:1 — extra polish */
+    html[data-show-weather="off"][data-show-stadium="on"] .dino-widget {
+      width: 100%; flex: 1 1 auto;
+    }
+
+    /* If notepad is off, redistribute grid so right column doesn't have giant
+       empty bottom space. Switch row 3 from 1fr to auto (collapses to 0 since
+       wallpaper-area is display:none). Tasks span 1/-1 → reach top of row 1
+       and grow with content. */
+    html[data-show-notepad="off"] #desktop {
+      grid-template-rows: auto auto 0;
+    }
+    /* And let the todo widget itself grow to fill viewport */
+    html[data-show-notepad="off"] .todo-area {
+      min-height: calc(100vh - 48px);
+    }
+
+    /* When EVERYTHING in left column is hidden, let tasks dominate */
+    html[data-show-weather="off"][data-show-stadium="off"][data-show-notepad="off"] #desktop {
+      grid-template-columns: minmax(280px, 1fr) var(--todo-col-width, 340px);
+    }
 
     /* ====== RESPONSIVE: TABLET (768–1199px) ====== */
     @media (min-width: 768px) and (max-width: 1199px) {
@@ -2168,9 +2204,19 @@
         flex-direction: column;
         height: 100vh;
         overflow-y: auto;
+        overflow-x: hidden;
         -webkit-overflow-scrolling: touch;
+        overscroll-behavior: contain;          /* 防止滚到尽头时把外层网页一起拖动 */
+        touch-action: pan-y;                   /* 强制只接受垂直滑动手势 */
         padding: 12px;
         gap: 10px;
+        scroll-padding-bottom: 80px;
+      }
+      /* 各区块都不要内嵌滚动，避免和外层 #desktop 抢手势 */
+      .time-widget, .weather-row, .notepad-widget, .todo-area {
+        flex-shrink: 0;
+        max-height: none;
+        overflow: visible;
       }
 
       /* Visual order: time → weather → todo → notepad */

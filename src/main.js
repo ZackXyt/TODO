@@ -2223,10 +2223,11 @@
     // 见文件顶部的 import 语句
 
     // §LAYOUT ─ 自适应识别 + 自定义布局
-    const LAYOUT_MODULES = ['weather','quotes','stadium','notepad','pomodoro','mascot'];
+    // 注意：v3.0.2 起「每日名言」与「进度环」合并（名言就在进度环里），共用 stadium 开关
+    const LAYOUT_MODULES = ['weather','stadium','notepad','pomodoro','mascot'];
     const DEFAULT_LAYOUT = {
       density: 'comfortable',
-      visibility: { weather:true, quotes:true, stadium:true, notepad:true, pomodoro:true, mascot:true },
+      visibility: { weather:true, stadium:true, notepad:true, pomodoro:true, mascot:true },
     };
 
     function loadLayout() {
@@ -2234,9 +2235,16 @@
         const s = localStorage.getItem('todo_layout');
         if (s) {
           const obj = JSON.parse(s);
+          const vis = { ...DEFAULT_LAYOUT.visibility, ...(obj.visibility || {}) };
+          // Migration: v3.0.2 merged 'quotes' into 'stadium'.
+          // If old user had quotes:false but stadium:true, hide stadium too.
+          if (obj.visibility && obj.visibility.quotes === false && vis.stadium) {
+            vis.stadium = false;
+          }
+          delete vis.quotes; // drop the orphaned key
           return {
             density: obj.density || DEFAULT_LAYOUT.density,
-            visibility: { ...DEFAULT_LAYOUT.visibility, ...(obj.visibility || {}) },
+            visibility: vis,
           };
         }
       } catch(e) {}
@@ -2277,10 +2285,10 @@
     }
 
     const LAYOUT_PRESETS = {
-      default:  { density: 'comfortable', visibility: { weather:true,  quotes:true,  stadium:true,  notepad:true,  pomodoro:true,  mascot:true  }},
-      focus:    { density: 'compact',     visibility: { weather:false, quotes:false, stadium:false, notepad:false, pomodoro:true,  mascot:false }},
-      minimal:  { density: 'comfortable', visibility: { weather:false, quotes:false, stadium:false, notepad:false, pomodoro:false, mascot:false }},
-      full:     { density: 'spacious',    visibility: { weather:true,  quotes:true,  stadium:true,  notepad:true,  pomodoro:true,  mascot:true  }},
+      default:  { density: 'comfortable', visibility: { weather:true,  stadium:true,  notepad:true,  pomodoro:true,  mascot:true  }},
+      focus:    { density: 'compact',     visibility: { weather:false, stadium:false, notepad:false, pomodoro:true,  mascot:false }},
+      minimal:  { density: 'comfortable', visibility: { weather:false, stadium:false, notepad:false, pomodoro:false, mascot:false }},
+      full:     { density: 'spacious',    visibility: { weather:true,  stadium:true,  notepad:true,  pomodoro:true,  mascot:true  }},
     };
     function applyLayoutPreset(name) {
       const p = LAYOUT_PRESETS[name];
