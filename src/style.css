@@ -1105,6 +1105,110 @@
       flex-shrink: 0; cursor: default;
     }
 
+    /* ====== LAYOUT CUSTOMIZATION PANEL ====== */
+    .layout-row {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 8px 14px; gap: 10px;
+    }
+    .layout-label {
+      font-size: 12px; color: rgba(255,255,255,0.65); font-weight: 600;
+    }
+    .layout-segmented {
+      display: flex; gap: 0; background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 8px; padding: 2px;
+    }
+    .seg-btn {
+      flex: 1; padding: 5px 12px; font-size: 11px; font-weight: 600;
+      background: none; border: none; color: rgba(255,255,255,0.55);
+      cursor: pointer; border-radius: 6px; transition: all 0.18s;
+      font-family: inherit;
+    }
+    .seg-btn.active {
+      background: rgba(120,200,255,0.25);
+      color: white;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+    }
+    .seg-btn:hover:not(.active) { color: rgba(255,255,255,0.85); }
+
+    .layout-info-row {
+      padding: 4px 14px 8px;
+      font-size: 10.5px;
+    }
+    .layout-info {
+      color: rgba(180,220,255,0.7); font-family: 'SF Mono', Menlo, monospace;
+      font-size: 10.5px; background: rgba(120,200,255,0.08);
+      border: 1px solid rgba(120,200,255,0.15);
+      border-radius: 5px; padding: 1px 7px;
+    }
+
+    .layout-modules {
+      padding: 8px 14px 6px;
+      border-top: 1px solid rgba(255,255,255,0.05);
+      margin-top: 4px;
+    }
+    .layout-module-title {
+      font-size: 10.5px; color: rgba(255,255,255,0.4);
+      text-transform: uppercase; letter-spacing: 0.6px;
+      margin-bottom: 6px; font-weight: 600;
+    }
+
+    /* Toggle switches */
+    .layout-toggle {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 6px 0; font-size: 12px; color: rgba(255,255,255,0.85);
+      cursor: pointer;
+      gap: 10px;
+    }
+    .layout-toggle:hover { color: white; }
+    .lt-icon { display: inline-block; width: 18px; margin-right: 2px; }
+    .layout-toggle input[type="checkbox"] {
+      position: absolute; opacity: 0; width: 0; height: 0;
+    }
+    .lt-track {
+      position: relative; width: 32px; height: 18px;
+      background: rgba(255,255,255,0.13);
+      border-radius: 12px; transition: background 0.2s;
+      flex-shrink: 0;
+    }
+    .lt-track::after {
+      content: ''; position: absolute;
+      top: 2px; left: 2px;
+      width: 14px; height: 14px;
+      background: white; border-radius: 50%;
+      transition: transform 0.22s, background 0.2s;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+    }
+    .layout-toggle input:checked ~ .lt-track {
+      background: rgba(120,200,255,0.5);
+    }
+    .layout-toggle input:checked ~ .lt-track::after {
+      transform: translateX(14px);
+    }
+
+    /* Layout presets */
+    .layout-presets-wrap {
+      padding: 8px 14px 14px;
+      border-top: 1px solid rgba(255,255,255,0.05);
+      margin-top: 6px;
+    }
+    .layout-presets {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 6px;
+    }
+    .preset-btn {
+      background: rgba(120,200,255,0.1);
+      border: 1px solid rgba(120,200,255,0.22);
+      color: rgba(200,225,255,0.88);
+      border-radius: 8px; padding: 7px 6px;
+      font-size: 11px; font-weight: 600; cursor: pointer;
+      transition: all 0.18s; font-family: inherit;
+    }
+    .preset-btn:hover {
+      background: rgba(120,200,255,0.22);
+      color: white;
+      transform: translateY(-1px);
+    }
+
     /* ====== APP VERSION FOOTER ====== */
     .app-version-footer {
       padding: 14px 16px 16px;
@@ -1735,6 +1839,108 @@
     .focus-mode #desktop { grid-template-columns: 1fr; }
     .focus-mode .todo-area { grid-column: 1; }
     .focus-mode #todo-resize-handle { display: none; }
+
+    /* =====================================================
+       RESPONSIVE: SMART BREAKPOINTS (v2.2)
+       ───────────────────────────────────────────────
+       <380   小屏手机 (iPhone SE)
+       380-767 标准手机
+       768-1023 平板（含小型笔电）
+       1024-1439 笔记本
+       1440-1999 台式
+       ≥2000  超宽屏
+       ===================================================== */
+
+    /* Disable hover effects on touch devices to avoid sticky hover */
+    @media (hover: none) {
+      .task-item:hover, .menu-item:hover, .mascot-pet:hover { transform: none; }
+    }
+
+    /* ====== ULTRA-WIDE (≥2000px) ====== */
+    @media (min-width: 2000px) {
+      #desktop {
+        max-width: 1800px;
+        margin: 0 auto;
+        --todo-col-width: 480px;
+      }
+      .time-display { font-size: clamp(96px, 7vw, 140px); }
+    }
+
+    /* ====== DESKTOP (1440-1999px) — same as default ====== */
+
+    /* ====== LAPTOP (1024-1439px) ====== */
+    @media (min-width: 1024px) and (max-width: 1439px) {
+      #desktop {
+        --todo-col-width: 320px;
+        gap: 14px;
+      }
+    }
+
+    /* ====== SMALL PHONE (<380px, iPhone SE etc.) ====== */
+    @media (max-width: 379px) {
+      .time-display { font-size: clamp(44px, 14vw, 60px) !important; letter-spacing: -1px; }
+      .time-seconds { font-size: clamp(20px, 7vw, 36px) !important; }
+      .time-card { padding: 12px 14px; }
+      .dino-emoji { font-size: clamp(36px, 11vw, 50px); }
+      .task-name { font-size: 12px; }
+      .task-ddl, .task-quip { font-size: 10px; }
+      #desktop { padding: 8px; gap: 8px; }
+      .quick-add-input { font-size: 12px; }
+      .form-input { font-size: 11.5px; }
+    }
+
+    /* ====== TABLET PORTRAIT (single column) ====== */
+    @media (min-width: 768px) and (max-width: 1023px) and (orientation: portrait) {
+      #desktop {
+        display: flex !important;
+        flex-direction: column !important;
+        height: 100vh !important;
+        overflow-y: auto;
+        gap: 14px; padding: 18px;
+      }
+      .time-widget, .weather-row, .todo-area, .wallpaper-area {
+        width: 100% !important;
+        grid-column: unset !important;
+      }
+      .todo-area { min-height: 60vh; }
+    }
+
+    /* =====================================================
+       LAYOUT CUSTOMIZATION (v2.2)
+       Driven by data-* attrs on <html> set from localStorage
+       ===================================================== */
+
+    /* Density */
+    html[data-density="compact"]    #desktop { gap: 8px;  padding: 14px; --base-pad: 0.85; }
+    html[data-density="comfortable"] #desktop { gap: 16px; padding: 24px; --base-pad: 1; }
+    html[data-density="spacious"]   #desktop { gap: 22px; padding: 32px; --base-pad: 1.18; }
+
+    html[data-density="compact"] .widget,
+    html[data-density="compact"] .time-card,
+    html[data-density="compact"] .weather-card,
+    html[data-density="compact"] .notepad-widget {
+      padding: 12px 14px;
+    }
+    html[data-density="spacious"] .widget,
+    html[data-density="spacious"] .time-card,
+    html[data-density="spacious"] .weather-card,
+    html[data-density="spacious"] .notepad-widget {
+      padding: 22px 26px;
+    }
+
+    /* Module visibility — set via data attrs to allow CSS-only toggling */
+    html[data-show-weather="off"]   .weather-widget,
+    html[data-show-quotes="off"]    .dino-widget .stadium-quote,
+    html[data-show-stadium="off"]   .dino-widget,
+    html[data-show-notepad="off"]   .notepad-widget,
+    html[data-show-pomodoro="off"]  .stretch-timer-card,
+    html[data-show-mascot="off"]    #mascot-container { display: none !important; }
+
+    /* When stadium is hidden but quotes still on (rare), just collapse the wrap */
+    html[data-show-stadium="off"] .weather-row .dino-widget { display: none !important; }
+
+    /* When BOTH stadium+weather hidden, hide entire weather row to reclaim space */
+    html[data-show-weather="off"][data-show-stadium="off"] .weather-row { display: none !important; }
 
     /* ====== RESPONSIVE: TABLET (768–1199px) ====== */
     @media (min-width: 768px) and (max-width: 1199px) {

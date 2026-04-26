@@ -2162,6 +2162,98 @@
     // §PURE-FOCUS ─ 纯享模式（已抽取到 ./pure-focus.js）
     // 见文件顶部的 import 语句
 
+    // §LAYOUT ─ 自适应识别 + 自定义布局
+    const LAYOUT_MODULES = ['weather','quotes','stadium','notepad','pomodoro','mascot'];
+    const DEFAULT_LAYOUT = {
+      density: 'comfortable',
+      visibility: { weather:true, quotes:true, stadium:true, notepad:true, pomodoro:true, mascot:true },
+    };
+
+    function loadLayout() {
+      try {
+        const s = localStorage.getItem('todo_layout');
+        if (s) {
+          const obj = JSON.parse(s);
+          return {
+            density: obj.density || DEFAULT_LAYOUT.density,
+            visibility: { ...DEFAULT_LAYOUT.visibility, ...(obj.visibility || {}) },
+          };
+        }
+      } catch(e) {}
+      return JSON.parse(JSON.stringify(DEFAULT_LAYOUT));
+    }
+    function saveLayout(l) { localStorage.setItem('todo_layout', JSON.stringify(l)); }
+    let _layout = loadLayout();
+
+    function applyLayoutToDOM() {
+      const html = document.documentElement;
+      html.setAttribute('data-density', _layout.density);
+      LAYOUT_MODULES.forEach(m => {
+        html.setAttribute('data-show-' + m, _layout.visibility[m] ? 'on' : 'off');
+        const cb = document.getElementById('lt-' + m);
+        if (cb) cb.checked = !!_layout.visibility[m];
+      });
+      // Update density segmented buttons
+      document.querySelectorAll('.seg-btn[data-density]').forEach(b => {
+        b.classList.toggle('active', b.dataset.density === _layout.density);
+      });
+    }
+
+    function setDensity(d) {
+      if (!['compact','comfortable','spacious'].includes(d)) return;
+      _layout.density = d;
+      saveLayout(_layout); applyLayoutToDOM();
+      showToast(`📐 密度已改为：${d === 'compact' ? '紧凑' : d === 'spacious' ? '宽松' : '标准'}`);
+    }
+
+    function setModuleVisible(mod, on) {
+      if (!LAYOUT_MODULES.includes(mod)) return;
+      _layout.visibility[mod] = !!on;
+      saveLayout(_layout); applyLayoutToDOM();
+      // Re-trigger stadium layout if needed
+      if (mod === 'stadium' && on && typeof updateStadiumLayout === 'function') {
+        setTimeout(updateStadiumLayout, 100);
+      }
+    }
+
+    const LAYOUT_PRESETS = {
+      default:  { density: 'comfortable', visibility: { weather:true,  quotes:true,  stadium:true,  notepad:true,  pomodoro:true,  mascot:true  }},
+      focus:    { density: 'compact',     visibility: { weather:false, quotes:false, stadium:false, notepad:false, pomodoro:true,  mascot:false }},
+      minimal:  { density: 'comfortable', visibility: { weather:false, quotes:false, stadium:false, notepad:false, pomodoro:false, mascot:false }},
+      full:     { density: 'spacious',    visibility: { weather:true,  quotes:true,  stadium:true,  notepad:true,  pomodoro:true,  mascot:true  }},
+    };
+    function applyLayoutPreset(name) {
+      const p = LAYOUT_PRESETS[name];
+      if (!p) return;
+      _layout = JSON.parse(JSON.stringify(p));
+      saveLayout(_layout); applyLayoutToDOM();
+      const labels = { default:'默认', focus:'任务专注', minimal:'极简', full:'全模块' };
+      showToast(`✨ 已切换到「${labels[name]}」布局`);
+      if (typeof updateStadiumLayout === 'function') setTimeout(updateStadiumLayout, 100);
+    }
+
+    // 屏幕信息显示（菜单里）
+    function updateScreenInfo() {
+      const el = document.getElementById('layout-screen-info');
+      if (!el) return;
+      const w = window.innerWidth, h = window.innerHeight;
+      const tier =
+        w >= 2000 ? '超宽屏' :
+        w >= 1440 ? '台式' :
+        w >= 1024 ? '笔电' :
+        w >= 768  ? '平板' :
+        w >= 380  ? '手机' : '小屏';
+      const orient = w > h ? '横屏' : '竖屏';
+      const isTouch = window.matchMedia('(hover: none)').matches;
+      const dpr = window.devicePixelRatio || 1;
+      el.textContent = `${tier} ${w}×${h} · ${orient}${isTouch ? ' · 触摸' : ''}${dpr > 1 ? ` · ${dpr}x` : ''}`;
+    }
+
+    // Apply on load + keep info synced on resize
+    applyLayoutToDOM();
+    updateScreenInfo();
+    window.addEventListener('resize', () => { updateScreenInfo(); });
+
     // §QUICK-ADD ─ 快速添加 + 自然语言解析
     // 解析示例:
     //   "明天下午3点开会 P1"      → 标题: 开会, 截止: 明天15:00, P1
@@ -2401,4 +2493,6 @@
       cancelRemoveMascot, confirmRemoveMascot, removeMascot,
       // Quick add (with NLP) + celebration
       quickAddTask, toggleQuickAddHint, parseQuickAdd,
+      // Layout customization
+      setDensity, setModuleVisible, applyLayoutPreset,
     });
