@@ -1,49 +1,49 @@
-    // ===== PWA: REGISTER SERVICE WORKER + UPDATE PROMPT =====
-    import('virtual:pwa-register').then(({ registerSW }) => {
-      const updateSW = registerSW({
-        onNeedRefresh() {
-          // New version available — show update banner
-          showUpdateBanner(() => updateSW(true));
-        },
-        onOfflineReady() {
-          showToast && showToast('✅ 已离线可用');
-        },
-      });
-    }).catch(() => { /* dev mode or SW unavailable */ });
+    // ╔═══════════════════════════════════════════════════════════════╗
+    // ║  心流 HeartFlow · main.js                                      ║
+    // ║  ───────────────────────────────────────────────────────────  ║
+    // ║                                                               ║
+    // ║  🗂  目录（按 Cmd+F 搜索这些标签即可跳转）                     ║
+    // ║                                                               ║
+    // ║   §CLOCK         时钟 + 日期                                   ║
+    // ║   §WEATHER       天气组件 + 城市搜索                           ║
+    // ║   §WALLPAPER     壁纸取色器                                    ║
+    // ║   §TASKS         任务核心：CRUD/列表/步骤/排序                 ║
+    // ║   §LISTS         多列表/分类                                   ║
+    // ║   §STEPS         子任务（步骤）                                ║
+    // ║   §DRAG          拖拽排序                                      ║
+    // ║   §SHORTCUTS     键盘快捷键                                    ║
+    // ║   §SEARCH        任务搜索                                      ║
+    // ║   §EDIT          任务编辑（点击名称弹窗）                      ║
+    // ║   §DATA-IO       JSON 导出/导入                                ║
+    // ║   §DELETE        删除确认弹窗                                  ║
+    // ║   §REMINDERS     定时提醒通知                                  ║
+    // ║   §TOAST         右下角通知条                                  ║
+    // ║   §POMODORO      番茄计时器 + 自定义时长                       ║
+    // ║   §NOTEPAD       随想录                                        ║
+    // ║   §RESIZE        Todo 面板宽度拖拽                             ║
+    // ║   §INIT          首屏渲染 + 间隔检查                           ║
+    // ║   §COMPLETED     已完成任务面板 + 恢复                         ║
+    // ║   §MENU          扩展坞菜单                                    ║
+    // ║   §FOCUS         专注模式                                      ║
+    // ║   §LANG          中英文切换                                    ║
+    // ║   §DAY-PROGRESS  每日进度（DayKey + 重置时间）                 ║
+    // ║   §MASCOT        陪伴小宠 + 拖动                               ║
+    // ║   §STADIUM       任务进度环 + 心电图                           ║
+    // ║   §CALENDAR      日历视图弹窗                                  ║
+    // ║   §REPORT        工作报告弹窗                                  ║
+    // ║   §PURE-FOCUS    纯享模式（全屏粒子）                          ║
+    // ║   §EXPOSE        把所有 onclick 函数挂到 window                ║
+    // ║                                                               ║
+    // ╚═══════════════════════════════════════════════════════════════╝
 
-    function showUpdateBanner(onConfirm) {
-      // Avoid duplicate banners
-      if (document.getElementById('pwa-update-banner')) return;
-      const bar = document.createElement('div');
-      bar.id = 'pwa-update-banner';
-      bar.style.cssText = `
-        position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%);
-        background: rgba(28,28,48,0.96); backdrop-filter: blur(16px);
-        color: white; padding: 12px 18px; border-radius: 14px;
-        border: 1.5px solid rgba(255,255,255,0.18);
-        box-shadow: 0 8px 32px rgba(0,0,0,0.45);
-        z-index: 99999; display: flex; align-items: center; gap: 12px;
-        font-size: 13px; font-family: inherit;
-        animation: pwaBannerIn 0.35s ease;
-      `;
-      bar.innerHTML = `
-        <span>🎉 心流有新版本</span>
-        <button id="pwa-update-yes" style="background:rgba(120,200,255,0.25);border:1px solid rgba(120,200,255,0.5);color:white;padding:5px 12px;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;">立即更新</button>
-        <button id="pwa-update-no"  style="background:none;border:none;color:rgba(255,255,255,0.5);font-size:12px;cursor:pointer;font-family:inherit;padding:4px 6px;">稍后</button>
-      `;
-      document.body.appendChild(bar);
-      // Inject keyframe once
-      if (!document.getElementById('pwa-banner-keyframes')) {
-        const st = document.createElement('style');
-        st.id = 'pwa-banner-keyframes';
-        st.textContent = `@keyframes pwaBannerIn { from { opacity:0; transform:translate(-50%, 16px); } to { opacity:1; transform:translate(-50%, 0); } }`;
-        document.head.appendChild(st);
-      }
-      document.getElementById('pwa-update-yes').onclick = () => { bar.remove(); onConfirm(); };
-      document.getElementById('pwa-update-no').onclick  = () => { bar.remove(); };
-    }
+    // §PWA  Service Worker 注册 + 自动更新提示
+    import { initPWA } from './pwa.js';
+    // §PURE-FOCUS  纯享模式（全屏粒子动画，独立模块）
+    import { enterPureFocus, exitPureFocus } from './pure-focus.js';
 
-    // ===== CLOCK =====
+    initPWA();
+
+    // §CLOCK ─ 时钟 + 日期
     const WEEKDAYS = ["周日","周一","周二","周三","周四","周五","周六"];
     const MONTHS   = ["1月","2月","3月","4月","5月","6月","7月","8月","9月","10月","11月","12月"];
     let currentTimezone = null;
@@ -79,7 +79,7 @@
     updateClock();
     setInterval(updateClock, 1000);
 
-    // ===== WEATHER =====
+    // §WEATHER ─ 天气组件
     let weatherRefreshTimer = null;
 
     function getSkyDesc(weatherCode, isDay, now, sunriseStr, sunsetStr) {
@@ -229,7 +229,7 @@
 
     initWeather();
 
-    // ===== WALLPAPER =====
+    // §WALLPAPER ─ 壁纸取色器
     function hexToHSL(hex) {
       let r = parseInt(hex.slice(1,3),16)/255;
       let g = parseInt(hex.slice(3,5),16)/255;
@@ -279,7 +279,7 @@
       document.getElementById("color-dot").style.background = "#533483";
     }
 
-    // ===== TASKS =====
+    // §TASKS ─ 任务核心状态
     let sortMode     = localStorage.getItem('todo_sort_mode')   || 'urgency';
     let viewMode     = localStorage.getItem('todo_view_mode')   || 'all';
     let activeListId = localStorage.getItem('todo_active_list') || 'all';
@@ -289,7 +289,7 @@
     let searchQuery = '';
     let selectedRepeat = 'none';
 
-    // ===== LISTS =====
+    // §LISTS ─ 多列表 / 分类
     function getDefaultLists() {
       return [
         { id: 'inbox', name: '收集箱', icon: '📥' },
@@ -365,7 +365,7 @@
       if (activeListId !== 'all' && lists.find(l => l.id === activeListId)) sel.value = activeListId;
     }
 
-    // ===== STEPS (SUB-TASKS) =====
+    // §STEPS ─ 子任务（步骤）
     function toggleTaskExpand(id) {
       expandedTasks[id] = !expandedTasks[id];
       const panel = document.getElementById('steps-' + id);
@@ -674,7 +674,7 @@
       saveTasks();
     }
 
-    // ===== DRAG & DROP REORDER =====
+    // §DRAG ─ 拖拽排序
     let _draggingTaskId = null;
 
     function onTaskDragStart(e, id) {
@@ -732,7 +732,7 @@
       });
     }
 
-    // ===== KEYBOARD SHORTCUTS =====
+    // §SHORTCUTS ─ 键盘快捷键 + 帮助弹窗
     document.addEventListener('keydown', function(e) {
       // Skip if user is typing in input/textarea/contenteditable
       const tag = (e.target && e.target.tagName) || '';
@@ -847,7 +847,7 @@
       saveTasks();
     }
 
-    // ===== SEARCH =====
+    // §SEARCH ─ 任务搜索
     function onTaskSearch(val) {
       searchQuery = val.trim().toLowerCase();
       const clr = document.getElementById('search-clear');
@@ -919,7 +919,7 @@
       showToast("✅ 任务已添加，加油！");
     }
 
-    // ===== EDIT TASK =====
+    // §EDIT ─ 任务编辑弹窗
     let _editingTaskId = null;
     let _editPriority  = 3;
     let _editRepeat    = 'none';
@@ -997,7 +997,7 @@
       showToast('✅ 已保存修改');
     }
 
-    // ===== DATA EXPORT / IMPORT =====
+    // §DATA-IO ─ JSON 导出 / 导入
     function exportData() {
       const payload = {
         version: 2,
@@ -1107,7 +1107,7 @@
       }, 270);
     }
 
-    // ===== DELETE TASK =====
+    // §DELETE ─ 删除确认弹窗
     var _pendingDeleteId = null;
 
     function promptDeleteTask(id) {
@@ -1150,7 +1150,7 @@
       showToast('🗑️ 任务已永久删除');
     }
 
-    // ===== REMINDER NOTIFICATIONS =====
+    // §REMINDERS ─ 定时提醒通知
     function checkReminders() {
       const now = Date.now();
       let changed = false;
@@ -1170,7 +1170,7 @@
     setInterval(checkReminders, 30000);
     setTimeout(checkReminders, 1500);
 
-    // ===== URGENCY NOTIFICATIONS (10-min interval) =====
+    // §URGENCY ─ 紧急任务提醒（10 分钟间隔）
     function checkNotify() {
       const urgent = tasks.filter(t => ["panic","urgent","overdue"].includes(getState(t.deadline)));
       if (!urgent.length) return;
@@ -1183,7 +1183,7 @@
       showToast(`${STATE_CFG[getState(urgent[0].deadline)].emoji} ${urgent[0].text} — ${STATE_CFG[getState(urgent[0].deadline)].quip}`);
     }
 
-    // ===== TOAST =====
+    // §TOAST ─ 右下角通知条
     let toastTimer;
     function showToast(msg) {
       const el = document.getElementById("toast");
@@ -1193,11 +1193,14 @@
       toastTimer = setTimeout(() => el.classList.remove("show"), 3200);
     }
 
-    // ===== STRETCH TIMER & SESSION LOGIC =====
+    // §POMODORO ─ 番茄计时器
     let timerDuration = parseInt(localStorage.getItem('todo_timer_duration')) || 3600;
     let stretchTime = timerDuration;
     let stretchExpired = false;
     let timerRunning = false;
+
+    // Expose timer state to other modules (pure-focus.js)
+    window._getTimer = () => ({ running: timerRunning, time: stretchTime, duration: timerDuration });
 
     function setDuration(mins) {
       timerDuration = mins * 60;
@@ -1339,7 +1342,7 @@
       updateStretchDisplay();
     })();
 
-    // ===== NOTEPAD =====
+    // §NOTEPAD ─ 随想录
     const NOTEPAD_MAX = 500;
     const notepadEl = document.getElementById("notepad-textarea");
     const notepadCountEl = document.getElementById("notepad-count");
@@ -1356,7 +1359,7 @@
         : "rgba(255,255,255,0.4)";
     });
 
-    // ===== TODO PANEL RESIZE =====
+    // §RESIZE ─ Todo 面板宽度拖拽
     (function() {
       const handle = document.getElementById('todo-resize-handle');
       const desktop = document.getElementById('desktop');
@@ -1401,7 +1404,7 @@
       });
     })();
 
-    // ===== INIT =====
+    // §INIT ─ 首屏渲染 + 定时器
     render();
     setInterval(render, 30000);
     setInterval(checkNotify, 10 * 60 * 1000);
@@ -1415,7 +1418,7 @@
       }
     });
 
-    // ===== COMPLETED TASKS (for reports + undo panel) =====
+    // §COMPLETED ─ 已完成任务 + 恢复
     var completedTasks = JSON.parse(localStorage.getItem('todo_completed_tasks') || '[]'); // var avoids TDZ
     function saveCompletedTask(task) {
       completedTasks.push({ ...task, completedAt: new Date().toISOString() });
@@ -1490,7 +1493,7 @@
       showToast('↩ 任务已恢复到待完成！');
     }
 
-    // ===== MENU =====
+    // §MENU ─ 扩展坞菜单
     let menuOpen = false;
     function toggleMenu() {
       menuOpen = !menuOpen;
@@ -1503,7 +1506,7 @@
       document.getElementById('menu-overlay').classList.remove('open');
     }
 
-    // ===== FOCUS MODE =====
+    // §FOCUS ─ 专注模式
     let focusModeOn = false;
     function toggleFocusMode() {
       focusModeOn = !focusModeOn;
@@ -1514,7 +1517,7 @@
       if (mf) mf.style.display = focusModeOn ? 'none' : '';
     }
 
-    // ===== LANGUAGE =====
+    // §LANG ─ 中英文切换
     let currentLang = localStorage.getItem('todo_lang') || 'zh';
     const I18N = {
       zh: {
@@ -1571,7 +1574,7 @@
     // Init language
     applyLanguage(currentLang);
 
-    // ===== DAILY PROGRESS TRACKING =====
+    // §DAY-PROGRESS ─ 每日进度
     function getDayKey() {
       const now = new Date();
       const rh  = parseInt(localStorage.getItem('todo_reset_hour') || '7');
@@ -1598,7 +1601,7 @@
       if (el) el.textContent = String(h).padStart(2,'0') + ':00';
     })();
 
-    // ===== MASCOTS =====
+    // §MASCOT ─ 陪伴小宠
     const MASCOTS = [
       { emoji: '🦕', name: '恐龙' },
       { emoji: '🐶', name: '小狗' },
@@ -1645,7 +1648,7 @@
     }
     initMascotGrid();
 
-    // ===== DRAGGABLE MASCOT =====
+    // §MASCOT-DRAG ─ 小宠拖动
     (function() {
       const el = document.getElementById('mascot-float');
       const CIRC = 2 * Math.PI * 121; // SVG progress arc circumference
@@ -1695,7 +1698,7 @@
       document.addEventListener('touchend',   () => endDrag());
     })();
 
-    // ===== STADIUM WIDGET (progress ring + daily quote) =====
+    // §STADIUM ─ 进度环 + 心电图
     const DAILY_QUOTES = [
       { text: "Stay hungry, stay foolish.", author: "Steve Jobs", info: "🇺🇸 美国 · 2005年斯坦福演讲" },
       { text: "One child, one teacher, one book, one pen can change the world.", author: "Malala Yousafzai", info: "🇵🇰 巴基斯坦 · 2013年联合国演讲" },
@@ -1846,7 +1849,7 @@
       }
     }, 600);
 
-    // ===== CALENDAR =====
+    // §CALENDAR ─ 日历视图弹窗
     let calYear, calMonth, calView = 'month';
     const CAL_MONTHS = ['一月','二月','三月','四月','五月','六月','七月','八月','九月','十月','十一月','十二月'];
 
@@ -1916,7 +1919,7 @@
       showToast('📅 ' + names.join(' · '));
     }
 
-    // ===== WORK REPORT =====
+    // §REPORT ─ 工作报告弹窗
     function openReport() {
       const today = new Date().toISOString().split('T')[0];
       const weekAgo = new Date(Date.now() - 7*24*3600*1000).toISOString().split('T')[0];
@@ -1969,214 +1972,12 @@
       }
       document.getElementById('report-task-list').innerHTML = html;
     }
-    // ===== PURE FOCUS MODE =====
-    var _pfRunning = false, _pfAnimId = null;
-    var _pfCanvas = null, _pfCtx = null;
-    var _pfParts = [];
-    var _pfBeat = 0;
-    var _pfLastST = -999;
-    var _pfSecTs = 0;
-    var _pfEcg = [];
-    var _pfSpike = 0, _pfSpikePh = 0, _pfSpikeAmp = 1.0;
-    var _pfCircleR = 0;
 
-    function _pfPal() {
-      var hx = (localStorage.getItem('todo_wallpaper_color') || '#533483').replace('#','');
-      var R=parseInt(hx.slice(0,2),16)/255, G=parseInt(hx.slice(2,4),16)/255, B=parseInt(hx.slice(4,6),16)/255;
-      var mx=Math.max(R,G,B), mn=Math.min(R,G,B), d=mx-mn;
-      var h=0, s=mx?d/mx:0;
-      if(d>0){if(mx===R)h=((((G-B)/d)%6)+6)%6;else if(mx===G)h=(B-R)/d+2;else h=(R-G)/d+4;h*=60;}
-      var f=function(hh,ss,ll,aa){aa=aa===undefined?1:aa;return'hsla('+((Math.round(hh)%360+360)%360)+','+(ss*100).toFixed(1)+'%,'+(ll*100).toFixed(1)+'%,'+aa+')';};
-      var sv=Math.max(s,.5);
-      return {
-        arc:  f(h,sv,.72),     arcBg: f(h,.18,.28,.38),
-        glow: f(h,sv,.68,.20), glowS: f(h,sv,.72,.55),
-        ecg:  f(h+18,sv,.72),  ecgF:  f(h+18,sv*.7,.58,.36),
-        p0:   f(h-16,sv,.70,.68), p1: f(h,sv*.85,.76,.44), p2: f(h+28,sv*.6,.82,.26),
-        bg0:  f(h,sv*.4,.12,.88),
-      };
-    }
-
-    function _pfMkParts() {
-      var W=_pfCanvas.width, H=_pfCanvas.height, cx=W/2, cy=H/2;
-      var pal=_pfPal(), cs=[pal.p0,pal.p1,pal.p2];
-      _pfParts=[];
-      // Orbital ring — beat-reactive
-      for(var i=0;i<60;i++){
-        var a=(i/60)*Math.PI*2+(Math.random()-.5)*.18;
-        var rMin=Math.min(W,H)*.16, rMax=Math.min(W,H)*.44;
-        var r=rMin+Math.pow(Math.random(),.6)*(rMax-rMin);
-        var sz=Math.random()<.12 ? 1.8+Math.random()*1.4 : (Math.random()<.35 ? .9+Math.random()*.8 : .25+Math.random()*.55);
-        _pfParts.push({orbital:true, a:a, av:(Math.random()<.5?1:-1)*(.00025+Math.random()*.00045),
-          r:r, rb:r, rd:0, sz:sz, col:cs[i%3], t:Math.random()*Math.PI*2, tw:Math.random()*Math.PI*2, twv:.018+Math.random()*.022});
-      }
-      // Cosmic dust — scattered across whole canvas
-      for(var j=0;j<1520;j++){
-        var x=Math.random()*W, y=Math.random()*H;
-        var rnd=Math.random();
-        var szC=rnd<.04 ? 1.5+Math.random()*1.0 : (rnd<.20 ? .6+Math.random()*.6 : .15+Math.random()*.38);
-        _pfParts.push({orbital:false, x:x, y:y,
-          vx:(Math.random()-.5)*.07, vy:(Math.random()-.5)*.07,
-          sz:szC, col:cs[j%3], t:Math.random()*Math.PI*2, tw:Math.random()*Math.PI*2, twv:.008+Math.random()*.016, rd:0, rb:0});
-      }
-    }
-
-    function _pfMkEcg() { _pfEcg=new Array(_pfCanvas.width).fill(0); }
-
-    function _pfFire() {
-      _pfBeat=1; _pfSpike=1; _pfSpikePh=0;
-      _pfSpikeAmp = 0.55 + Math.random()*0.90; // 0.55–1.45, varies each beat
-      _pfParts.forEach(function(p){ p.rd+=10+Math.random()*14; });
-    }
-
-    function _pfStep() {
-      for(var k=0;k<2;k++){
-        var t=performance.now();
-        // Angular baseline: triangle waves + square-wave steps
-        var tri=function(p){p=((p%(Math.PI*2))+Math.PI*2)%(Math.PI*2);return p<Math.PI?(p/Math.PI)*2-1:3-(p/Math.PI)*2;};
-        var y=tri(t*.00075)*12 + tri(t*.0022)*7 + Math.sign(Math.sin(t*.011))*2.8 + Math.sign(Math.sin(t*.031))*1.2;
-        if(_pfSpike>.015){
-          var ph=_pfSpikePh;
-          if     (ph< 3) y= -16*_pfSpike*_pfSpikeAmp;
-          else if(ph< 6) y=-115*_pfSpike*_pfSpikeAmp;
-          else if(ph< 9) y=  62*_pfSpike*_pfSpikeAmp;
-          else if(ph<15) y= -22*_pfSpike*_pfSpikeAmp*((15-ph)/6);
-          else            y=0;
-          _pfSpikePh++; _pfSpike=Math.max(0,_pfSpike-.040);
-        }
-        _pfEcg.shift(); _pfEcg.push(y);
-      }
-    }
-
-    function _pfFrame(ts) {
-      if(!_pfRunning) return;
-      var cv=_pfCanvas, ctx=_pfCtx, W=cv.width, H=cv.height, cx=W/2, cy=H/2;
-      var pal=_pfPal();
-
-      if(timerRunning && stretchTime!==_pfLastST){
-        if(_pfLastST!==-999) _pfFire();
-        _pfLastST=stretchTime; _pfSecTs=ts;
-      }
-
-      var frac=timerRunning?Math.min((ts-_pfSecTs)/1e3,1):0;
-      var remMs=Math.max(0,stretchTime*1e3-frac*1e3);
-      var mm=Math.floor(remMs/6e4), ss=Math.floor((remMs%6e4)/1e3), cc=Math.floor((remMs%1e3)/10);
-      var tmEl=document.getElementById('pf-tm'), csEl=document.getElementById('pf-cs');
-      if(tmEl) tmEl.textContent=String(mm).padStart(2,'0')+':'+String(ss).padStart(2,'0');
-      if(csEl) csEl.textContent='.'+String(cc).padStart(2,'0');
-
-      _pfBeat=Math.max(0,_pfBeat-.026);
-      var bp=Math.sin(_pfBeat*Math.PI)*.055;
-
-      // clear
-      ctx.clearRect(0,0,W,H);
-      ctx.fillStyle='rgba(4,4,11,.97)'; ctx.fillRect(0,0,W,H);
-      var rg=ctx.createRadialGradient(cx,cy,0,cx,cy,Math.min(W,H)*.56);
-      rg.addColorStop(0,pal.bg0); rg.addColorStop(1,'transparent');
-      ctx.fillStyle=rg; ctx.fillRect(0,0,W,H);
-
-      // particles
-      _pfParts.forEach(function(p){
-        p.t+=.013; p.tw+=p.twv;
-        var alpha=0.45+Math.sin(p.tw)*0.30; // twinkle
-        var px,py;
-        if(p.orbital){
-          p.a+=p.av; p.rd*=.91;
-          var r=p.rb+p.rd+Math.sin(p.t)*4;
-          px=cx+Math.cos(p.a)*r; py=cy+Math.sin(p.a)*r;
-        } else {
-          p.x+=p.vx; p.y+=p.vy;
-          if(p.x<-4)p.x=W+4; else if(p.x>W+4)p.x=-4;
-          if(p.y<-4)p.y=H+4; else if(p.y>H+4)p.y=-4;
-          px=p.x; py=p.y;
-        }
-        var pulseSz=p.orbital ? p.sz*(1+bp*.85) : p.sz;
-        if(p.sz>0.85){
-          ctx.save(); ctx.globalAlpha=alpha;
-          ctx.beginPath(); ctx.arc(px,py,pulseSz,0,Math.PI*2);
-          ctx.fillStyle=p.col; ctx.shadowColor=p.col; ctx.shadowBlur=p.sz>1.4?8:3;
-          ctx.fill(); ctx.restore();
-        } else {
-          ctx.globalAlpha=alpha*.65;
-          ctx.fillStyle=p.col;
-          ctx.beginPath(); ctx.arc(px,py,pulseSz,0,Math.PI*2); ctx.fill();
-        }
-      });
-
-      ctx.globalAlpha=1; // reset after particle loop
-      // ECG line — always scroll
-      _pfStep();
-      var eyBase=H*.68, eHalf=W*.38, eX0=cx-eHalf, eX1=cx+eHalf;
-      ctx.save();
-      ctx.beginPath();
-      var N=_pfEcg.length;
-      for(var i=0;i<N;i++){
-        var ex=eX0+(i/N)*eHalf*2, ey=eyBase+_pfEcg[i]*(1+bp*2.2);
-        i===0?ctx.moveTo(ex,ey):ctx.lineTo(ex,ey);
-      }
-      var eg=ctx.createLinearGradient(eX0,0,eX1,0);
-      eg.addColorStop(0,'transparent'); eg.addColorStop(.07,pal.ecgF);
-      eg.addColorStop(.55,pal.ecg);   eg.addColorStop(1,pal.ecg);
-      ctx.strokeStyle=eg; ctx.lineWidth=1.0; ctx.shadowColor=pal.ecg; ctx.shadowBlur=8; ctx.stroke();
-      // left baseline
-      ctx.beginPath(); ctx.moveTo(0,eyBase); ctx.lineTo(eX0,eyBase);
-      var lg=ctx.createLinearGradient(0,0,eX0,0); lg.addColorStop(0,'transparent'); lg.addColorStop(1,pal.ecgF);
-      ctx.strokeStyle=lg; ctx.lineWidth=1; ctx.shadowBlur=0; ctx.stroke();
-      // right baseline
-      ctx.beginPath(); ctx.moveTo(eX1,eyBase); ctx.lineTo(W,eyBase);
-      var rgg=ctx.createLinearGradient(eX1,0,W,0); rgg.addColorStop(0,pal.ecgF); rgg.addColorStop(1,'transparent');
-      ctx.strokeStyle=rgg; ctx.stroke();
-      ctx.restore();
-
-      // Circle
-      var R=_pfCircleR>10 ? _pfCircleR : Math.min(W,H)*.18;
-      var circY=cy-H*.05;
-      ctx.save(); ctx.translate(cx,circY); ctx.scale(1+bp, 1+bp);
-      var gl=ctx.createRadialGradient(0,0,R*.6,0,0,R*1.28);
-      gl.addColorStop(0,pal.glow); gl.addColorStop(1,'transparent');
-      ctx.fillStyle=gl; ctx.beginPath(); ctx.arc(0,0,R*1.28,0,Math.PI*2); ctx.fill();
-      ctx.beginPath(); ctx.arc(0,0,R,0,Math.PI*2);
-      ctx.strokeStyle=pal.arcBg; ctx.lineWidth=2.5; ctx.shadowBlur=0; ctx.stroke();
-      var progFrac=timerDuration>0?Math.max(0,stretchTime/timerDuration):1;
-      ctx.beginPath(); ctx.arc(0,0,R,-Math.PI/2,-Math.PI/2+progFrac*Math.PI*2);
-      ctx.strokeStyle=pal.arc; ctx.lineWidth=2.5; ctx.lineCap='round';
-      ctx.shadowColor=pal.glowS; ctx.shadowBlur=18; ctx.stroke();
-      ctx.beginPath(); ctx.arc(0,0,R*.84,0,Math.PI*2);
-      ctx.strokeStyle='rgba(255,255,255,0.04)'; ctx.lineWidth=.7; ctx.shadowBlur=0; ctx.stroke();
-      ctx.restore();
-
-      _pfAnimId=requestAnimationFrame(_pfFrame);
-    }
-
-    function enterPureFocus() {
-      var ov=document.getElementById('pf-overlay'); if(!ov) return;
-      _pfCanvas=document.getElementById('pf-cv'); _pfCtx=_pfCanvas.getContext('2d');
-      _pfCanvas.width=window.innerWidth; _pfCanvas.height=window.innerHeight;
-      _pfLastST=-999; _pfBeat=0; _pfSpike=0; _pfSpikePh=0; _pfRunning=true;
-      _pfMkParts(); _pfMkEcg();
-      ov.classList.add('show');
-      // Measure text bounding box to size circle — wait one frame for layout
-      setTimeout(function(){
-        var tw=document.getElementById('pf-time-wrap');
-        if(tw){ var b=tw.getBoundingClientRect(); _pfCircleR=Math.sqrt(Math.pow(b.width/2,2)+Math.pow(b.height/2,2))*1.30; }
-      }, 60);
-      window._pfRsz=function(){
-        _pfCanvas.width=window.innerWidth; _pfCanvas.height=window.innerHeight; _pfMkParts(); _pfMkEcg();
-        var tw=document.getElementById('pf-time-wrap');
-        if(tw){ var b=tw.getBoundingClientRect(); _pfCircleR=Math.sqrt(Math.pow(b.width/2,2)+Math.pow(b.height/2,2))*1.30; }
-      };
-      window.addEventListener('resize',window._pfRsz);
-      _pfAnimId=requestAnimationFrame(_pfFrame);
-    }
-    function exitPureFocus() {
-      _pfRunning=false; cancelAnimationFrame(_pfAnimId);
-      var ov=document.getElementById('pf-overlay'); if(ov) ov.classList.remove('show');
-      window.removeEventListener('resize',window._pfRsz);
-    }
-    document.addEventListener('keydown',function(e){ if(e.key==='Escape'&&_pfRunning) exitPureFocus(); });
+    // §PURE-FOCUS ─ 纯享模式（已抽取到 ./pure-focus.js）
+    // 见文件顶部的 import 语句
 
 
-    // ===== EXPOSE TO WINDOW =====
+    // §EXPOSE ─ 暴露给 window 供 onclick 使用
     // Inline onclick="..." handlers in HTML need these as globals.
     // (ES modules scope declarations to the module by default.)
     Object.assign(window, {
