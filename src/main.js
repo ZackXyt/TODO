@@ -279,11 +279,9 @@
       const wp = document.getElementById("wallpaper");
       wp.style.backgroundImage = "";
       wp.style.background = grad;
-      // 三层同步：html + body + #wallpaper 都用相同 gradient，杜绝任何断层
-      document.documentElement.style.background = grad;
+      // 同步更新 CSS 变量 --wp-grad，让 html::before 全屏伪元素也跟着变色
+      document.documentElement.style.setProperty('--wp-grad', grad);
       document.documentElement.style.backgroundColor = dark;
-      document.body.style.background = grad;
-      document.body.style.backgroundColor = dark;
       document.getElementById("color-dot").style.background = hex;
       localStorage.setItem('todo_wallpaper_color', hex);
     }
@@ -293,10 +291,8 @@
       const wp = document.getElementById("wallpaper");
       wp.style.background = grad;
       wp.style.backgroundImage = "";
-      document.documentElement.style.background = grad;
+      document.documentElement.style.setProperty('--wp-grad', grad);
       document.documentElement.style.backgroundColor = "#1a1a2e";
-      document.body.style.background = grad;
-      document.body.style.backgroundColor = "#1a1a2e";
       document.getElementById("wallpaper-color-input").value = "#533483";
       document.getElementById("color-dot").style.background = "#533483";
       localStorage.removeItem('todo_wallpaper_color');

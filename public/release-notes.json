@@ -1,6 +1,27 @@
 {
   "versions": [
     {
+      "version": "3.0.10",
+      "emoji": "💪",
+      "title": "终极大招：伪元素强制铺满",
+      "tagline": "用 -200px 负偏移让壁纸故意溢出视口边界，再也跑不了",
+      "highlights": [
+        {
+          "emoji": "🎯",
+          "title": "html::before 伪元素覆盖整屏",
+          "what": "在最底层放一个故意溢出 200px 的 fixed 元素",
+          "how": "无论 100vh / 100dvh 怎么算都覆盖不了它，安全区也被填上"
+        },
+        {
+          "emoji": "🎨",
+          "title": "CSS 变量 --wp-grad",
+          "what": "用户切换配色时，CSS 变量更新让伪元素自动跟着变色",
+          "how": "JS 调 documentElement.style.setProperty('--wp-grad', ...)"
+        }
+      ],
+      "footer": "如果这版还有断层，那就是 iOS 的硬件级 bug 了 😅"
+    },
+    {
       "version": "3.0.9",
       "emoji": "🛡",
       "title": "底部断层三层兜底",
