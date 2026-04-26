@@ -455,7 +455,7 @@
         try {
           const arr = JSON.parse(s);
           // Migrate: ensure all tasks have listId and steps fields
-          arr.forEach(t => {
+          arr.forEach((t, i) => {
             if (!t.listId)                   t.listId       = 'inbox';
             if (!t.steps)                    t.steps        = [];
             if (t.starred  === undefined)    t.starred      = false;
@@ -463,6 +463,7 @@
             if (!t.repeat)                   t.repeat       = 'none';
             if (t.reminder === undefined)    t.reminder     = '';
             if (t.reminderFired === undefined) t.reminderFired = false;
+            if (typeof t.order !== 'number') t.order        = i;
           });
           return arr;
         } catch(e) {}
@@ -517,7 +518,9 @@
         : viewFiltered;
       const sorted = sortMode === 'priority'
         ? [...base].sort((a,b) => (a.priority||3) - (b.priority||3))
-        : [...base].sort((a,b) => STATE_ORDER[getState(a.deadline)] - STATE_ORDER[getState(b.deadline)]);
+        : sortMode === 'manual'
+          ? [...base].sort((a,b) => (a.order ?? 1e9) - (b.order ?? 1e9))
+          : [...base].sort((a,b) => STATE_ORDER[getState(a.deadline)] - STATE_ORDER[getState(b.deadline)]);
 
       const urgentN = base.filter(t => ["panic","urgent","overdue"].includes(getState(t.deadline))).length;
       const mydayN  = tasks.filter(t => t.myDay).length;
@@ -542,7 +545,7 @@
       }
 
       const btn = document.getElementById("sort-btn");
-      if (btn) btn.textContent = sortMode === 'priority' ? '按 P' : '按 DDL';
+      if (btn) btn.textContent = sortMode === 'priority' ? '按 P' : sortMode === 'manual' ? '自定义' : '按 DDL';
 
       const list = document.getElementById("task-list");
 
@@ -613,7 +616,13 @@
         const remFmt = t.reminder && !t.reminderFired ? (() => { const rd = new Date(t.reminder); return `${rd.getMonth()+1}/${rd.getDate()} ${String(rd.getHours()).padStart(2,'0')}:${String(rd.getMinutes()).padStart(2,'0')}`; })() : '';
         const reminderLbl = remFmt ? `<span class="reminder-badge" title="提醒：${remFmt}">🔔 ${remFmt}</span>` : '';
         return `
-          <div class="task-item state-${s}" id="task-${t.id}">
+          <div class="task-item state-${s}${sortMode==='manual'?' draggable':''}" id="task-${t.id}" data-task-id="${t.id}"
+               ${sortMode==='manual' ? `draggable="true"
+               ondragstart="onTaskDragStart(event,${t.id})"
+               ondragover="onTaskDragOver(event,${t.id})"
+               ondragleave="onTaskDragLeave(event)"
+               ondrop="onTaskDrop(event,${t.id})"
+               ondragend="onTaskDragEnd(event)"` : ''}>
             <div class="task-item-header">
               <div class="task-bar" style="background:${c.color}"></div>
               <div class="task-content">
@@ -641,9 +650,153 @@
     }
 
     function toggleSortMode() {
-      sortMode = sortMode === 'urgency' ? 'priority' : 'urgency';
+      // Cycle: urgency → priority → manual → urgency
+      sortMode = sortMode === 'urgency' ? 'priority'
+               : sortMode === 'priority' ? 'manual'
+               : 'urgency';
       localStorage.setItem('todo_sort_mode', sortMode);
+      if (sortMode === 'manual') {
+        // First time switching to manual: assign order from current display order
+        ensureManualOrder();
+        showToast('🖱️ 自定义排序：拖动任务调整顺序');
+      } else if (sortMode === 'priority') {
+        showToast('按优先级排序');
+      } else {
+        showToast('按截止时间排序');
+      }
       render();
+    }
+
+    function ensureManualOrder() {
+      // Assign sequential order to tasks that don't have one (or all NaN)
+      const sorted = [...tasks].sort((a,b) => STATE_ORDER[getState(a.deadline)] - STATE_ORDER[getState(b.deadline)]);
+      sorted.forEach((t, i) => { if (typeof t.order !== 'number') t.order = i; });
+      saveTasks();
+    }
+
+    // ===== DRAG & DROP REORDER =====
+    let _draggingTaskId = null;
+
+    function onTaskDragStart(e, id) {
+      _draggingTaskId = id;
+      e.dataTransfer.effectAllowed = 'move';
+      try { e.dataTransfer.setData('text/plain', String(id)); } catch(_){}
+      const el = document.getElementById('task-' + id);
+      if (el) el.classList.add('dragging');
+    }
+
+    function onTaskDragOver(e, id) {
+      if (_draggingTaskId === null || _draggingTaskId === id) return;
+      e.preventDefault();
+      e.dataTransfer.dropEffect = 'move';
+      const el = document.getElementById('task-' + id);
+      if (!el) return;
+      // Determine drop position (above or below) based on mouse Y vs midpoint
+      const rect = el.getBoundingClientRect();
+      const above = e.clientY < rect.top + rect.height / 2;
+      el.classList.toggle('drop-above', above);
+      el.classList.toggle('drop-below', !above);
+    }
+
+    function onTaskDragLeave(e) {
+      const el = e.currentTarget;
+      if (el && el.classList) el.classList.remove('drop-above','drop-below');
+    }
+
+    function onTaskDrop(e, targetId) {
+      e.preventDefault();
+      const srcId = _draggingTaskId;
+      if (srcId === null || srcId === targetId) { onTaskDragEnd(e); return; }
+      const targetEl = document.getElementById('task-' + targetId);
+      const above = targetEl && targetEl.classList.contains('drop-above');
+      const src = tasks.find(t => t.id === srcId);
+      const tgt = tasks.find(t => t.id === targetId);
+      if (!src || !tgt) { onTaskDragEnd(e); return; }
+      // Build current visual order (manual sort), insert src before/after tgt
+      const ordered = [...tasks].sort((a,b) => (a.order ?? 1e9) - (b.order ?? 1e9));
+      const filtered = ordered.filter(t => t.id !== srcId);
+      const targetIdx = filtered.findIndex(t => t.id === targetId);
+      const insertIdx = above ? targetIdx : targetIdx + 1;
+      filtered.splice(insertIdx, 0, src);
+      filtered.forEach((t, i) => t.order = i);
+      saveTasks();
+      onTaskDragEnd(e);
+      render();
+      showToast('🔀 顺序已更新');
+    }
+
+    function onTaskDragEnd(e) {
+      _draggingTaskId = null;
+      document.querySelectorAll('.task-item').forEach(el => {
+        el.classList.remove('dragging','drop-above','drop-below');
+      });
+    }
+
+    // ===== KEYBOARD SHORTCUTS =====
+    document.addEventListener('keydown', function(e) {
+      // Skip if user is typing in input/textarea/contenteditable
+      const tag = (e.target && e.target.tagName) || '';
+      const isTyping = tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' ||
+                       (e.target && e.target.isContentEditable);
+      // Esc works everywhere — close any open modal/menu
+      if (e.key === 'Escape') {
+        // Edit modal
+        const em = document.getElementById('edit-modal-overlay');
+        if (em && em.classList.contains('show')) { closeEditModal(); e.preventDefault(); return; }
+        // Delete modal
+        const dm = document.getElementById('del-modal-overlay');
+        if (dm && dm.classList.contains('show')) { cancelDeleteModal(); e.preventDefault(); return; }
+        // Calendar
+        const cm = document.getElementById('calendar-modal');
+        if (cm && cm.classList.contains('open')) { closeCalendar(); e.preventDefault(); return; }
+        // Report
+        const rm = document.getElementById('report-modal');
+        if (rm && rm.classList.contains('open')) { closeReport(); e.preventDefault(); return; }
+        // Help modal
+        const hm = document.getElementById('help-modal-overlay');
+        if (hm && hm.classList.contains('show')) { closeHelp(); e.preventDefault(); return; }
+        // Menu
+        const mo = document.getElementById('menu-overlay');
+        if (mo && mo.classList.contains('open')) { closeMenu(); e.preventDefault(); return; }
+        // Add form
+        const af = document.getElementById('add-form');
+        if (af && af.style.display !== 'none') { toggleForm(); e.preventDefault(); return; }
+        return;
+      }
+      if (isTyping) return; // Don't trigger letter shortcuts while typing
+
+      // Ignore if a modifier is held (let browser shortcuts work)
+      if (e.metaKey || e.ctrlKey || e.altKey) return;
+
+      switch (e.key) {
+        case 'n': case 'N':
+          e.preventDefault();
+          toggleForm();
+          break;
+        case '/':
+          e.preventDefault();
+          { const inp = document.getElementById('task-search'); if (inp) inp.focus(); }
+          break;
+        case '1':
+          e.preventDefault(); setViewMode('all'); break;
+        case '2':
+          e.preventDefault(); setViewMode('myDay'); break;
+        case '3':
+          e.preventDefault(); setViewMode('starred'); break;
+        case 's': case 'S':
+          e.preventDefault(); toggleSortMode(); break;
+        case '?':
+          e.preventDefault(); openHelp(); break;
+      }
+    });
+
+    function openHelp() {
+      const ov = document.getElementById('help-modal-overlay');
+      if (ov) ov.classList.add('show');
+    }
+    function closeHelp() {
+      const ov = document.getElementById('help-modal-overlay');
+      if (ov) ov.classList.remove('show');
     }
 
     function setViewMode(mode) {
@@ -751,7 +904,11 @@
       const remInp = document.getElementById('task-reminder');
       const reminder = (remInp && remInp.value) ? new Date(remInp.value).toISOString() : '';
       if (reminder && Notification.permission === 'default') Notification.requestPermission();
-      tasks.push({ id: Date.now(), text: name, deadline: new Date(ddl).toISOString(), priority: selectedPriority, myDay: false, starred: false, steps: [], note: '', listId: chosenList, repeat: selectedRepeat, reminder, reminderFired: false });
+      // In manual sort mode, place new task at the top
+      const newOrder = sortMode === 'manual'
+        ? Math.min(...tasks.map(t => t.order ?? 0), 0) - 1
+        : tasks.length;
+      tasks.push({ id: Date.now(), text: name, deadline: new Date(ddl).toISOString(), priority: selectedPriority, myDay: false, starred: false, steps: [], note: '', listId: chosenList, repeat: selectedRepeat, reminder, reminderFired: false, order: newOrder });
       document.getElementById("task-name").value = "";
       document.getElementById("add-form").style.display = "none";
       saveTasks();
@@ -2038,4 +2195,8 @@
       // Edit + data import/export
       openEditModal, closeEditModal, selectEditPriority, selectEditRepeat,
       saveEditedTask, exportData, importData,
+      // Drag-and-drop reorder
+      onTaskDragStart, onTaskDragOver, onTaskDragLeave, onTaskDrop, onTaskDragEnd,
+      // Help modal
+      openHelp, closeHelp,
     });
