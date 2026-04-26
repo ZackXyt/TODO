@@ -40,8 +40,18 @@
     import { initPWA, checkForUpdate } from './pwa.js';
     // §PURE-FOCUS  纯享模式（全屏粒子动画，独立模块）
     import { enterPureFocus, exitPureFocus } from './pure-focus.js';
+    // §AUTH  Firebase 登录/注册/退出
+    import {
+      initAuth, openAuthModal, closeAuthModal, setAuthMode,
+      submitAuthForm, logoutUser, getCurrentUser, onUserChange,
+    } from './auth.js';
 
     initPWA();
+    initAuth();
+    // Expose auth functions for inline onclick handlers
+    Object.assign(window, {
+      openAuthModal, closeAuthModal, setAuthMode, submitAuthForm, logoutUser,
+    });
 
     // §VERSION ─ 显示版本号 + 暴露手动检查更新
     const APP_VERSION = typeof __APP_VERSION__ !== 'undefined' ? __APP_VERSION__ : 'dev';
