@@ -130,15 +130,19 @@ function showReleaseNotesModal(data, mode /* 'preview' | 'celebration' */) {
     </div>
   `).join('');
 
+  const isMajor = !!current.majorUpdate;
   const overlay = document.createElement('div');
   overlay.id = 'release-notes-modal';
-  overlay.className = 'rn-overlay' + (isCelebration ? ' celebration' : '');
+  overlay.className = 'rn-overlay'
+    + (isCelebration ? ' celebration' : '')
+    + (isMajor ? ' major-update' : '');
   overlay.innerHTML = `
     <div class="rn-modal">
       <div class="rn-hero">
+        ${isMajor ? `<div class="rn-major-badge">✨ 重磅更新 ✨</div>` : ''}
         <div class="rn-hero-emoji">${current.emoji || (isCelebration ? '🎉' : '📦')}</div>
         <div class="rn-hero-title">${
-          isCelebration ? `升级成功！🎉` : escapeHtml(current.title || '更新日志')
+          isCelebration ? (isMajor ? `${escapeHtml(current.title || '重磅更新')} 🎉` : `升级成功！🎉`) : escapeHtml(current.title || '更新日志')
         }</div>
         <div class="rn-hero-version">v${current.version}</div>
         <div class="rn-hero-tagline">${
@@ -187,7 +191,12 @@ function showReleaseNotesModal(data, mode /* 'preview' | 'celebration' */) {
       if (_pendingReload) _pendingReload();
     };
   } else {
-    setTimeout(() => burstCelebration(), 200);
+    // Bigger, longer celebration for major updates
+    setTimeout(() => burstCelebration(isMajor ? 140 : 60), 200);
+    if (isMajor) {
+      // Second burst at 1s for extra wow
+      setTimeout(() => burstCelebration(80), 1000);
+    }
   }
 }
 
@@ -232,11 +241,11 @@ async function checkPostUpdateCelebration() {
 
 // ---- Confetti -----------------------------------------------------------
 
-function burstCelebration() {
-  const EMOJIS = ['🎉','🎊','✨','⭐','💫','🌟','🎈','🍀','🚀','🎁'];
+function burstCelebration(particleCount = 60) {
+  const EMOJIS = ['🎉','🎊','✨','⭐','💫','🌟','🎈','🍀','🚀','🎁','🦋','💎','👑'];
   const cx = window.innerWidth / 2;
   const cy = window.innerHeight / 2;
-  const N = 60;
+  const N = particleCount;
   for (let i = 0; i < N; i++) {
     const piece = document.createElement('span');
     piece.className = 'confetti-piece';
@@ -335,6 +344,65 @@ function ensureNotesStyles() {
     .rn-overlay.show { opacity: 1; pointer-events: all; }
     .rn-overlay.celebration {
       background: radial-gradient(circle at center, rgba(80,40,120,0.6), rgba(0,0,0,0.85));
+    }
+    .rn-overlay.major-update .rn-modal {
+      background: linear-gradient(155deg, rgba(48,28,98,0.97), rgba(20,14,52,0.97), rgba(48,28,98,0.97));
+      border: 1.5px solid rgba(255,200,100,0.45);
+      box-shadow: 0 20px 80px rgba(0,0,0,0.75),
+                  0 0 0 1px rgba(255,255,255,0.06),
+                  0 0 60px rgba(180,140,255,0.25),
+                  0 0 120px rgba(255,200,100,0.15);
+      animation: majorPulse 3s ease-in-out infinite;
+    }
+    @keyframes majorPulse {
+      0%, 100% { box-shadow: 0 20px 80px rgba(0,0,0,0.75),
+                              0 0 0 1px rgba(255,255,255,0.06),
+                              0 0 60px rgba(180,140,255,0.25),
+                              0 0 120px rgba(255,200,100,0.15); }
+      50%      { box-shadow: 0 20px 90px rgba(0,0,0,0.8),
+                              0 0 0 1px rgba(255,255,255,0.1),
+                              0 0 80px rgba(180,140,255,0.4),
+                              0 0 160px rgba(255,200,100,0.25); }
+    }
+    .rn-overlay.major-update .rn-hero-emoji {
+      font-size: 56px;
+      animation: majorEmoji 2s ease-in-out infinite;
+    }
+    @keyframes majorEmoji {
+      0%,100% { transform: translateY(0) rotate(-5deg) scale(1); }
+      33%     { transform: translateY(-10px) rotate(5deg) scale(1.1); }
+      66%     { transform: translateY(-4px) rotate(-3deg) scale(1.05); }
+    }
+    .rn-overlay.major-update .rn-hero-title {
+      font-size: 22px;
+      background: linear-gradient(135deg, #ffd966, #ff9966, #c699ff);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      font-weight: 800;
+      letter-spacing: 0.3px;
+    }
+    .rn-overlay.major-update .rn-hero-version {
+      font-size: 13px; padding: 3px 12px;
+      background: linear-gradient(135deg, rgba(255,200,100,0.3), rgba(180,140,255,0.3));
+      border-color: rgba(255,200,100,0.5);
+      color: white;
+      box-shadow: 0 2px 10px rgba(255,200,100,0.3);
+    }
+    .rn-overlay.major-update .rn-hero-tagline {
+      font-size: 13px; color: rgba(255,220,180,0.85);
+      font-weight: 500;
+    }
+    .rn-major-badge {
+      display: inline-block;
+      background: linear-gradient(135deg, #ffd966, #ff9966);
+      color: #1a1a2e;
+      font-size: 10px; font-weight: 800;
+      padding: 2px 8px; border-radius: 10px;
+      margin-bottom: 8px;
+      letter-spacing: 0.6px;
+      text-transform: uppercase;
+      box-shadow: 0 2px 8px rgba(255,150,100,0.4);
     }
     .rn-modal {
       background: linear-gradient(155deg, rgba(36,30,68,0.97), rgba(20,18,42,0.97));

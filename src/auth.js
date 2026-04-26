@@ -173,6 +173,7 @@ export function updateAccountUI() {
         <div class="acct-name">${_currentUser.displayName || _currentUser.email.split('@')[0]}</div>
         <div class="acct-email">${_currentUser.email}</div>
       </div>
+      <button class="acct-sync-btn" onclick="manualSync()" title="立即同步">🔄</button>
       <button class="acct-logout-btn" onclick="logoutUser()" title="退出登录">退出</button>
     `;
     card.classList.add('logged-in');

@@ -187,6 +187,31 @@ function handleSnapshot(snap, kind) {
 export function syncTasksToCloud() { schedulePush('tasks'); }
 export function syncListsToCloud() { schedulePush('lists'); }
 
+// Manual force-sync: triggered from "立即同步" button in account card.
+// Re-pulls cloud, merges with local, pushes back result. Use when in doubt.
+export async function manualSync() {
+  if (!_state.uid) {
+    if (typeof window.showToast === 'function') {
+      window.showToast('⚠️ 请先登录账号');
+    }
+    return;
+  }
+  setStatus('syncing', '强制同步中…');
+  try {
+    await pullAndMerge(_state.uid);
+    setStatus('synced', '已同步');
+    if (typeof window.showToast === 'function') {
+      window.showToast('🔄 同步完成');
+    }
+  } catch (err) {
+    console.error('Manual sync failed:', err);
+    setStatus('error', err?.code || '同步失败');
+    if (typeof window.showToast === 'function') {
+      window.showToast('❌ 同步失败：' + (err?.code || err?.message || '未知错误'));
+    }
+  }
+}
+
 function schedulePush(kind) {
   if (!_state.uid || _state.isApplyingRemote) return;
   _state.pushQueue[kind] = true;

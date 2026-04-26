@@ -1265,6 +1265,17 @@
       color: rgba(255,180,180,0.85);
     }
     .acct-logout-btn:hover { background: rgba(255,90,90,0.22); color: white; border-color: rgba(255,90,90,0.4); }
+    .acct-sync-btn {
+      flex-shrink: 0; width: 30px; height: 30px;
+      background: rgba(120,200,255,0.15);
+      border: 1px solid rgba(120,200,255,0.3);
+      color: rgba(180,220,255,0.9);
+      font-size: 14px; border-radius: 50%;
+      cursor: pointer; transition: all 0.2s;
+      font-family: inherit;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .acct-sync-btn:hover { background: rgba(120,200,255,0.32); color: white; transform: rotate(180deg); }
 
     /* ====== SYNC STATUS INDICATOR ====== */
     .sync-status-row {

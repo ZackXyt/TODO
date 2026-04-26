@@ -46,7 +46,7 @@
       submitAuthForm, logoutUser, getCurrentUser, onUserChange,
     } from './auth.js';
     // §SYNC  Firestore 双向实时同步
-    import { initSync, syncTasksToCloud, syncListsToCloud, getSyncStatus } from './sync.js';
+    import { initSync, syncTasksToCloud, syncListsToCloud, getSyncStatus, manualSync } from './sync.js';
 
     initPWA();
     initAuth();
@@ -56,6 +56,7 @@
     // Expose auth functions for inline onclick handlers
     Object.assign(window, {
       openAuthModal, closeAuthModal, setAuthMode, submitAuthForm, logoutUser,
+      manualSync,
     });
 
     // §VERSION ─ 显示版本号 + 暴露手动检查更新
