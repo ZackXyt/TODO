@@ -1,6 +1,33 @@
 {
   "versions": [
     {
+      "version": "3.0.3",
+      "emoji": "📱",
+      "title": "刘海/灵动岛友好",
+      "tagline": "iPhone X 之后的全面屏现在不再被刘海挡住内容",
+      "highlights": [
+        {
+          "emoji": "🌗",
+          "title": "顶部刘海/灵动岛避让",
+          "what": "iPhone 17 Pro Max 等机型的灵动岛不再压住时间组件",
+          "how": "用 CSS env(safe-area-inset-top) 自动算出避让距离"
+        },
+        {
+          "emoji": "📍",
+          "title": "底部 Home 指示器避让",
+          "what": "底部任务也不会被横条遮住",
+          "how": "同样用 env(safe-area-inset-bottom) 自动适配"
+        },
+        {
+          "emoji": "🍱",
+          "title": "侧边菜单也避让",
+          "what": "扩展坞菜单顶部不会被刘海压住，底部也保留了滑动空间",
+          "how": "同步处理，无需任何用户操作"
+        }
+      ],
+      "footer": "iPad、iPhone SE、Android 各种屏幕都自动适应 ✨"
+    },
+    {
       "version": "3.0.2",
       "emoji": "🧩",
       "title": "布局更智能，移动端更顺",
