@@ -1,33 +1,23 @@
     * { margin: 0; padding: 0; box-sizing: border-box; }
 
-    /* iOS PWA 安全区底色穿透：用 html::before 伪元素强制覆盖整个屏幕，
-       含刘海/灵动岛/Home 指示器的所有安全区。
-       关键：用负 inset (-200px) 故意溢出视口，确保不管 100vh 如何计算
-       都能盖住整片屏幕。
-       gradient 通过 CSS 变量 --wp-grad 让 JS 切换配色时同步更新。 */
+    /* 壁纸渲染策略：把 gradient 直接挂在 html 上。
+       CSS 规范规定 html 背景会向整张「视口画布」传播（含刘海 / 灵动岛 /
+       Home 指示器 / iOS PWA 安全区），不需要 fixed 伪元素兜底。
+       background-attachment: fixed 让 gradient 锁定视口、滚动时不平移，
+       避免 iOS Safari 滚动到尾部时露出底部断层。
+       --wp-grad 变量给 JS 切换配色时同步更新。 */
     html {
       width: 100%;
       min-height: 100%;
       min-height: 100vh;
       min-height: 100dvh;
       min-height: -webkit-fill-available;
-      background-color: #1a1a2e;
       --wp-grad: linear-gradient(135deg, #1a1a2e 0%, #16213e 40%, #0f3460 70%, #533483 100%);
-    }
-    html::before {
-      content: '';
-      position: fixed;
-      top: -200px;
-      left: -200px;
-      right: -200px;
-      bottom: -200px;
-      width: calc(100vw + 400px);
-      height: calc(100vh + 400px);
-      background: var(--wp-grad);
-      background-color: #1a1a2e;
-      background-size: cover;
-      z-index: -10;
-      pointer-events: none;
+      background-color: #533483;          /* 兜底用 gradient 末端色，安全区即使露出也不会突兀 */
+      background-image: var(--wp-grad);
+      background-attachment: fixed;
+      background-size: 100% 100%;
+      background-repeat: no-repeat;
     }
 
     body {
@@ -40,7 +30,7 @@
       overflow: hidden;
       font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'PingFang SC', sans-serif;
       position: relative;
-      background: transparent;            /* 让 html::before 透出来 */
+      background: transparent;            /* 让 html 的 gradient 透出来 */
     }
 
     /* ====== WALLPAPER ====== */
@@ -2293,7 +2283,7 @@
       .time-widget   { order: 1; width: 100%; }
       .weather-row   { order: 2; width: 100%; flex-direction: column; }
       .todo-area     { order: 3; width: 100%; align-self: auto; position: relative; }
-      .wallpaper-area { order: 4; width: 100%; height: auto; align-self: auto; padding-bottom: 80px; }
+      .wallpaper-area { order: 4; width: 100%; height: auto; align-self: auto; padding-bottom: 24px; }
 
       /* Time: compact */
       .time-display { font-size: clamp(52px, 17vw, 90px); letter-spacing: -2px; }
