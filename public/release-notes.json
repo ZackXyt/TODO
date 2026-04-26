@@ -1,31 +1,31 @@
 {
   "versions": [
     {
-      "version": "3.0.12",
-      "emoji": "📱",
-      "title": "UI 真·铺满全屏，告别底部断层",
-      "tagline": "Gradient 直接挂 html，#desktop 顶到屏幕边缘——上下再无空带",
+      "version": "3.0.13",
+      "emoji": "🧹",
+      "title": "壁纸 / 安全区代码大回滚",
+      "tagline": "之前 v3.0.6 → v3.0.12 一直追着改的「底部断层」，原来是 iOS Safari 的底部标签页栏（设置 → Safari → 标签页 = 底部），不是 web 端能修的 bug",
       "highlights": [
         {
-          "emoji": "🎨",
-          "title": "壁纸 gradient 改挂 html 元素",
-          "what": "之前用 html::before fixed 兜底安全区，iOS PWA 下不稳，Home 指示器附近会露出死黑色断层",
-          "how": "改成把 gradient 直接挂在 html 上（background-attachment: fixed），靠 CSS 规范里『html 背景向整张视口画布传播』规则覆盖所有安全区"
+          "emoji": "🔍",
+          "title": "断层真相查明",
+          "what": "底下那条「死黑色带」其实是 Safari 自家的标签页栏，不是壁纸渲染问题",
+          "how": "把 Safari 标签页位置改成「顶部」就消失，或者用「添加到主屏幕」装成 PWA 后 Safari UI 整个隐藏"
         },
         {
-          "emoji": "📐",
-          "title": "#desktop 接管 safe-area，UI 视觉铺满全屏",
-          "what": "之前 body 吃 safe-area，导致 UI 上下各留一截空带，看起来像没装满",
-          "how": "改成 body 不留 padding，#desktop 直接 100dvh 顶到屏幕边缘，padding 里再吸收 env(safe-area-inset-*)，子组件自动避让"
+          "emoji": "↩️",
+          "title": "壁纸 + 安全区 CSS 回到 v3.0.5",
+          "what": "html::before 伪元素、三层 gradient 兜底、#desktop 自管 safe-area 这些追着幻觉改的代码全部撤回",
+          "how": "html 直接挂 gradient（background-attachment: fixed）+ body 吸收 safe-area，干净简洁，配色自定义照常工作"
         },
         {
-          "emoji": "🧹",
-          "title": "去掉 .wallpaper-area 80px 多余空白",
-          "what": "notepad 下面那段死空白消失，gradient 现在和水印自然衔接",
-          "how": "padding-bottom 由 80px → 0，scroll-padding-bottom 留 24 就够"
+          "emoji": "💡",
+          "title": "经验教训",
+          "what": "看到「断层」先确认是浏览器 chrome 还是网页本身，别一上来就改 CSS",
+          "how": "PWA 模式下没 Safari 栏、看起来才是真正铺满；Safari 内打开自然有底部栏占位"
         }
       ],
-      "footer": "如果还有断层，请彻底退出 PWA（长按删后台）重开，让 Service Worker 拉到最新版"
+      "footer": "想要真·全屏体验，请用「分享 → 添加到主屏幕」装成 PWA 再打开 ✨"
     },
     {
       "version": "3.0.10",
