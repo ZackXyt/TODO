@@ -1,6 +1,33 @@
 {
   "versions": [
     {
+      "version": "3.0.12",
+      "emoji": "📱",
+      "title": "UI 真·铺满全屏，告别底部断层",
+      "tagline": "Gradient 直接挂 html，#desktop 顶到屏幕边缘——上下再无空带",
+      "highlights": [
+        {
+          "emoji": "🎨",
+          "title": "壁纸 gradient 改挂 html 元素",
+          "what": "之前用 html::before fixed 兜底安全区，iOS PWA 下不稳，Home 指示器附近会露出死黑色断层",
+          "how": "改成把 gradient 直接挂在 html 上（background-attachment: fixed），靠 CSS 规范里『html 背景向整张视口画布传播』规则覆盖所有安全区"
+        },
+        {
+          "emoji": "📐",
+          "title": "#desktop 接管 safe-area，UI 视觉铺满全屏",
+          "what": "之前 body 吃 safe-area，导致 UI 上下各留一截空带，看起来像没装满",
+          "how": "改成 body 不留 padding，#desktop 直接 100dvh 顶到屏幕边缘，padding 里再吸收 env(safe-area-inset-*)，子组件自动避让"
+        },
+        {
+          "emoji": "🧹",
+          "title": "去掉 .wallpaper-area 80px 多余空白",
+          "what": "notepad 下面那段死空白消失，gradient 现在和水印自然衔接",
+          "how": "padding-bottom 由 80px → 0，scroll-padding-bottom 留 24 就够"
+        }
+      ],
+      "footer": "如果还有断层，请彻底退出 PWA（长按删后台）重开，让 Service Worker 拉到最新版"
+    },
+    {
       "version": "3.0.10",
       "emoji": "💪",
       "title": "终极大招：伪元素强制铺满",
