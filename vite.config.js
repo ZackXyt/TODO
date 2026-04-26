@@ -28,9 +28,9 @@ export default defineConfig({
         'release-notes.json',
       ],
       manifest: {
-        name: '心流 HeartFlow',
-        short_name: '心流',
-        description: '专注、高效、心流状态——优雅的任务管理应用',
+        name: '凝光 Lumen',
+        short_name: '凝光',
+        description: '凝聚一束光，专注此时此刻——文人气质的任务管理应用',
         theme_color: '#1a1a2e',
         background_color: '#1a1a2e',
         display: 'standalone',

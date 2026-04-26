@@ -1,7 +1,7 @@
 {
-  "name": "heartflow",
-  "version": "3.0.19",
-  "description": "心流 HeartFlow — 专注任务管理应用",
+  "name": "lumen",
+  "version": "3.1.0",
+  "description": "凝光 Lumen — 凝聚一束光，专注此时此刻",
   "scripts": {
     "dev": "vite",
     "build": "vite build",

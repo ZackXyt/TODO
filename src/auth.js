@@ -171,7 +171,7 @@ export async function submitAuthForm() {
       const cred = await createUserWithEmailAndPassword(auth, email, pw);
       try { await updateProfile(cred.user, { displayName: email.split('@')[0] }); } catch {}
       closeAuthModal();
-      window.showToast?.('✨ 注册成功，欢迎加入心流！');
+      window.showToast?.('✨ 注册成功，欢迎加入凝光！');
     } else if (mode === 'reset') {
       await sendPasswordResetEmail(auth, email);
       window.showToast?.('📧 重置邮件已发送，请查收');

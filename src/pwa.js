@@ -67,7 +67,7 @@ function showUpdateBanner(onConfirm) {
   const bar = document.createElement('div');
   bar.id = 'pwa-update-banner';
   bar.innerHTML = `
-    <span class="pwa-banner-msg">🎉 心流有新版本</span>
+    <span class="pwa-banner-msg">🎉 凝光有新版本</span>
     <button class="pwa-banner-btn pwa-btn-primary" id="pwa-update-yes">立即更新</button>
     <button class="pwa-banner-btn pwa-btn-secondary" id="pwa-update-peek">看看更新了啥</button>
     <button class="pwa-banner-btn pwa-btn-ghost" id="pwa-update-no">稍后</button>

@@ -1,5 +1,5 @@
     // ╔═══════════════════════════════════════════════════════════════╗
-    // ║  心流 HeartFlow · main.js                                      ║
+    // ║  凝光 Lumen · main.js                                           ║
     // ║  ───────────────────────────────────────────────────────────  ║
     // ║                                                               ║
     // ║  🗂  目录（按 Cmd+F 搜索这些标签即可跳转）                     ║
@@ -1109,7 +1109,7 @@
       const payload = {
         version: 2,
         exportedAt: new Date().toISOString(),
-        appName: 'HeartFlow',
+        appName: 'Lumen',
         data: {
           todo_tasks:           localStorage.getItem('todo_tasks'),
           todo_lists:           localStorage.getItem('todo_lists'),
@@ -1131,7 +1131,7 @@
       const a    = document.createElement('a');
       const dt   = new Date();
       const stamp = `${dt.getFullYear()}${String(dt.getMonth()+1).padStart(2,'0')}${String(dt.getDate()).padStart(2,'0')}-${String(dt.getHours()).padStart(2,'0')}${String(dt.getMinutes()).padStart(2,'0')}`;
-      a.href = url; a.download = `heartflow-backup-${stamp}.json`;
+      a.href = url; a.download = `lumen-backup-${stamp}.json`;
       document.body.appendChild(a); a.click(); a.remove();
       setTimeout(() => URL.revokeObjectURL(url), 1000);
       showToast('📤 已导出备份文件');
@@ -1144,8 +1144,9 @@
       reader.onload = (e) => {
         try {
           const payload = JSON.parse(e.target.result);
-          if (!payload || !payload.data || payload.appName !== 'HeartFlow') {
-            showToast('❌ 文件格式不对，看起来不是心流备份');
+          // 向后兼容：v3.1.0 改名前的备份文件 appName 是 'HeartFlow'，依然能导入
+          if (!payload || !payload.data || (payload.appName !== 'Lumen' && payload.appName !== 'HeartFlow')) {
+            showToast('❌ 文件格式不对，看起来不是凝光的备份');
             event.target.value = '';
             return;
           }
@@ -1272,7 +1273,7 @@
       tasks.forEach(t => {
         if (t.reminder && !t.reminderFired && now >= new Date(t.reminder).getTime()) {
           if (Notification.permission === 'granted') {
-            new Notification('心流 · 任务提醒 🔔', { body: t.text, icon: '' });
+            new Notification('凝光 · 任务提醒 🔔', { body: t.text, icon: '' });
           }
           showToast(`🔔 提醒：${t.text}`);
           t.reminderFired = true;
