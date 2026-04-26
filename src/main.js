@@ -45,9 +45,14 @@
       initAuth, openAuthModal, closeAuthModal, setAuthMode,
       submitAuthForm, logoutUser, getCurrentUser, onUserChange,
     } from './auth.js';
+    // §SYNC  Firestore 双向实时同步
+    import { initSync, syncTasksToCloud, syncListsToCloud, getSyncStatus } from './sync.js';
 
     initPWA();
     initAuth();
+    // sync.js needs window.reloadDataFromStorage + window.updateSyncIndicator,
+    // both defined below — call initSync after they're ready
+    setTimeout(initSync, 0);
     // Expose auth functions for inline onclick handlers
     Object.assign(window, {
       openAuthModal, closeAuthModal, setAuthMode, submitAuthForm, logoutUser,
@@ -319,7 +324,13 @@
       return getDefaultLists();
     }
     var lists = loadLists();
-    function saveLists() { localStorage.setItem('todo_lists', JSON.stringify(lists)); }
+    function saveLists() {
+      // Stamp updatedAt on each list so cloud sync resolves conflicts correctly
+      const now = Date.now();
+      lists.forEach(l => { l.updatedAt = now; });
+      localStorage.setItem('todo_lists', JSON.stringify(lists));
+      try { syncListsToCloud(); } catch {}
+    }
 
     function setActiveList(id) {
       activeListId = id;
@@ -464,7 +475,13 @@
       ];
     }
 
-    function saveTasks() { localStorage.setItem('todo_tasks', JSON.stringify(tasks)); }
+    function saveTasks() {
+      // Stamp updatedAt on each task so cloud sync resolves conflicts correctly
+      const now = Date.now();
+      tasks.forEach(t => { t.updatedAt = now; });
+      localStorage.setItem('todo_tasks', JSON.stringify(tasks));
+      try { syncTasksToCloud(); } catch {}
+    }
     function loadTasksFromStorage() {
       const s = localStorage.getItem('todo_tasks');
       if (s) {
@@ -487,6 +504,38 @@
       return getDefaultTasks().map(t => ({ ...t, listId: 'inbox', steps: [], starred: false, note: '', repeat: 'none', reminder: '', reminderFired: false }));
     }
     let tasks = loadTasksFromStorage();
+
+    // §SYNC-HOOKS  Helpers used by sync.js to apply remote changes locally
+    // (called WITHOUT going through saveTasks/saveLists to avoid sync loops)
+    window.reloadDataFromStorage = function() {
+      try {
+        const ts = localStorage.getItem('todo_tasks');
+        if (ts) tasks = JSON.parse(ts);
+        const ls = localStorage.getItem('todo_lists');
+        if (ls) lists = JSON.parse(ls);
+        if (typeof render === 'function') render();
+        if (typeof renderListChips === 'function') renderListChips();
+      } catch (e) { console.warn('reloadDataFromStorage:', e); }
+    };
+
+    // Sync indicator updater (called by sync.js)
+    window.updateSyncIndicator = function(status, detail) {
+      const dot = document.getElementById('sync-dot');
+      const txt = document.getElementById('sync-status-text');
+      if (!dot || !txt) return;
+      const map = {
+        offline: { color: 'rgba(255,255,255,0.25)',  label: '未登录' },
+        syncing: { color: 'rgba(120,200,255,0.95)',  label: detail || '同步中…' },
+        synced:  { color: 'rgba(100,220,140,0.95)',  label: '已同步 ✓' },
+        error:   { color: 'rgba(255,120,120,0.95)',  label: '同步失败' },
+      };
+      const cfg = map[status] || map.offline;
+      dot.style.background = cfg.color;
+      dot.style.boxShadow  = status === 'syncing' ? `0 0 0 4px ${cfg.color.replace(/[\d.]+\)$/, '0.18)')}` : 'none';
+      dot.classList.toggle('pulsing', status === 'syncing');
+      txt.textContent = cfg.label;
+      txt.title = detail || '';
+    };
 
     const STATE_ORDER = { overdue:0, panic:1, urgent:2, soon:3, normal:4 };
     const STATE_CFG = {

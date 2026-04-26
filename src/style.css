@@ -1266,6 +1266,30 @@
     }
     .acct-logout-btn:hover { background: rgba(255,90,90,0.22); color: white; border-color: rgba(255,90,90,0.4); }
 
+    /* ====== SYNC STATUS INDICATOR ====== */
+    .sync-status-row {
+      display: flex; align-items: center; gap: 8px;
+      padding: 8px 14px 4px 18px;
+      font-size: 11px; color: rgba(255,255,255,0.5);
+    }
+    .sync-dot {
+      width: 9px; height: 9px; border-radius: 50%;
+      background: rgba(255,255,255,0.25);
+      transition: background 0.25s, box-shadow 0.25s;
+      flex-shrink: 0;
+    }
+    .sync-dot.pulsing {
+      animation: syncPulse 1.4s ease-in-out infinite;
+    }
+    @keyframes syncPulse {
+      0%, 100% { opacity: 1; }
+      50%      { opacity: 0.45; }
+    }
+    .sync-status-text {
+      font-family: inherit; flex: 1;
+      overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    }
+
     /* ====== AUTH MODAL ====== */
     .auth-modal-overlay {
       position: fixed; inset: 0; z-index: 100000;
