@@ -2363,6 +2363,18 @@
         overflow: visible;
       }
 
+      /* PWA 模式下底部毛玻璃条高度 = env(safe-area-inset-bottom) + 12px。
+         此时把水印放到条的视觉正中，更有「品牌签名」的精致感。
+         Safari 模式下条只有 12px 太矮，居中会把字推出屏幕，所以只在
+         standalone 下生效。 */
+      @media (display-mode: standalone) {
+        .watermark {
+          bottom: calc((env(safe-area-inset-bottom, 0px) + 12px) / 2) !important;
+          transform: translate(-50%, 50%) !important;     /* 横竖都中心对齐到 anchor 点 */
+          color: rgba(255,255,255,0.55) !important;        /* 衬玻璃条略提亮 */
+        }
+      }
+
       /* Menu button: large tappable tab at middle-right */
       #menu-btn {
         top: 50% !important;

@@ -1,6 +1,33 @@
 {
   "versions": [
     {
+      "version": "3.0.17",
+      "emoji": "📛",
+      "title": "水印挪到底部毛玻璃条正中",
+      "tagline": "「Zzzack's first creativity!!!」现在稳稳坐在 PWA 底部那条玻璃条中央，像签名一样精致",
+      "highlights": [
+        {
+          "emoji": "🎯",
+          "title": "PWA 模式：水印垂直居中到玻璃条",
+          "what": "v3.0.14 加的底部毛玻璃条原本是空的，现在让水印在条的视觉正中显示",
+          "how": "bottom: calc((env(safe-area-inset-bottom) + 12px) / 2) + transform translate(-50%, 50%)，几何上精确对齐到条的中心"
+        },
+        {
+          "emoji": "💡",
+          "title": "色阶上调",
+          "what": "玻璃条本身偏亮，水印 alpha 从 0.35 提到 0.55 让字更清晰",
+          "how": "color: rgba(255,255,255,0.55) 仅在 standalone 下生效"
+        },
+        {
+          "emoji": "🌐",
+          "title": "Safari 模式保持原样",
+          "what": "Safari 里玻璃条只有 12px 太矮，水印居中会被推出屏幕，所以仅 PWA 模式启用居中",
+          "how": "@media (display-mode: standalone) 限定，自动判断当前是 PWA 还是 Safari"
+        }
+      ],
+      "footer": "细节决定质感 ✨"
+    },
+    {
       "version": "3.0.16",
       "emoji": "🔍",
       "title": "手机端双指缩放上线",
