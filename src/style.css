@@ -944,6 +944,93 @@
     .note-textarea::placeholder { color: rgba(255,255,255,0.25); }
     .note-textarea:focus { border-color: rgba(255,255,255,0.3); background: rgba(255,255,255,0.11); }
 
+    /* ====== QUICK ADD BAR ====== */
+    .quick-add-wrap {
+      position: relative;
+      display: flex; align-items: center;
+      margin-bottom: 8px;
+      background: linear-gradient(135deg, rgba(120,200,255,0.13), rgba(180,140,255,0.13));
+      border: 1.5px solid rgba(120,200,255,0.28);
+      border-radius: 12px;
+      padding: 0 6px 0 4px;
+      transition: border-color 0.2s, background 0.2s;
+    }
+    .quick-add-wrap:focus-within {
+      border-color: rgba(120,200,255,0.6);
+      background: linear-gradient(135deg, rgba(120,200,255,0.2), rgba(180,140,255,0.2));
+      box-shadow: 0 0 0 3px rgba(120,200,255,0.12);
+    }
+    .quick-add-icon {
+      font-size: 20px; color: rgba(180,220,255,0.85);
+      padding: 0 6px 0 8px; line-height: 1; font-weight: 300;
+    }
+    .quick-add-input {
+      flex: 1; background: transparent; border: none; outline: none;
+      padding: 9px 4px; color: white; font-size: 12.5px;
+      font-family: inherit;
+    }
+    .quick-add-input::placeholder { color: rgba(255,255,255,0.42); font-style: italic; }
+    .quick-add-hint-btn {
+      width: 22px; height: 22px; border-radius: 50%;
+      background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2);
+      color: rgba(255,255,255,0.6); font-size: 12px; font-weight: 700;
+      cursor: pointer; transition: all 0.18s; flex-shrink: 0;
+      font-family: inherit; line-height: 1;
+    }
+    .quick-add-hint-btn:hover {
+      background: rgba(120,200,255,0.3); color: white; transform: scale(1.1);
+    }
+    .quick-add-hint {
+      display: none;
+      background: rgba(28,28,48,0.88);
+      backdrop-filter: blur(14px);
+      border: 1px solid rgba(120,200,255,0.2);
+      border-radius: 10px;
+      padding: 10px 12px;
+      margin-bottom: 8px;
+      font-size: 11px;
+      animation: fadeSlide 0.2s ease;
+    }
+    .quick-add-hint.show { display: block; }
+    .qa-hint-row {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 4px 0; gap: 12px;
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+    }
+    .qa-hint-row:last-child { border-bottom: none; }
+    .qa-hint-key {
+      background: rgba(120,200,255,0.16);
+      border: 1px solid rgba(120,200,255,0.3);
+      border-radius: 5px; padding: 1px 7px;
+      color: rgba(180,220,255,0.95); font-weight: 600;
+      font-family: 'SF Mono', Menlo, monospace; font-size: 10.5px;
+    }
+    .qa-hint-row > span:last-child { color: rgba(255,255,255,0.6); }
+
+    /* ====== TASK COMPLETION CONFETTI ====== */
+    .confetti-piece {
+      position: fixed;
+      pointer-events: none;
+      font-size: 18px;
+      z-index: 99999;
+      will-change: transform, opacity;
+      user-select: none;
+    }
+    @keyframes confetti-fly {
+      0%   { transform: translate(0, 0) rotate(0deg) scale(0.6); opacity: 1; }
+      20%  { opacity: 1; }
+      100% { transform: translate(var(--dx), var(--dy)) rotate(var(--rot)) scale(1); opacity: 0; }
+    }
+
+    /* Glow ring on the completed task button */
+    @keyframes done-burst {
+      0%   { box-shadow: 0 0 0 0 rgba(100,220,140,0.65); }
+      100% { box-shadow: 0 0 0 28px rgba(100,220,140,0);  }
+    }
+    .done-btn.bursting {
+      animation: done-burst 0.55s ease-out;
+    }
+
     /* ====== SEARCH BAR ====== */
     .search-bar-wrap {
       position: relative; margin-bottom: 8px;

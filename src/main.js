@@ -779,6 +779,10 @@
           e.preventDefault();
           toggleForm();
           break;
+        case 'a': case 'A':
+          e.preventDefault();
+          { const qi = document.getElementById('quick-add-input'); if (qi) qi.focus(); }
+          break;
         case '/':
           e.preventDefault();
           { const inp = document.getElementById('task-search'); if (inp) inp.focus(); }
@@ -1078,7 +1082,15 @@
     function completeTask(id) {
       const task = tasks.find(t => t.id === id);
       const el = document.getElementById("task-" + id);
+
+      // 🎉 Confetti celebration burst from the ✓ button
       if (el) {
+        const btn = el.querySelector('.done-btn');
+        if (btn) {
+          const r = btn.getBoundingClientRect();
+          celebrate(r.left + r.width / 2, r.top + r.height / 2);
+          btn.classList.add('bursting');
+        }
         el.style.opacity = "0";
         el.style.transform = "translateX(24px) scale(0.95)";
         el.style.transition = "all 0.28s ease";
@@ -2120,8 +2132,218 @@
     // §PURE-FOCUS ─ 纯享模式（已抽取到 ./pure-focus.js）
     // 见文件顶部的 import 语句
 
+    // §QUICK-ADD ─ 快速添加 + 自然语言解析
+    // 解析示例:
+    //   "明天下午3点开会 P1"      → 标题: 开会, 截止: 明天15:00, P1
+    //   "周五交报告 !"           → 标题: 交报告, 截止: 下周五23:59, ⭐
+    //   "5月10日团建 P2"         → 标题: 团建, 截止: 5月10日23:59, P2
+    //   "3天后做 demo"           → 标题: 做 demo, 截止: 3天后23:59
+    //   "9点半喝咖啡"            → 标题: 喝咖啡, 截止: 今天09:30
+    function parseQuickAdd(raw) {
+      let title = String(raw || '').trim();
+      let deadline = null;
+      let priority = 3;
+      let starred = false;
 
-    // §EXPOSE ─ 暴露给 window 供 onclick 使用
+      // 优先级：P1-P5（不区分大小写）
+      const pMatch = title.match(/(?:^|\s)([Pp])([1-5])(?=\s|$)/);
+      if (pMatch) {
+        priority = parseInt(pMatch[2]);
+        title = title.replace(pMatch[0], ' ').trim();
+      }
+
+      // 重要标记：! 或 ！或 ⭐（仅首尾）
+      const starMatch = title.match(/(^|\s)([!！⭐]+)(\s|$)/);
+      if (starMatch) {
+        starred = true;
+        title = title.replace(starMatch[0], ' ').trim();
+      }
+
+      // 日期解析（先解析日期，再解析时间）
+      const now = new Date();
+      let baseDate = null;
+      let dateMatched = false;
+
+      // 今天/明天/后天/大后天
+      const todayKw = title.match(/今天|今日/);
+      const tomKw   = title.match(/明天|明日/);
+      const dayAfter = title.match(/后天/);
+      const dayAfterAfter = title.match(/大后天/);
+
+      if (dayAfterAfter) {
+        baseDate = new Date(); baseDate.setDate(baseDate.getDate() + 3);
+        title = title.replace(dayAfterAfter[0], '').trim(); dateMatched = true;
+      } else if (dayAfter) {
+        baseDate = new Date(); baseDate.setDate(baseDate.getDate() + 2);
+        title = title.replace(dayAfter[0], '').trim(); dateMatched = true;
+      } else if (tomKw) {
+        baseDate = new Date(); baseDate.setDate(baseDate.getDate() + 1);
+        title = title.replace(tomKw[0], '').trim(); dateMatched = true;
+      } else if (todayKw) {
+        baseDate = new Date();
+        title = title.replace(todayKw[0], '').trim(); dateMatched = true;
+      }
+
+      // 周X / 星期X
+      if (!dateMatched) {
+        const weekdayMap = { '日':0,'天':0,'一':1,'二':2,'三':3,'四':4,'五':5,'六':6 };
+        const wMatch = title.match(/(?:周|星期|礼拜)([日天一二三四五六])/);
+        if (wMatch) {
+          const targetDay = weekdayMap[wMatch[1]];
+          const todayDay = now.getDay();
+          let diff = targetDay - todayDay;
+          if (diff <= 0) diff += 7;
+          baseDate = new Date(); baseDate.setDate(baseDate.getDate() + diff);
+          title = title.replace(wMatch[0], '').trim(); dateMatched = true;
+        }
+      }
+
+      // X月X日 / X月X号 / X/X
+      if (!dateMatched) {
+        const dMatch = title.match(/(\d{1,2})\s*[月\/](\d{1,2})\s*[日号]?/);
+        if (dMatch) {
+          baseDate = new Date(now.getFullYear(), parseInt(dMatch[1]) - 1, parseInt(dMatch[2]));
+          if (baseDate.getTime() < now.getTime() - 86400000) baseDate.setFullYear(baseDate.getFullYear() + 1);
+          title = title.replace(dMatch[0], '').trim(); dateMatched = true;
+        }
+      }
+
+      // X天后 / X周后
+      if (!dateMatched) {
+        const daysM = title.match(/(\d+)\s*天后/);
+        const weekM = title.match(/(\d+)\s*(?:周|星期)后/);
+        if (weekM) {
+          baseDate = new Date(); baseDate.setDate(baseDate.getDate() + parseInt(weekM[1]) * 7);
+          title = title.replace(weekM[0], '').trim(); dateMatched = true;
+        } else if (daysM) {
+          baseDate = new Date(); baseDate.setDate(baseDate.getDate() + parseInt(daysM[1]));
+          title = title.replace(daysM[0], '').trim(); dateMatched = true;
+        }
+      }
+
+      // X小时后 / X分钟后（直接覆盖时间，不需要 baseDate 加日期）
+      const hoursM = title.match(/(\d+)\s*小时后/);
+      const minsM  = title.match(/(\d+)\s*分钟后/);
+      if (hoursM) {
+        baseDate = new Date(); baseDate.setHours(baseDate.getHours() + parseInt(hoursM[1]));
+        title = title.replace(hoursM[0], '').trim();
+        deadline = baseDate;
+      } else if (minsM) {
+        baseDate = new Date(); baseDate.setMinutes(baseDate.getMinutes() + parseInt(minsM[1]));
+        title = title.replace(minsM[0], '').trim();
+        deadline = baseDate;
+      } else if (baseDate) {
+        // 时刻：上午/下午/晚上 X 点(半)（X分）/ X:XX
+        const timeM = title.match(/(上午|下午|中午|晚上|早上|凌晨)?\s*(\d{1,2})\s*(?:点|:|：)\s*(半|\d{1,2})?\s*分?/);
+        if (timeM) {
+          let hour = parseInt(timeM[2]);
+          const period = timeM[1];
+          const minStr = timeM[3];
+          const minute = minStr === '半' ? 30 : (minStr ? parseInt(minStr) : 0);
+          if ((period === '下午' || period === '晚上') && hour < 12) hour += 12;
+          if (period === '中午' && hour < 12) hour = 12;
+          if (period === '凌晨' && hour === 12) hour = 0;
+          baseDate.setHours(hour, minute, 0, 0);
+          title = title.replace(timeM[0], '').trim();
+        } else {
+          // 默认当天 23:59
+          baseDate.setHours(23, 59, 0, 0);
+        }
+        deadline = baseDate;
+      }
+
+      // 清理多余空格、孤立标点
+      title = title.replace(/\s{2,}/g, ' ').replace(/^[，,。.;；\s]+|[，,。.;；\s]+$/g, '').trim();
+
+      return { title, deadline, priority, starred };
+    }
+
+    function quickAddTask() {
+      const inp = document.getElementById('quick-add-input');
+      if (!inp) return;
+      const raw = inp.value.trim();
+      if (!raw) return;
+      const parsed = parseQuickAdd(raw);
+      if (!parsed.title) {
+        showToast('❌ 请输入任务名');
+        return;
+      }
+      // Default deadline: today 23:59 if user didn't specify
+      if (!parsed.deadline) {
+        parsed.deadline = new Date();
+        parsed.deadline.setHours(23, 59, 0, 0);
+      }
+      // Determine list (current active list, or inbox)
+      const chosenList = (activeListId !== 'all' && lists.find(l => l.id === activeListId))
+        ? activeListId
+        : (lists[0] ? lists[0].id : 'inbox');
+
+      const newOrder = sortMode === 'manual'
+        ? Math.min(...tasks.map(t => t.order ?? 0), 0) - 1
+        : tasks.length;
+
+      tasks.push({
+        id: Date.now(),
+        text: parsed.title,
+        deadline: parsed.deadline.toISOString(),
+        priority: parsed.priority,
+        myDay: false,
+        starred: parsed.starred,
+        steps: [], note: '',
+        listId: chosenList,
+        repeat: 'none', reminder: '', reminderFired: false,
+        order: newOrder,
+      });
+      inp.value = '';
+      saveTasks();
+      const _dk = getDayKey(), _dd = getDayData(_dk);
+      _dd.total++; saveDayData(_dk, _dd);
+      render();
+
+      // Smart toast that confirms what we parsed
+      const dt = parsed.deadline;
+      const sameDay = dt.toDateString() === new Date().toDateString();
+      const tomorrow = new Date(); tomorrow.setDate(tomorrow.getDate() + 1);
+      const isTomorrow = dt.toDateString() === tomorrow.toDateString();
+      const dateStr = sameDay ? '今天' : isTomorrow ? '明天' : `${dt.getMonth()+1}/${dt.getDate()}`;
+      const isEod = dt.getHours() === 23 && dt.getMinutes() === 59;
+      const timeStr = isEod ? '' : ` ${String(dt.getHours()).padStart(2,'0')}:${String(dt.getMinutes()).padStart(2,'0')}`;
+      const pStr = parsed.priority !== 3 ? ` · P${parsed.priority}` : '';
+      const sStr = parsed.starred ? ' ⭐' : '';
+      showToast(`✅ "${parsed.title}" → ${dateStr}${timeStr}${pStr}${sStr}`);
+    }
+
+    function toggleQuickAddHint() {
+      const h = document.getElementById('quick-add-hint');
+      if (h) h.classList.toggle('show');
+    }
+
+    // §CELEBRATE ─ 任务完成庆祝动画
+    const CONFETTI_EMOJIS = ['🎉','🎊','✨','⭐','💫','🌟','🎈','🍀'];
+    function celebrate(x, y) {
+      const N = 18;
+      for (let i = 0; i < N; i++) {
+        const piece = document.createElement('span');
+        piece.className = 'confetti-piece';
+        piece.textContent = CONFETTI_EMOJIS[Math.floor(Math.random() * CONFETTI_EMOJIS.length)];
+        piece.style.left = (x - 10) + 'px';
+        piece.style.top  = (y - 10) + 'px';
+        // Random direction & distance
+        const angle = (Math.PI * 2 * i / N) + (Math.random() * 0.5 - 0.25);
+        const dist  = 70 + Math.random() * 90;
+        const dx = Math.cos(angle) * dist;
+        const dy = Math.sin(angle) * dist - 40; // bias upward
+        const rot = (Math.random() * 720 - 360) + 'deg';
+        piece.style.setProperty('--dx', dx + 'px');
+        piece.style.setProperty('--dy', dy + 'px');
+        piece.style.setProperty('--rot', rot);
+        piece.style.fontSize = (14 + Math.random() * 12) + 'px';
+        piece.style.animation = `confetti-fly ${0.7 + Math.random() * 0.5}s ease-out forwards`;
+        document.body.appendChild(piece);
+        setTimeout(() => piece.remove(), 1400);
+      }
+    }
+
     // Inline onclick="..." handlers in HTML need these as globals.
     // (ES modules scope declarations to the module by default.)
     Object.assign(window, {
@@ -2146,4 +2368,6 @@
       openHelp, closeHelp,
       // Multi-mascot
       cancelRemoveMascot, confirmRemoveMascot, removeMascot,
+      // Quick add (with NLP) + celebration
+      quickAddTask, toggleQuickAddHint, parseQuickAdd,
     });
