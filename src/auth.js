@@ -38,21 +38,85 @@ export function initAuth() {
   });
 }
 
-// ---- Modal control ----
+// ---- Modal control (dynamically injected to avoid iOS password autofill prompt) ----
+
+function buildAuthModal(mode) {
+  const ov = document.createElement('div');
+  ov.className = 'auth-modal-overlay';
+  ov.id = 'auth-modal-overlay';
+  ov.dataset.mode = mode;
+  ov.addEventListener('click', e => {
+    if (e.target === ov) closeAuthModal();
+  });
+  ov.innerHTML = `
+    <div class="auth-modal">
+      <button class="auth-close-btn" type="button" title="关闭">✕</button>
+      <div class="auth-hero">
+        <div class="auth-hero-icon">🦋</div>
+        <div class="auth-hero-title" id="auth-modal-title">🔐 登录</div>
+        <div class="auth-hero-sub" id="auth-modal-sub">欢迎回来，登录后多设备同步</div>
+      </div>
+      <input class="auth-input" type="email" id="auth-email"
+             placeholder="邮箱" autocomplete="off" autocorrect="off"
+             autocapitalize="off" spellcheck="false"
+             data-form-type="other" />
+      <input class="auth-input auth-input-pw" type="password" id="auth-password"
+             placeholder="密码（至少 6 位）" autocomplete="off"
+             autocorrect="off" autocapitalize="off" spellcheck="false"
+             data-form-type="other" />
+      <div class="auth-error" id="auth-error"></div>
+      <button class="auth-submit-btn" id="auth-submit-btn" type="button">登录 →</button>
+      <div class="auth-switch-row">
+        <span class="auth-switch-link auth-show-signin"  data-target-mode="signin">← 已有账号，登录</span>
+        <span class="auth-switch-link auth-show-signup"  data-target-mode="signup">还没账号？注册 →</span>
+        <span class="auth-switch-link auth-show-reset"   data-target-mode="reset">忘记密码？</span>
+      </div>
+      <div class="auth-foot">
+        🔒 你的数据加密存储于 Google 云，靠 Firestore 安全规则保护，<br>仅你本人可访问。中国大陆需 VPN 才能登录。
+      </div>
+    </div>
+  `;
+  // Wire up handlers (avoid inline onclick — those rely on window globals
+  // which would still leak if the modal is re-rendered)
+  ov.querySelector('.auth-close-btn').addEventListener('click', closeAuthModal);
+  ov.querySelector('#auth-submit-btn').addEventListener('click', submitAuthForm);
+  ov.querySelectorAll('.auth-switch-link').forEach(link => {
+    link.addEventListener('click', () => setAuthMode(link.dataset.targetMode));
+  });
+  ov.querySelector('#auth-email').addEventListener('keydown', e => {
+    if (e.key === 'Enter') submitAuthForm();
+  });
+  ov.querySelector('#auth-password').addEventListener('keydown', e => {
+    if (e.key === 'Enter') submitAuthForm();
+  });
+  return ov;
+}
 
 export function openAuthModal(mode = 'signin') {
-  closeAuthError();
-  setAuthMode(mode);
-  const ov = document.getElementById('auth-modal-overlay');
+  // If already open (shouldn't happen but defensive), just refocus
+  let ov = document.getElementById('auth-modal-overlay');
   if (ov) {
-    ov.classList.add('show');
-    setTimeout(() => document.getElementById('auth-email')?.focus(), 60);
+    setAuthMode(mode);
+    setTimeout(() => document.getElementById('auth-email')?.focus(), 30);
+    return;
   }
+  ov = buildAuthModal(mode);
+  document.body.appendChild(ov);
+  // Set the texts via setAuthMode (writes title/sub/button labels)
+  setAuthMode(mode);
+  // Animate in
+  requestAnimationFrame(() => ov.classList.add('show'));
+  // Focus email after animation
+  setTimeout(() => document.getElementById('auth-email')?.focus(), 320);
 }
 
 export function closeAuthModal() {
-  document.getElementById('auth-modal-overlay')?.classList.remove('show');
-  closeAuthError();
+  const ov = document.getElementById('auth-modal-overlay');
+  if (!ov) return;
+  ov.classList.remove('show');
+  // Remove from DOM after animation so password input is gone — prevents
+  // iOS password autofill prompt from triggering on next page interaction
+  setTimeout(() => ov.remove(), 240);
 }
 
 export function setAuthMode(mode /* 'signin' | 'signup' | 'reset' */) {
