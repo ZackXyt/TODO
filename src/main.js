@@ -46,7 +46,7 @@
       submitAuthForm, logoutUser, getCurrentUser, onUserChange,
     } from './auth.js';
     // §SYNC  Firestore 双向实时同步
-    import { initSync, syncTasksToCloud, syncListsToCloud, getSyncStatus, manualSync } from './sync.js';
+    import { initSync, syncTasksToCloud, syncListsToCloud, syncNotepadToCloud, getSyncStatus, manualSync } from './sync.js';
 
     initPWA();
     initAuth();
@@ -1465,14 +1465,28 @@
     notepadEl.value = localStorage.getItem('todo_notepad') || "";
     notepadCountEl.textContent = NOTEPAD_MAX - notepadEl.value.length;
 
-    notepadEl.addEventListener("input", () => {
-      localStorage.setItem('todo_notepad', notepadEl.value);
-      const remaining = NOTEPAD_MAX - notepadEl.value.length;
+    function updateNotepadCount(remaining) {
       notepadCountEl.textContent = remaining;
       notepadCountEl.style.color = remaining < 50
         ? "rgba(255,100,100,0.8)"
         : "rgba(255,255,255,0.4)";
+    }
+
+    notepadEl.addEventListener("input", () => {
+      localStorage.setItem('todo_notepad', notepadEl.value);
+      localStorage.setItem('todo_notepad_updatedAt', String(Date.now()));
+      updateNotepadCount(NOTEPAD_MAX - notepadEl.value.length);
+      try { syncNotepadToCloud(); } catch {}
     });
+
+    // §SYNC-HOOKS  云端 → 本地：随想录被远端修改时刷新 textarea
+    window.reloadNotepadFromStorage = function() {
+      try {
+        const v = localStorage.getItem('todo_notepad') || '';
+        if (notepadEl.value !== v) notepadEl.value = v;
+        updateNotepadCount(NOTEPAD_MAX - v.length);
+      } catch (e) { console.warn('reloadNotepadFromStorage:', e); }
+    };
 
     // §RESIZE ─ Todo 面板宽度拖拽
     (function() {

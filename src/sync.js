@@ -11,7 +11,7 @@
 
 import { db } from './firebase.js';
 import {
-  collection, doc, onSnapshot, getDocs, writeBatch,
+  collection, doc, onSnapshot, getDocs, getDoc, setDoc, writeBatch,
 } from 'firebase/firestore';
 import { onUserChange } from './auth.js';
 
@@ -20,7 +20,7 @@ const _state = {
   unsubs: [],
   status: 'offline',     // offline | syncing | synced | error
   isApplyingRemote: false,
-  pushQueue: { tasks: false, lists: false },
+  pushQueue: { tasks: false, lists: false, notepad: false },
   pushTimer: null,
   initialPullDone: false,
 };
@@ -59,7 +59,7 @@ function teardown() {
   _state.unsubs.forEach(u => { try { u(); } catch {} });
   _state.unsubs = [];
   clearTimeout(_state.pushTimer);
-  _state.pushQueue = { tasks: false, lists: false };
+  _state.pushQueue = { tasks: false, lists: false, notepad: false };
 }
 
 async function setupForUser(uid) {
@@ -87,6 +87,15 @@ async function setupForUser(uid) {
   );
   _state.unsubs.push(unsubLists);
 
+  // 随想录是单文档（每个用户只有一个），单独监听
+  const notepadRef = doc(db, 'users', uid, 'profile', 'notepad');
+  const unsubNotepad = onSnapshot(
+    notepadRef,
+    snap => handleNotepadSnapshot(snap),
+    err => console.error('Notepad listener error:', err)
+  );
+  _state.unsubs.push(unsubNotepad);
+
   setStatus('synced', '已同步');
 }
 
@@ -110,13 +119,29 @@ async function pullAndMerge(uid) {
     localStorage.setItem('todo_lists', JSON.stringify(mergedLists));
   }
 
+  // Notepad（单文档：users/{uid}/profile/notepad，schema: { content, updatedAt }）
+  const notepadSnap = await getDoc(doc(db, 'users', uid, 'profile', 'notepad'));
+  const cloudNotepad = notepadSnap.exists() ? notepadSnap.data() : null;
+  const localNotepad = {
+    content: localStorage.getItem('todo_notepad') || '',
+    updatedAt: parseInt(localStorage.getItem('todo_notepad_updatedAt') || '0', 10),
+  };
+  const mergedNotepad = (cloudNotepad && (cloudNotepad.updatedAt || 0) > localNotepad.updatedAt)
+    ? cloudNotepad
+    : localNotepad;
+  localStorage.setItem('todo_notepad', mergedNotepad.content || '');
+  localStorage.setItem('todo_notepad_updatedAt', String(mergedNotepad.updatedAt || 0));
+
   // Apply to live state in main.js
   if (typeof window.reloadDataFromStorage === 'function') {
     window.reloadDataFromStorage();
   }
+  if (typeof window.reloadNotepadFromStorage === 'function') {
+    window.reloadNotepadFromStorage();
+  }
 
   // Push merged result back so cloud reflects the union (handles "local had newer")
-  await pushAll(uid, mergedTasks, mergedLists.length > 0 ? mergedLists : localLists);
+  await pushAll(uid, mergedTasks, mergedLists.length > 0 ? mergedLists : localLists, mergedNotepad);
 }
 
 function mergeByTimestamp(local, remote) {
@@ -182,10 +207,31 @@ function handleSnapshot(snap, kind) {
   }
 }
 
+// ---- Notepad listener ----
+
+function handleNotepadSnapshot(snap) {
+  if (!_state.initialPullDone) return;
+  if (snap.metadata.hasPendingWrites) return;
+  if (!snap.exists()) return;
+  const cloud = snap.data();
+  const localTs = parseInt(localStorage.getItem('todo_notepad_updatedAt') || '0', 10);
+  const cloudTs = cloud.updatedAt || 0;
+  if (cloudTs > localTs) {
+    _state.isApplyingRemote = true;
+    localStorage.setItem('todo_notepad', cloud.content || '');
+    localStorage.setItem('todo_notepad_updatedAt', String(cloudTs));
+    if (typeof window.reloadNotepadFromStorage === 'function') {
+      window.reloadNotepadFromStorage();
+    }
+    _state.isApplyingRemote = false;
+  }
+}
+
 // ---- Push (debounced) ----
 
-export function syncTasksToCloud() { schedulePush('tasks'); }
-export function syncListsToCloud() { schedulePush('lists'); }
+export function syncTasksToCloud()   { schedulePush('tasks'); }
+export function syncListsToCloud()   { schedulePush('lists'); }
+export function syncNotepadToCloud() { schedulePush('notepad'); }
 
 // Manual force-sync: triggered from "立即同步" button in account card.
 // Re-pulls cloud, merges with local, pushes back result. Use when in doubt.
@@ -225,9 +271,14 @@ async function flushPush() {
   try {
     const tasks = JSON.parse(localStorage.getItem('todo_tasks') || '[]');
     const lists = JSON.parse(localStorage.getItem('todo_lists') || '[]');
-    await pushAll(_state.uid, tasks, lists);
+    const notepad = {
+      content: localStorage.getItem('todo_notepad') || '',
+      updatedAt: parseInt(localStorage.getItem('todo_notepad_updatedAt') || '0', 10),
+    };
+    await pushAll(_state.uid, tasks, lists, notepad);
     _state.pushQueue.tasks = false;
     _state.pushQueue.lists = false;
+    _state.pushQueue.notepad = false;
     setStatus('synced', '已同步');
   } catch (err) {
     console.error('Push failed:', err);
@@ -235,7 +286,7 @@ async function flushPush() {
   }
 }
 
-async function pushAll(uid, tasks, lists) {
+async function pushAll(uid, tasks, lists, notepad) {
   const now = Date.now();
 
   // Stamp updatedAt on items missing it (so first-time sync gets timestamps)
@@ -252,6 +303,18 @@ async function pushAll(uid, tasks, lists) {
   // Push lists
   await batchedSet(`users/${uid}/lists`, lists);
   await batchedDeleteMissing(`users/${uid}/lists`, lists);
+
+  // Push notepad（单文档 set，覆盖式写入）
+  if (notepad) {
+    const stampedNotepad = {
+      content: notepad.content || '',
+      updatedAt: notepad.updatedAt || now,
+    };
+    if (!notepad.updatedAt) {
+      localStorage.setItem('todo_notepad_updatedAt', String(stampedNotepad.updatedAt));
+    }
+    await setDoc(doc(db, 'users', uid, 'profile', 'notepad'), stampedNotepad);
+  }
 }
 
 async function batchedSet(path, items) {
