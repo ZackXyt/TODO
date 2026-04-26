@@ -11,8 +11,8 @@
   <meta name="apple-mobile-web-app-title" content="心流">
   <link rel="icon" type="image/svg+xml" href="/TODO/heartflow.svg">
   <link rel="apple-touch-icon" href="/TODO/apple-touch-icon-180x180.png">
-  <script type="module" crossorigin src="/TODO/assets/index-CcU73Za_.js"></script>
-  <link rel="stylesheet" crossorigin href="/TODO/assets/index-BiYnj-dW.css">
+  <script type="module" crossorigin src="/TODO/assets/index-BekoK7zO.js"></script>
+  <link rel="stylesheet" crossorigin href="/TODO/assets/index-B8dY6ehy.css">
 <link rel="manifest" href="/TODO/manifest.webmanifest"></head>
 <body>
   <div id="wallpaper"></div>
@@ -399,13 +399,14 @@
     </div>
 
     <div class="menu-section">
-      <div class="menu-section-title">其他</div>
-      <div class="menu-item" style="opacity:0.35;cursor:default;">
-        <span class="menu-item-icon">👤</span>
-        <div>
-          <div>账号设置</div>
-          <div class="menu-item-desc">（开发中）</div>
+      <div class="menu-section-title">账号</div>
+      <div class="account-card" id="account-card">
+        <div class="acct-avatar acct-avatar-empty">👤</div>
+        <div class="acct-info">
+          <div class="acct-name">未登录</div>
+          <div class="acct-email">登录后即可多设备同步</div>
         </div>
+        <button class="acct-login-btn" onclick="openAuthModal('signin')">登录</button>
       </div>
     </div>
 
@@ -549,6 +550,35 @@
       <div class="del-modal-actions">
         <button class="del-modal-cancel" onclick="cancelDeleteModal()">取消</button>
         <button class="del-modal-confirm" onclick="confirmDeleteTask()">删除</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- AUTH MODAL (login / signup / reset) -->
+  <div class="auth-modal-overlay" id="auth-modal-overlay" data-mode="signin"
+       onclick="if(event.target===this)closeAuthModal()">
+    <div class="auth-modal">
+      <button class="auth-close-btn" onclick="closeAuthModal()" title="关闭">✕</button>
+      <div class="auth-hero">
+        <div class="auth-hero-icon">🦋</div>
+        <div class="auth-hero-title" id="auth-modal-title">🔐 登录</div>
+        <div class="auth-hero-sub" id="auth-modal-sub">欢迎回来，登录后多设备同步</div>
+      </div>
+      <input class="auth-input" type="email" id="auth-email"
+             placeholder="邮箱" autocomplete="email"
+             onkeydown="if(event.key==='Enter')submitAuthForm()" />
+      <input class="auth-input auth-input-pw" type="password" id="auth-password"
+             placeholder="密码（至少 6 位）" autocomplete="current-password"
+             onkeydown="if(event.key==='Enter')submitAuthForm()" />
+      <div class="auth-error" id="auth-error"></div>
+      <button class="auth-submit-btn" id="auth-submit-btn" onclick="submitAuthForm()">登录 →</button>
+      <div class="auth-switch-row">
+        <span class="auth-switch-link auth-show-signin"  onclick="setAuthMode('signin')">← 已有账号，登录</span>
+        <span class="auth-switch-link auth-show-signup"  onclick="setAuthMode('signup')">还没账号？注册 →</span>
+        <span class="auth-switch-link auth-show-reset"   onclick="setAuthMode('reset')">忘记密码？</span>
+      </div>
+      <div class="auth-foot">
+        🔒 你的数据加密存储于 Google 云，靠 Firestore 安全规则保护，<br>仅你本人可访问。中国大陆需 VPN 才能登录。
       </div>
     </div>
   </div>
