@@ -11,8 +11,8 @@
   <meta name="apple-mobile-web-app-title" content="心流">
   <link rel="icon" type="image/svg+xml" href="/TODO/heartflow.svg">
   <link rel="apple-touch-icon" href="/TODO/apple-touch-icon-180x180.png">
-  <script type="module" crossorigin src="/TODO/assets/index-B5HJGvJT.js"></script>
-  <link rel="stylesheet" crossorigin href="/TODO/assets/index-DVz5UvyC.css">
+  <script type="module" crossorigin src="/TODO/assets/index-CcU73Za_.js"></script>
+  <link rel="stylesheet" crossorigin href="/TODO/assets/index-BiYnj-dW.css">
 <link rel="manifest" href="/TODO/manifest.webmanifest"></head>
 <body>
   <div id="wallpaper"></div>
@@ -319,6 +319,72 @@
         <div>
           <div>键盘快捷键</div>
           <div class="menu-item-desc">按 ? 也可打开</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="menu-section">
+      <div class="menu-section-title">🎨 布局</div>
+
+      <!-- 密度 -->
+      <div class="layout-row">
+        <span class="layout-label">密度</span>
+        <div class="layout-segmented">
+          <button class="seg-btn" data-density="compact"     onclick="setDensity('compact')">紧凑</button>
+          <button class="seg-btn" data-density="comfortable" onclick="setDensity('comfortable')">标准</button>
+          <button class="seg-btn" data-density="spacious"    onclick="setDensity('spacious')">宽松</button>
+        </div>
+      </div>
+
+      <!-- 屏幕信息 -->
+      <div class="layout-row layout-info-row">
+        <span class="layout-label">屏幕</span>
+        <span class="layout-info" id="layout-screen-info">—</span>
+      </div>
+
+      <!-- 模块开关 -->
+      <div class="layout-modules">
+        <div class="layout-module-title">模块显示</div>
+        <label class="layout-toggle">
+          <span><span class="lt-icon">☀️</span>天气</span>
+          <input type="checkbox" id="lt-weather" onchange="setModuleVisible('weather', this.checked)" checked />
+          <span class="lt-track"></span>
+        </label>
+        <label class="layout-toggle">
+          <span><span class="lt-icon">💬</span>每日名言</span>
+          <input type="checkbox" id="lt-quotes" onchange="setModuleVisible('quotes', this.checked)" checked />
+          <span class="lt-track"></span>
+        </label>
+        <label class="layout-toggle">
+          <span><span class="lt-icon">🏟</span>进度环</span>
+          <input type="checkbox" id="lt-stadium" onchange="setModuleVisible('stadium', this.checked)" checked />
+          <span class="lt-track"></span>
+        </label>
+        <label class="layout-toggle">
+          <span><span class="lt-icon">🌿</span>随想录</span>
+          <input type="checkbox" id="lt-notepad" onchange="setModuleVisible('notepad', this.checked)" checked />
+          <span class="lt-track"></span>
+        </label>
+        <label class="layout-toggle">
+          <span><span class="lt-icon">⏱</span>番茄计时</span>
+          <input type="checkbox" id="lt-pomodoro" onchange="setModuleVisible('pomodoro', this.checked)" checked />
+          <span class="lt-track"></span>
+        </label>
+        <label class="layout-toggle">
+          <span><span class="lt-icon">🐾</span>陪伴小宠</span>
+          <input type="checkbox" id="lt-mascot" onchange="setModuleVisible('mascot', this.checked)" checked />
+          <span class="lt-track"></span>
+        </label>
+      </div>
+
+      <!-- 预设布局 -->
+      <div class="layout-presets-wrap">
+        <div class="layout-module-title">一键预设</div>
+        <div class="layout-presets">
+          <button class="preset-btn" onclick="applyLayoutPreset('default')">默认</button>
+          <button class="preset-btn" onclick="applyLayoutPreset('focus')">任务专注</button>
+          <button class="preset-btn" onclick="applyLayoutPreset('minimal')">极简</button>
+          <button class="preset-btn" onclick="applyLayoutPreset('full')">全模块</button>
         </div>
       </div>
     </div>
