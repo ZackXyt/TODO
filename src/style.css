@@ -2173,6 +2173,11 @@
     html[data-show-pomodoro="off"]  .stretch-timer-card,
     html[data-show-mascot="off"]    #mascot-container { display: none !important; }
 
+    /* v3.0.18：「进度环 + 每日名言」整体下线，强制隐藏对应 widget。
+       UI 开关已移除；底层 JS 仍在跑（只是渲染没人看），保留以便未来恢复时
+       少改代码——想恢复就删掉这条规则 + 把 index.html 的 toggle / 菜单项加回来。 */
+    .dino-widget { display: none !important; }
+
     /* Hide the wallpaper-area (notepad container) when notepad is off, so
        grid doesn't reserve a 1fr empty row at the bottom-left */
     html[data-show-notepad="off"]   .wallpaper-area { display: none !important; }
