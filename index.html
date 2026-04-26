@@ -253,7 +253,7 @@
         <span class="menu-item-icon">🐾</span>
         <div>
           <div id="custom-section-title">陪伴小宠</div>
-          <div class="menu-item-desc">选择你的专属伴侣</div>
+          <div class="menu-item-desc"><span id="mascot-count">0 个已陪伴</span>　·　点击添加，长按删除</div>
         </div>
         <span class="menu-chevron">›</span>
       </div>
@@ -457,13 +457,18 @@
     </div>
   </div>
 
-  <!-- Floating draggable mascot (must be before <script> so DOM is ready) -->
-  <div id="mascot-float">
-    <div class="dino-container">
-      <div class="dino-speech" id="dino-speech">该去拉伸啦！🏃</div>
-      <div class="dino-emoji" id="mascot-emoji">🦕</div>
-      <div class="dino-zzz">
-        <span>z</span><span>z</span><span>z</span>
+  <!-- Multi-mascot container (rendered dynamically) -->
+  <div id="mascot-container"></div>
+
+  <!-- Mascot remove confirmation -->
+  <div class="mascot-remove-modal-overlay" id="mascot-remove-overlay" onclick="if(event.target===this)cancelRemoveMascot()">
+    <div class="mascot-remove-modal">
+      <div class="mascot-remove-emoji" id="mascot-remove-emoji">🦕</div>
+      <div class="mascot-remove-title">不再需要它的陪伴了吗？</div>
+      <div class="mascot-remove-sub">点「不再陪伴」会让 <span id="mascot-remove-name">小宠</span> 离开桌面，<br>你以后可以从菜单里再次添加。</div>
+      <div class="mascot-remove-actions">
+        <button class="mascot-keep-btn" onclick="cancelRemoveMascot()">再陪我一会</button>
+        <button class="mascot-bye-btn"  onclick="confirmRemoveMascot()">不再陪伴</button>
       </div>
     </div>
   </div>

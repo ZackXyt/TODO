@@ -300,10 +300,10 @@
       to   { transform: translateX(-50%) translateY(-5px); }
     }
 
-    /* Alert state (on floating mascot) */
-    #mascot-float.alert .dino-emoji { animation: dino-jump 0.45s ease-in-out infinite; }
-    #mascot-float.alert .dino-zzz   { display: none; }
-    #mascot-float.alert .dino-speech { display: block; }
+    /* Alert state (applied to all placed mascots when timer expires) */
+    .mascot-pet.alert .dino-emoji { animation: dino-jump 0.45s ease-in-out infinite; }
+    .mascot-pet.alert .dino-zzz   { display: none; }
+    .mascot-pet.alert .dino-speech { display: block; }
 
     @keyframes dino-jump {
       0%,100% { transform: translateY(0) scale(1) rotate(0deg); }
@@ -324,17 +324,77 @@
       min-width:40px; text-align:center; font-variant-numeric:tabular-nums;
     }
 
-    /* ====== FLOATING MASCOT ====== */
-    #mascot-float {
+    /* ====== FLOATING MASCOTS (multi) ====== */
+    #mascot-container { position: relative; z-index: 50; pointer-events: none; }
+    .mascot-pet {
       position: fixed;
       z-index: 50;
       cursor: grab;
       user-select: none;
       touch-action: none;
+      pointer-events: auto;
+      transition: transform 0.15s ease;
     }
-    #mascot-float:active { cursor: grabbing; }
-    #mascot-float .dino-zzz { pointer-events: none; }
-    #mascot-float .dino-speech { pointer-events: none; }
+    .mascot-pet:active { cursor: grabbing; }
+    .mascot-pet:hover  { transform: scale(1.05); }
+    .mascot-pet.long-pressing {
+      animation: mascotShake 0.4s ease-in-out infinite;
+    }
+    @keyframes mascotShake {
+      0%,100% { transform: rotate(-3deg); }
+      50%     { transform: rotate(3deg); }
+    }
+    .mascot-pet .dino-zzz { pointer-events: none; }
+    .mascot-pet .dino-speech { pointer-events: none; }
+
+    /* Mascot grid status: placed vs available */
+    .mascot-option.placed {
+      background: rgba(120,200,255,0.18);
+      border-color: rgba(120,200,255,0.5);
+    }
+    .mascot-option.placed::after {
+      content: '✓';
+      position: absolute; top: 2px; right: 4px;
+      font-size: 9px; color: rgba(120,220,255,0.95);
+      font-weight: 700;
+    }
+    .mascot-option { position: relative; }
+
+    /* Confirmation modal for removing mascot */
+    .mascot-remove-modal-overlay {
+      position: fixed; inset: 0; z-index: 9999;
+      background: rgba(0,0,0,0.5);
+      display: flex; align-items: center; justify-content: center;
+      backdrop-filter: blur(6px);
+      opacity: 0; pointer-events: none;
+      transition: opacity 0.2s; padding: 16px;
+    }
+    .mascot-remove-modal-overlay.show { opacity: 1; pointer-events: all; }
+    .mascot-remove-modal {
+      background: rgba(28,28,48,0.96); backdrop-filter: blur(28px);
+      border: 1px solid rgba(255,255,255,0.13);
+      border-radius: 20px; padding: 24px 28px;
+      text-align: center; min-width: 280px; max-width: 340px;
+      box-shadow: 0 12px 48px rgba(0,0,0,0.6);
+      animation: editModalIn 0.25s ease;
+    }
+    .mascot-remove-emoji { font-size: 48px; margin-bottom: 8px; }
+    .mascot-remove-title { font-size: 14px; color: rgba(255,255,255,0.88); font-weight: 600; margin-bottom: 4px; }
+    .mascot-remove-sub   { font-size: 12px; color: rgba(255,255,255,0.4); margin-bottom: 18px; line-height: 1.6; }
+    .mascot-remove-actions { display: flex; gap: 10px; justify-content: center; }
+    .mascot-keep-btn {
+      background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.18);
+      color: rgba(255,255,255,0.85); border-radius: 10px;
+      padding: 8px 18px; font-size: 13px; cursor: pointer; transition: all 0.18s; font-family: inherit;
+    }
+    .mascot-keep-btn:hover { background: rgba(255,255,255,0.18); }
+    .mascot-bye-btn {
+      background: rgba(255,80,80,0.22); border: 1px solid rgba(255,100,100,0.4);
+      color: rgba(255,170,160,0.95); border-radius: 10px;
+      padding: 8px 18px; font-size: 13px; font-weight: 600;
+      cursor: pointer; transition: all 0.18s; font-family: inherit;
+    }
+    .mascot-bye-btn:hover { background: rgba(255,80,80,0.42); color: white; }
 
     /* ====== STADIUM WIDGET ====== */
     .stadium-wrap {

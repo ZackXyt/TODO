@@ -1296,7 +1296,7 @@
         timerRunning = false;
         const btn = document.getElementById('start-timer-btn');
         if (btn) { btn.textContent = '▶ 开始'; btn.classList.remove('running'); }
-        document.getElementById("mascot-float").classList.add("alert");
+        document.querySelectorAll(".mascot-pet").forEach(el => el.classList.add("alert"));
         showToast("🔔 站起来动动身体，拉伸一下吧！");
       }
       updateStretchDisplay();
@@ -1306,7 +1306,7 @@
       timerRunning = false;
       stretchTime = timerDuration;
       stretchExpired = false;
-      document.getElementById("mascot-float").classList.remove("alert");
+      document.querySelectorAll(".mascot-pet").forEach(el => el.classList.remove("alert"));
       const btn = document.getElementById('start-timer-btn');
       if (btn) { btn.textContent = '▶ 开始'; btn.classList.remove('running'); }
       completedSessions++;
@@ -1519,8 +1519,8 @@
       document.getElementById('desktop').classList.toggle('focus-mode', focusModeOn);
       document.getElementById('focus-toggle').classList.toggle('on', focusModeOn);
       document.getElementById('focus-menu-item').classList.toggle('active', focusModeOn);
-      const mf = document.getElementById('mascot-float');
-      if (mf) mf.style.display = focusModeOn ? 'none' : '';
+      const mc = document.getElementById('mascot-container');
+      if (mc) mc.style.display = focusModeOn ? 'none' : '';
     }
 
     // §LANG ─ 中英文切换
@@ -1607,7 +1607,7 @@
       if (el) el.textContent = String(h).padStart(2,'0') + ':00';
     })();
 
-    // §MASCOT ─ 陪伴小宠
+    // §MASCOT ─ 陪伴小宠（多只 · 可加可删 · 各自拖动）
     const MASCOTS = [
       { emoji: '🦕', name: '恐龙' },
       { emoji: '🐶', name: '小狗' },
@@ -1632,77 +1632,215 @@
       const isOpen = panel.classList.toggle('open');
       trigger.classList.toggle('pet-open', isOpen);
     }
-    let currentMascot = localStorage.getItem('todo_mascot') || '🦕';
 
+    // ----- Placed mascots state -----
+    function loadPlacedMascots() {
+      const s = localStorage.getItem('todo_mascots');
+      if (s) try { return JSON.parse(s); } catch(e) {}
+      // Migrate from v2.0 single-mascot system
+      const oldEmoji = localStorage.getItem('todo_mascot') || '🦕';
+      const oldPos   = JSON.parse(localStorage.getItem('todo_mascot_pos') || 'null');
+      const x = oldPos ? oldPos.x : Math.max(0, window.innerWidth  * 0.42 - 60);
+      const y = oldPos ? oldPos.y : Math.max(0, window.innerHeight * 0.35 - 60);
+      return [{ id: Date.now(), emoji: oldEmoji, x, y }];
+    }
+    let placedMascots = loadPlacedMascots();
+    function savePlacedMascots() {
+      localStorage.setItem('todo_mascots', JSON.stringify(placedMascots));
+    }
+
+    function isPlaced(emoji) { return placedMascots.some(m => m.emoji === emoji); }
+
+    // Toggle mascot from menu grid: add if not placed, do nothing if already placed
     function applyMascot(emoji) {
-      currentMascot = emoji;
-      localStorage.setItem('todo_mascot', emoji);
-      document.getElementById('mascot-emoji').textContent = emoji;
-      document.querySelectorAll('.mascot-option').forEach(el => {
-        el.classList.toggle('sel', el.dataset.emoji === emoji);
+      if (isPlaced(emoji)) {
+        showToast('🐾 这个小宠已经在桌面上了，长按可移除');
+        return;
+      }
+      // Place new mascot at a slightly offset position so they don't all overlap
+      const offset = (placedMascots.length % 6) * 24;
+      const x = Math.max(0, window.innerWidth  * 0.42 - 60 + offset);
+      const y = Math.max(0, window.innerHeight * 0.35 - 60 + offset);
+      placedMascots.push({ id: Date.now() + Math.random(), emoji, x, y });
+      savePlacedMascots();
+      renderPlacedMascots();
+      updateMascotGrid();
+      showToast(`🎉 ${MASCOTS.find(m => m.emoji === emoji)?.name || '小宠'} 加入了！`);
+    }
+
+    function removeMascot(id) {
+      placedMascots = placedMascots.filter(m => m.id !== id);
+      savePlacedMascots();
+      renderPlacedMascots();
+      updateMascotGrid();
+    }
+
+    function updateMascotGrid() {
+      const grid = document.getElementById('mascot-grid');
+      if (!grid) return;
+      grid.innerHTML = MASCOTS.map(m => {
+        const placed = isPlaced(m.emoji);
+        return `<div class="mascot-option ${placed ? 'placed' : ''}" data-emoji="${m.emoji}" onclick="applyMascot('${m.emoji}')" title="${placed ? '已在桌面' : '点击添加'}">
+          <span class="m-emoji">${m.emoji}</span>
+          <span class="m-name">${m.name}</span>
+        </div>`;
+      }).join('');
+      const cnt = document.getElementById('mascot-count');
+      if (cnt) cnt.textContent = `${placedMascots.length} 个已陪伴`;
+    }
+
+    function renderPlacedMascots() {
+      const container = document.getElementById('mascot-container');
+      if (!container) return;
+      container.innerHTML = '';
+      placedMascots.forEach(m => {
+        const el = document.createElement('div');
+        el.className = 'mascot-pet';
+        el.dataset.id = m.id;
+        // Clamp into viewport in case window resized
+        const x = Math.min(Math.max(0, m.x), window.innerWidth  - 80);
+        const y = Math.min(Math.max(0, m.y), window.innerHeight - 80);
+        el.style.left = x + 'px';
+        el.style.top  = y + 'px';
+        el.innerHTML = `
+          <div class="dino-container">
+            <div class="dino-speech">该去拉伸啦！🏃</div>
+            <div class="dino-emoji">${m.emoji}</div>
+            <div class="dino-zzz"><span>z</span><span>z</span><span>z</span></div>
+          </div>`;
+        container.appendChild(el);
+        attachMascotInteractions(el, m.id);
       });
     }
 
-    function initMascotGrid() {
-      const grid = document.getElementById('mascot-grid');
-      grid.innerHTML = MASCOTS.map(m => `
-        <div class="mascot-option ${m.emoji === currentMascot ? 'sel' : ''}" data-emoji="${m.emoji}" onclick="applyMascot('${m.emoji}')">
-          <span class="m-emoji">${m.emoji}</span>
-          <span class="m-name">${m.name}</span>
-        </div>`).join('');
-      document.getElementById('mascot-emoji').textContent = currentMascot;
+    // Backward-compat helper used by pomodoro / focus mode
+    function setAllMascotsAlert(on) {
+      document.querySelectorAll('.mascot-pet').forEach(el => {
+        el.classList.toggle('alert', !!on);
+      });
     }
-    initMascotGrid();
+    function setAllMascotsHidden(hidden) {
+      const c = document.getElementById('mascot-container');
+      if (c) c.style.display = hidden ? 'none' : '';
+    }
 
-    // §MASCOT-DRAG ─ 小宠拖动
-    (function() {
-      const el = document.getElementById('mascot-float');
-      const CIRC = 2 * Math.PI * 121; // SVG progress arc circumference
+    // §MASCOT-DRAG ─ 小宠拖动 + 长按删除
+    let _activeMascot = null;          // { el, id }
+    let _mascotDragging = false;
+    let _mascotOffsetX = 0, _mascotOffsetY = 0;
+    let _mascotLongPressTimer = null;
+    let _mascotStartPt = null;
+    let _pendingRemoveMascotId = null;
 
-      // Set initial position (saved or default center-ish)
-      const saved = JSON.parse(localStorage.getItem('todo_mascot_pos') || 'null');
-      if (saved) {
-        el.style.left = saved.x + 'px';
-        el.style.top  = saved.y + 'px';
-      } else {
-        el.style.left = Math.max(0, window.innerWidth  * 0.42 - 60) + 'px';
-        el.style.top  = Math.max(0, window.innerHeight * 0.35 - 60) + 'px';
+    function attachMascotInteractions(el, id) {
+      el.addEventListener('mousedown',  e => { startMascotInteraction(el, id, e.clientX, e.clientY); e.preventDefault(); });
+      el.addEventListener('touchstart', e => { const t = e.touches[0]; startMascotInteraction(el, id, t.clientX, t.clientY); }, { passive: true });
+    }
+
+    function startMascotInteraction(el, id, cx, cy) {
+      _activeMascot = { el, id };
+      _mascotStartPt = { x: cx, y: cy };
+      _mascotDragging = false;
+      const r = el.getBoundingClientRect();
+      _mascotOffsetX = cx - r.left;
+      _mascotOffsetY = cy - r.top;
+      el.classList.add('long-pressing');
+      // Long-press → ask to remove
+      _mascotLongPressTimer = setTimeout(() => {
+        if (!_mascotDragging) {
+          el.classList.remove('long-pressing');
+          promptRemoveMascot(id);
+          _activeMascot = null;
+        }
+      }, 600);
+    }
+
+    document.addEventListener('mousemove', e => mascotMove(e.clientX, e.clientY));
+    document.addEventListener('touchmove', e => { if (_activeMascot) { const t = e.touches[0]; mascotMove(t.clientX, t.clientY); e.preventDefault(); } }, { passive: false });
+    document.addEventListener('mouseup',   mascotEnd);
+    document.addEventListener('touchend',  mascotEnd);
+    document.addEventListener('touchcancel', mascotEnd);
+
+    function mascotMove(cx, cy) {
+      if (!_activeMascot) return;
+      // Detect drag start (>5px movement cancels long-press)
+      if (!_mascotDragging) {
+        const dx = cx - _mascotStartPt.x;
+        const dy = cy - _mascotStartPt.y;
+        if (Math.abs(dx) > 5 || Math.abs(dy) > 5) {
+          _mascotDragging = true;
+          if (_mascotLongPressTimer) clearTimeout(_mascotLongPressTimer);
+          _activeMascot.el.classList.remove('long-pressing');
+          _activeMascot.el.style.transition = 'none';
+        } else {
+          return;
+        }
       }
+      const el = _activeMascot.el;
+      const x = Math.min(Math.max(0, cx - _mascotOffsetX), window.innerWidth  - el.offsetWidth);
+      const y = Math.min(Math.max(0, cy - _mascotOffsetY), window.innerHeight - el.offsetHeight);
+      el.style.left = x + 'px';
+      el.style.top  = y + 'px';
+    }
 
-      let dragging = false, ox = 0, oy = 0;
-
-      function startDrag(cx, cy) {
-        dragging = true;
-        const r = el.getBoundingClientRect();
-        ox = cx - r.left;
-        oy = cy - r.top;
-        el.style.transition = 'none';
+    function mascotEnd() {
+      if (_mascotLongPressTimer) clearTimeout(_mascotLongPressTimer);
+      if (_activeMascot) {
+        _activeMascot.el.classList.remove('long-pressing');
+        if (_mascotDragging) {
+          const m = placedMascots.find(p => p.id === _activeMascot.id);
+          if (m) {
+            m.x = parseInt(_activeMascot.el.style.left);
+            m.y = parseInt(_activeMascot.el.style.top);
+            savePlacedMascots();
+          }
+          _activeMascot.el.style.transition = '';
+        }
       }
-      function moveDrag(cx, cy) {
-        if (!dragging) return;
-        const x = Math.min(Math.max(0, cx - ox), window.innerWidth  - el.offsetWidth);
-        const y = Math.min(Math.max(0, cy - oy), window.innerHeight - el.offsetHeight);
-        el.style.left = x + 'px';
-        el.style.top  = y + 'px';
-      }
-      function endDrag() {
-        if (!dragging) return;
-        dragging = false;
-        localStorage.setItem('todo_mascot_pos', JSON.stringify({
-          x: parseInt(el.style.left), y: parseInt(el.style.top)
-        }));
-      }
+      _activeMascot = null;
+      _mascotDragging = false;
+    }
 
-      // Mouse
-      el.addEventListener('mousedown',  e => { startDrag(e.clientX, e.clientY); e.preventDefault(); });
-      document.addEventListener('mousemove', e => moveDrag(e.clientX, e.clientY));
-      document.addEventListener('mouseup',   () => endDrag());
+    function promptRemoveMascot(id) {
+      const m = placedMascots.find(p => p.id === id);
+      if (!m) return;
+      _pendingRemoveMascotId = id;
+      document.getElementById('mascot-remove-emoji').textContent = m.emoji;
+      document.getElementById('mascot-remove-name').textContent =
+        MASCOTS.find(x => x.emoji === m.emoji)?.name || '小宠';
+      document.getElementById('mascot-remove-overlay').classList.add('show');
+    }
 
-      // Touch
-      el.addEventListener('touchstart', e => { const t = e.touches[0]; startDrag(t.clientX, t.clientY); }, { passive: true });
-      document.addEventListener('touchmove',  e => { if (!dragging) return; const t = e.touches[0]; moveDrag(t.clientX, t.clientY); e.preventDefault(); }, { passive: false });
-      document.addEventListener('touchend',   () => endDrag());
-    })();
+    function cancelRemoveMascot() {
+      _pendingRemoveMascotId = null;
+      document.getElementById('mascot-remove-overlay').classList.remove('show');
+    }
+
+    function confirmRemoveMascot() {
+      const id = _pendingRemoveMascotId;
+      cancelRemoveMascot();
+      if (id != null) {
+        const m = placedMascots.find(p => p.id === id);
+        const name = m ? (MASCOTS.find(x => x.emoji === m.emoji)?.name || '小宠') : '小宠';
+        removeMascot(id);
+        showToast(`👋 ${name} 离开了，记得想念它～`);
+      }
+    }
+
+    // Re-clamp positions on window resize
+    window.addEventListener('resize', () => {
+      let changed = false;
+      placedMascots.forEach(m => {
+        const x = Math.min(Math.max(0, m.x), window.innerWidth  - 80);
+        const y = Math.min(Math.max(0, m.y), window.innerHeight - 80);
+        if (x !== m.x || y !== m.y) { m.x = x; m.y = y; changed = true; }
+      });
+      if (changed) { savePlacedMascots(); renderPlacedMascots(); }
+    });
+
+    // Initial render
+    updateMascotGrid();
+    renderPlacedMascots();
 
     // §STADIUM ─ 进度环 + 心电图
     const DAILY_QUOTES = [
@@ -2006,4 +2144,6 @@
       onTaskDragStart, onTaskDragOver, onTaskDragLeave, onTaskDrop, onTaskDragEnd,
       // Help modal
       openHelp, closeHelp,
+      // Multi-mascot
+      cancelRemoveMascot, confirmRemoveMascot, removeMascot,
     });
