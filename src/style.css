@@ -2129,7 +2129,7 @@
         overflow-x: hidden;
         -webkit-overflow-scrolling: touch;
         overscroll-behavior: contain;
-        touch-action: pan-y;
+        touch-action: pan-y pinch-zoom;     /* 允许竖向滑 + 双指缩放，挡住横向滑 */
         gap: 14px;
         padding: 18px;
       }
@@ -2273,7 +2273,7 @@
         overflow-x: hidden;
         -webkit-overflow-scrolling: touch;
         overscroll-behavior: contain;          /* 防止滚到尽头时把外层网页一起拖动 */
-        touch-action: pan-y;                   /* 强制只接受垂直滑动手势 */
+        touch-action: pan-y pinch-zoom;        /* 允许竖向滑 + 双指缩放，挡住横向滑 */
         padding: 12px;                         /* safe-area 已在 body 处理，这里就纯 12 */
         gap: 10px;
         scroll-padding-bottom: 80px;

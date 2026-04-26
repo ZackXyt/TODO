@@ -1,6 +1,33 @@
 {
   "versions": [
     {
+      "version": "3.0.16",
+      "emoji": "🔍",
+      "title": "手机端双指缩放上线",
+      "tagline": "两根手指捏合 / 撑开就能整屏放大缩小，看任务字小了再也不用眯眼",
+      "highlights": [
+        {
+          "emoji": "🤏",
+          "title": "双指缩放（pinch-to-zoom）",
+          "what": "用两根手指在屏幕上捏合或撑开，整个 app 跟着缩放",
+          "how": "viewport meta 开放 user-scalable + maximum-scale=5；#desktop 的 touch-action 由 pan-y 改成 pan-y pinch-zoom"
+        },
+        {
+          "emoji": "⬆️",
+          "title": "竖向滑动手势保留",
+          "what": "上下滑任务列表照常顺滑，缩放跟滚动两不耽误",
+          "how": "touch-action: pan-y pinch-zoom 同时声明，浏览器自动分流单指上下滑 vs 双指缩放"
+        },
+        {
+          "emoji": "↩️",
+          "title": "双击页面任意空白处可恢复",
+          "what": "缩放后想回到原始大小，iOS 双击页面空白处即可（系统自带）",
+          "how": "原生浏览器手势，无需额外代码"
+        }
+      ],
+      "footer": "看不清就放大，桌面 widget 也支持哦 ✨"
+    },
+    {
       "version": "3.0.15",
       "emoji": "🎯",
       "title": "Toast 提示挪到屏幕正中",
