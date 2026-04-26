@@ -1,6 +1,33 @@
 {
   "versions": [
     {
+      "version": "3.0.4",
+      "emoji": "🔧",
+      "title": "刘海避让二次修复",
+      "tagline": "v3.0.3 在某些 iOS PWA 场景下没奏效，这次彻底搞定",
+      "highlights": [
+        {
+          "emoji": "🛡",
+          "title": "Safe-area 移到 body 层级",
+          "what": "之前在 #desktop 上设的 env() 在 PWA 容器里有时被算成 0",
+          "how": "改在 body 层级吸收 safe-area，所有子元素自动避让"
+        },
+        {
+          "emoji": "📐",
+          "title": "100dvh 替代 100vh",
+          "what": "动态视口高度，应对 Safari URL 栏伸缩 + iOS PWA 状态栏",
+          "how": "iPhone 上滚动不再因为浏览器栏出现/消失而跳"
+        },
+        {
+          "emoji": "🚨",
+          "title": "@supports 兜底",
+          "what": "万一浏览器不认 env()，fallback 给 28px 顶部安全垫",
+          "how": "杜绝最坏情况下时间组件被刘海压住"
+        }
+      ],
+      "footer": "如果还是重叠：请彻底退出 PWA（Cmd+Q 或长按删后台），重开就能拉到最新"
+    },
+    {
       "version": "3.0.3",
       "emoji": "📱",
       "title": "刘海/灵动岛友好",
