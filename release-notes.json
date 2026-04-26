@@ -1,6 +1,39 @@
 {
   "versions": [
     {
+      "version": "3.0.19",
+      "emoji": "📝",
+      "title": "随想录上云同步（001 内测版）",
+      "tagline": "你今天写下的灵感，明天换台设备照样在那——你是这个功能的零零一号内测用户 ✨",
+      "highlights": [
+        {
+          "emoji": "☁️",
+          "title": "随想录加入实时云同步",
+          "what": "之前 notepad 只存本机 localStorage，换设备就没了；现在登录账号后内容跟任务/列表一样实时双向同步",
+          "how": "Firestore 路径 users/{uid}/profile/notepad，schema { content, updatedAt }，800ms debounce 推送，onSnapshot 监听远端，按 timestamp 解决冲突"
+        },
+        {
+          "emoji": "🔁",
+          "title": "跨设备秒级同步",
+          "what": "Mac 上写一段 → 800ms 后云端落库 → 手机端打开几秒内自动出现",
+          "how": "和任务同步走同一套 last-write-wins 策略，本地有更新会立刻覆盖云端旧版，反之亦然"
+        },
+        {
+          "emoji": "📵",
+          "title": "离线照常工作",
+          "what": "断网时正常输入，恢复网络后自动补传——飞机上、地铁里都能用",
+          "how": "Firebase SDK 自带智能离线队列，对你完全透明"
+        },
+        {
+          "emoji": "🧪",
+          "title": "内测中，你是 001 号",
+          "what": "这是直接在你的账号里上线，先让你压测；OK 之后再说推广",
+          "how": "试试：电脑上写一段 → 看手机能不能拉到；手机上改一段 → 看电脑能不能看到"
+        }
+      ],
+      "footer": "登录账号才生效，未登录依旧只存本机 ✨"
+    },
+    {
       "version": "3.0.18",
       "emoji": "🧹",
       "title": "下线进度环 + 每日名言 + 每日重置",
