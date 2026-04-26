@@ -1,10 +1,21 @@
     * { margin: 0; padding: 0; box-sizing: border-box; }
 
+    /* Root background: 让 iOS PWA 安全区（刘海/Home 指示器周围）也染上壁纸色，
+       而不是露出系统的黑色。#wallpaper 在内部继续画 gradient，但底色已经对了。
+       gradient 同步设到 html 防止任何容器边界把 #wallpaper 限制在 body 区域内。 */
+    html {
+      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 40%, #0f3460 70%, #533483 100%);
+      background-color: #1a1a2e;
+      background-attachment: fixed;
+      min-height: 100%;
+    }
+
     body {
       width: 100vw; height: 100vh;
       overflow: hidden;
       font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'PingFang SC', sans-serif;
       position: relative;
+      background: transparent;
     }
 
     /* ====== WALLPAPER ====== */

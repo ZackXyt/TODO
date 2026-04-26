@@ -1,6 +1,27 @@
 {
   "versions": [
     {
+      "version": "3.0.5",
+      "emoji": "🌌",
+      "title": "壁纸真·铺满全屏",
+      "tagline": "iOS PWA 安全区不再是黑色断层",
+      "highlights": [
+        {
+          "emoji": "🎨",
+          "title": "壁纸 gradient 同步到 html 根元素",
+          "what": "之前 #wallpaper 在 body 内部，刘海/Home 指示器周围露出系统黑底",
+          "how": "html 现在也同色 gradient，安全区颜色无缝衔接"
+        },
+        {
+          "emoji": "🔄",
+          "title": "切换配色时同步更新",
+          "what": "用户改壁纸颜色时，html 背景也跟着变",
+          "how": "applyColorWallpaper / resetWallpaper 都连带更新 documentElement"
+        }
+      ],
+      "footer": "下一步：壁纸库（多套预设场景）+ 自定义图片背景"
+    },
+    {
       "version": "3.0.4",
       "emoji": "🔧",
       "title": "刘海避让二次修复",
