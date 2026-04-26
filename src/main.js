@@ -37,11 +37,17 @@
     // ╚═══════════════════════════════════════════════════════════════╝
 
     // §PWA  Service Worker 注册 + 自动更新提示
-    import { initPWA } from './pwa.js';
+    import { initPWA, checkForUpdate } from './pwa.js';
     // §PURE-FOCUS  纯享模式（全屏粒子动画，独立模块）
     import { enterPureFocus, exitPureFocus } from './pure-focus.js';
 
     initPWA();
+
+    // §VERSION ─ 显示版本号 + 暴露手动检查更新
+    const APP_VERSION = typeof __APP_VERSION__ !== 'undefined' ? __APP_VERSION__ : 'dev';
+    const verEl = document.getElementById('app-version-num');
+    if (verEl) verEl.textContent = 'v' + APP_VERSION;
+    window.checkForUpdate = checkForUpdate;
 
     // §CLOCK ─ 时钟 + 日期
     const WEEKDAYS = ["周日","周一","周二","周三","周四","周五","周六"];

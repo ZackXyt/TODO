@@ -958,6 +958,38 @@
       flex-shrink: 0; cursor: default;
     }
 
+    /* ====== APP VERSION FOOTER ====== */
+    .app-version-footer {
+      padding: 14px 16px 16px;
+      margin-top: 8px;
+      border-top: 1px solid rgba(255,255,255,0.06);
+      display: flex; align-items: center; gap: 8px;
+      font-size: 11px; color: rgba(255,255,255,0.32);
+      flex-wrap: wrap;
+    }
+    .app-version-num {
+      background: rgba(120,200,255,0.12);
+      border: 1px solid rgba(120,200,255,0.2);
+      border-radius: 6px;
+      padding: 1px 7px;
+      font-family: 'SF Mono', Menlo, monospace;
+      color: rgba(180,220,255,0.85);
+      font-weight: 600;
+    }
+    .version-check-btn {
+      margin-left: auto;
+      background: rgba(255,255,255,0.07);
+      border: 1px solid rgba(255,255,255,0.13);
+      color: rgba(255,255,255,0.55);
+      border-radius: 6px;
+      padding: 3px 10px;
+      font-size: 11px; font-family: inherit;
+      cursor: pointer; transition: all 0.18s;
+    }
+    .version-check-btn:hover {
+      background: rgba(255,255,255,0.13); color: white;
+    }
+
     /* ====== DRAG & DROP ====== */
     .task-item.draggable {
       cursor: grab;

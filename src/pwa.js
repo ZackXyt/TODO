@@ -6,6 +6,8 @@
 // whether to update now or later.
 // =============================================================
 
+let _swRegistration = null;
+
 export function initPWA() {
   import('virtual:pwa-register').then(({ registerSW }) => {
     const updateSW = registerSW({
@@ -22,6 +24,7 @@ export function initPWA() {
       // 注册成功后，每小时主动检查一次更新（防止 app 长时间不刷新）
       onRegisteredSW(swUrl, registration) {
         if (!registration) return;
+        _swRegistration = registration;
         // 立即检查一次（0.5s 后，避开冷启动竞争）
         setTimeout(() => registration.update().catch(() => {}), 500);
         // 之后每小时检查一次
@@ -34,6 +37,34 @@ export function initPWA() {
       },
     });
   }).catch(() => { /* dev mode or SW unavailable */ });
+}
+
+// Manual "check for update" — called from menu button
+export function checkForUpdate() {
+  if (typeof window.showToast === 'function') {
+    window.showToast('🔍 正在检查更新…');
+  }
+  if (_swRegistration) {
+    _swRegistration.update()
+      .then(() => {
+        // If onNeedRefresh fires, the banner will show.
+        // If no update, show "you're up to date" toast after a short delay.
+        setTimeout(() => {
+          if (!document.getElementById('pwa-update-banner') && typeof window.showToast === 'function') {
+            window.showToast('✅ 已是最新版本');
+          }
+        }, 1500);
+      })
+      .catch(() => {
+        if (typeof window.showToast === 'function') {
+          window.showToast('❌ 检查失败，请检查网络');
+        }
+      });
+  } else {
+    if (typeof window.showToast === 'function') {
+      window.showToast('⚠️ Service Worker 还在初始化，稍后再试');
+    }
+  }
 }
 
 function showUpdateBanner(onConfirm) {
