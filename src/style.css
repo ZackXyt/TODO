@@ -2328,6 +2328,26 @@
       /* Mascot: stays but smaller */
       #mascot-float .dino-emoji { font-size: 40px; }
 
+      /* Toast 手机端改为屏幕正中弹出，避开刘海 / 灵动岛遮挡。
+         动画从淡入 + 轻微缩放，比从顶部下拉更显眼也更不会被系统 UI 吃掉。 */
+      .toast {
+        top: 50% !important;
+        left: 50% !important;
+        transform: translate(-50%, -50%) scale(0.85) !important;
+        opacity: 0;
+        transition: transform 0.32s cubic-bezier(0.34,1.56,0.64,1), opacity 0.22s ease !important;
+        white-space: normal !important;
+        max-width: calc(100vw - 48px);
+        text-align: center;
+        font-size: 14px;
+        padding: 14px 22px;
+        z-index: 9999 !important;            /* 顶到最上层，盖过底部毛玻璃条等所有 UI */
+      }
+      .toast.show {
+        transform: translate(-50%, -50%) scale(1) !important;
+        opacity: 1;
+      }
+
       /* Watermark: bottom-left, smaller */
       /* 水印手机端居中显示，避开 Home 指示器
          用 !important 确保不被任何后续/外层 .watermark 规则覆盖 */

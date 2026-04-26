@@ -1,6 +1,33 @@
 {
   "versions": [
     {
+      "version": "3.0.15",
+      "emoji": "🎯",
+      "title": "Toast 提示挪到屏幕正中",
+      "tagline": "「🎉 完成！干得漂亮！」之类的提示不再被刘海 / 灵动岛挡住",
+      "highlights": [
+        {
+          "emoji": "📍",
+          "title": "手机端 toast 居中显示",
+          "what": "之前 toast 从顶部下拉，刚好被 iPhone 的刘海 / 灵动岛压住一半",
+          "how": "改成屏幕正中央弹出，配合淡入 + 轻微缩放动画，比从顶部更显眼"
+        },
+        {
+          "emoji": "📐",
+          "title": "支持长文本换行",
+          "what": "提示文字长时不再被截断，自动换行 + 居中排版",
+          "how": "max-width: calc(100vw - 48px) + white-space: normal"
+        },
+        {
+          "emoji": "🖥",
+          "title": "桌面端不变",
+          "what": "Mac / iPad 横屏下 toast 还是从顶部下拉，因为那些设备没有刘海挡道",
+          "how": "媒体查询 max-width: 767px 限定，仅手机生效"
+        }
+      ],
+      "footer": "完成任务的小成就感不能被苹果硬件拦腰截断 ✨"
+    },
+    {
       "version": "3.0.14",
       "emoji": "✨",
       "title": "底部 Home 指示器区美化条",
