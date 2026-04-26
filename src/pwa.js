@@ -203,8 +203,14 @@ function showReleaseNotesModal(data, mode /* 'preview' | 'celebration' */) {
 function closeReleaseNotes() {
   const ov = document.getElementById('release-notes-modal');
   if (!ov) return;
+  const wasCelebration = ov.classList.contains('celebration');
+  const wasMajor       = ov.classList.contains('major-update');
   ov.classList.remove('show');
   setTimeout(() => ov.remove(), 220);
+  // Send-off burst when celebration modal closes (now no backdrop blocking)
+  if (wasCelebration) {
+    setTimeout(() => burstCelebration(wasMajor ? 100 : 50), 250);
+  }
 }
 
 // ---- Post-update celebration --------------------------------------------
@@ -317,8 +323,9 @@ function ensureBannerStyles() {
     .pwa-btn-ghost:hover { color: white; }
     /* Confetti pieces (used both by app and by celebration) */
     .confetti-piece {
-      position: fixed; pointer-events: none; z-index: 99999;
+      position: fixed; pointer-events: none; z-index: 100002;
       font-size: 18px; will-change: transform, opacity; user-select: none;
+      filter: drop-shadow(0 2px 6px rgba(0,0,0,0.3));
     }
     @keyframes confetti-fly {
       0%   { transform: translate(0, 0) rotate(0deg) scale(0.6); opacity: 1; }
