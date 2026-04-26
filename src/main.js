@@ -619,7 +619,7 @@
               <div class="task-content">
                 <div class="task-top-row">
                   <span class="task-emoji">${c.emoji}</span>
-                  <span class="task-name">${t.text}</span>
+                  <span class="task-name" onclick="openEditModal(${t.id})" title="点击编辑">${t.text}</span>
                   <span class="task-priority p${p}">${P_LABELS[p]}</span>
                 </div>
                 <div class="task-ddl-row">
@@ -760,6 +760,154 @@
       _dd.total++; saveDayData(_dk, _dd);
       render();
       showToast("✅ 任务已添加，加油！");
+    }
+
+    // ===== EDIT TASK =====
+    let _editingTaskId = null;
+    let _editPriority  = 3;
+    let _editRepeat    = 'none';
+
+    function openEditModal(id) {
+      const t = tasks.find(t => t.id === id);
+      if (!t) return;
+      _editingTaskId = id;
+      // Populate fields
+      document.getElementById('edit-task-name').value = t.text;
+      // datetime-local needs YYYY-MM-DDTHH:mm in local time (no timezone)
+      const d = new Date(t.deadline);
+      const pad = n => String(n).padStart(2,'0');
+      const fmt = dt => `${dt.getFullYear()}-${pad(dt.getMonth()+1)}-${pad(dt.getDate())}T${pad(dt.getHours())}:${pad(dt.getMinutes())}`;
+      document.getElementById('edit-task-ddl').value = fmt(d);
+      document.getElementById('edit-task-reminder').value = t.reminder ? fmt(new Date(t.reminder)) : '';
+      // List select
+      const sel = document.getElementById('edit-task-list-select');
+      sel.innerHTML = lists.map(l => `<option value="${l.id}">${l.icon} ${l.name}</option>`).join('');
+      sel.value = t.listId || 'inbox';
+      // Priority
+      selectEditPriority(t.priority || 3);
+      // Repeat
+      selectEditRepeat(t.repeat || 'none');
+      // Show modal
+      document.getElementById('edit-modal-overlay').classList.add('show');
+      setTimeout(() => document.getElementById('edit-task-name').focus(), 50);
+    }
+
+    function closeEditModal() {
+      _editingTaskId = null;
+      document.getElementById('edit-modal-overlay').classList.remove('show');
+    }
+
+    function selectEditPriority(p) {
+      _editPriority = p;
+      const modal = document.getElementById('edit-modal-overlay');
+      if (!modal) return;
+      modal.querySelectorAll('.ppick').forEach(b => b.classList.remove('sel'));
+      modal.querySelectorAll(`.ppick.pp${p}`).forEach(b => b.classList.add('sel'));
+    }
+
+    function selectEditRepeat(r) {
+      _editRepeat = r;
+      ['none','daily','weekly','monthly'].forEach(v => {
+        const b = document.getElementById('erpick-' + v);
+        if (b) b.classList.toggle('sel', v === r);
+      });
+    }
+
+    function saveEditedTask() {
+      const id = _editingTaskId;
+      if (id === null) return;
+      const t = tasks.find(t => t.id === id);
+      if (!t) { closeEditModal(); return; }
+      const name = document.getElementById('edit-task-name').value.trim();
+      const ddl  = document.getElementById('edit-task-ddl').value;
+      if (!name) { showToast('❌ 任务名称不能为空'); return; }
+      if (!ddl)  { showToast('❌ 截止时间不能为空'); return; }
+      const remVal = document.getElementById('edit-task-reminder').value;
+      const oldReminder = t.reminder;
+      // Update fields
+      t.text     = name;
+      t.deadline = new Date(ddl).toISOString();
+      t.priority = _editPriority;
+      t.repeat   = _editRepeat;
+      t.listId   = document.getElementById('edit-task-list-select').value || 'inbox';
+      t.reminder = remVal ? new Date(remVal).toISOString() : '';
+      // If reminder time changed, reset fired flag
+      if (t.reminder !== oldReminder) t.reminderFired = false;
+      if (t.reminder && Notification.permission === 'default') Notification.requestPermission();
+      saveTasks();
+      closeEditModal();
+      render();
+      showToast('✅ 已保存修改');
+    }
+
+    // ===== DATA EXPORT / IMPORT =====
+    function exportData() {
+      const payload = {
+        version: 2,
+        exportedAt: new Date().toISOString(),
+        appName: 'HeartFlow',
+        data: {
+          todo_tasks:           localStorage.getItem('todo_tasks'),
+          todo_lists:           localStorage.getItem('todo_lists'),
+          todo_completed_tasks: localStorage.getItem('todo_completed_tasks'),
+          todo_view_mode:       localStorage.getItem('todo_view_mode'),
+          todo_active_list:     localStorage.getItem('todo_active_list'),
+          todo_sort_mode:       localStorage.getItem('todo_sort_mode'),
+          todo_wallpaper_color: localStorage.getItem('todo_wallpaper_color'),
+          todo_timer_duration:  localStorage.getItem('todo_timer_duration'),
+          todo_day_data:        localStorage.getItem('todo_day_data'),
+          todo_diary:           localStorage.getItem('todo_diary'),
+          todo_weather_city:    localStorage.getItem('todo_weather_city'),
+          todo_lang:            localStorage.getItem('todo_lang'),
+          todo_mascot:          localStorage.getItem('todo_mascot'),
+        },
+      };
+      const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+      const url  = URL.createObjectURL(blob);
+      const a    = document.createElement('a');
+      const dt   = new Date();
+      const stamp = `${dt.getFullYear()}${String(dt.getMonth()+1).padStart(2,'0')}${String(dt.getDate()).padStart(2,'0')}-${String(dt.getHours()).padStart(2,'0')}${String(dt.getMinutes()).padStart(2,'0')}`;
+      a.href = url; a.download = `heartflow-backup-${stamp}.json`;
+      document.body.appendChild(a); a.click(); a.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+      showToast('📤 已导出备份文件');
+    }
+
+    function importData(event) {
+      const file = event.target.files && event.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        try {
+          const payload = JSON.parse(e.target.result);
+          if (!payload || !payload.data || payload.appName !== 'HeartFlow') {
+            showToast('❌ 文件格式不对，看起来不是心流备份');
+            event.target.value = '';
+            return;
+          }
+          const taskCount = payload.data.todo_tasks ? (JSON.parse(payload.data.todo_tasks) || []).length : 0;
+          const ok = confirm(
+            `⚠️ 导入将覆盖当前所有数据！\n\n` +
+            `备份信息：\n` +
+            `• 导出时间：${new Date(payload.exportedAt).toLocaleString()}\n` +
+            `• 任务数：${taskCount}\n\n` +
+            `当前数据将被替换。要继续吗？`
+          );
+          if (!ok) { event.target.value = ''; return; }
+          // Apply each key (only if present in backup)
+          Object.keys(payload.data).forEach(key => {
+            const val = payload.data[key];
+            if (val == null) localStorage.removeItem(key);
+            else             localStorage.setItem(key, val);
+          });
+          showToast('✅ 导入成功，2 秒后刷新…');
+          setTimeout(() => location.reload(), 1800);
+        } catch (err) {
+          showToast('❌ 解析失败：' + err.message);
+        }
+        event.target.value = '';
+      };
+      reader.readAsText(file);
     }
 
     const REPEAT_LABEL = { daily:'每天', weekly:'每周', monthly:'每月' };
@@ -1887,4 +2035,7 @@
       startPauseTimer, toggleCityEdit, toggleCompletedPanel, toggleFocusMode,
       toggleForm, toggleMascotPanel, toggleMenu, toggleMyDay, toggleSortMode,
       toggleStarred, toggleStep, toggleTaskExpand,
+      // Edit + data import/export
+      openEditModal, closeEditModal, selectEditPriority, selectEditRepeat,
+      saveEditedTask, exportData, importData,
     });
