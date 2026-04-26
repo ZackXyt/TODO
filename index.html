@@ -405,7 +405,14 @@
         <button class="repeat-pick" id="erpick-weekly"  onclick="selectEditRepeat('weekly')">每周</button>
         <button class="repeat-pick" id="erpick-monthly" onclick="selectEditRepeat('monthly')">每月</button>
       </div>
-      <div class="edit-modal-actions">
+      <div class="form-repeat-row">
+        <span class="form-priority-label">标签:</span>
+        <button class="repeat-pick" id="edit-star-btn" onclick="toggleEditStar()">⭐ 重要</button>
+        <button class="repeat-pick" id="edit-myday-btn" onclick="toggleEditMyDay()">☀️ 今日</button>
+      </div>
+      <textarea class="note-textarea" id="edit-task-note" placeholder="📝 备注…" style="margin-top:6px;min-height:60px;"></textarea>
+      <div class="edit-modal-actions" style="margin-top:14px;">
+        <button class="del-btn-inline" onclick="deleteFromEditModal()" title="删除任务">🗑 删除任务</button>
         <button class="edit-modal-cancel" onclick="closeEditModal()">取消</button>
         <button class="edit-modal-save" onclick="saveEditedTask()">保存</button>
       </div>

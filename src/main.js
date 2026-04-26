@@ -631,18 +631,19 @@
                ondragend="onTaskDragEnd(event)"` : ''}>
             <div class="task-item-header">
               <div class="task-bar" style="background:${c.color}"></div>
-              <div class="task-content">
+              <div class="task-content" onclick="openEditModal(${t.id})" title="点击编辑任务">
                 <div class="task-top-row">
                   <span class="task-emoji">${c.emoji}</span>
-                  <span class="task-name" onclick="openEditModal(${t.id})" title="点击编辑">${t.text}</span>
+                  <span class="task-name">${t.text}</span>
                   <span class="task-priority p${p}">${P_LABELS[p]}</span>
+                  <span class="task-edit-hint">✏️</span>
                 </div>
                 <div class="task-ddl-row">
                   <span class="task-ddl" style="color:${c.color}">${c.prefix} ${formatTime(t.deadline)}</span>
                   ${c.quip ? `<span class="task-quip" style="color:${c.color}">${c.quip}</span>` : ""}
                   ${listLbl}${repeatLbl}${reminderLbl}
                   <button class="steps-toggle${totN>0?' has-steps':''}" id="steps-toggle-${t.id}"
-                          onclick="toggleTaskExpand(${t.id})">${stepsLbl}</button>
+                          onclick="event.stopPropagation();toggleTaskExpand(${t.id})">${stepsLbl}</button>
                 </div>
               </div>
               <button class="star-btn ${t.starred ? 'on' : ''}" onclick="toggleStarred(${t.id})" title="${t.starred ? '取消重要' : '标为重要'}">⭐</button>
@@ -933,6 +934,8 @@
     let _editingTaskId = null;
     let _editPriority  = 3;
     let _editRepeat    = 'none';
+    let _editStarred   = false;
+    let _editMyDay     = false;
 
     function openEditModal(id) {
       const t = tasks.find(t => t.id === id);
@@ -954,9 +957,33 @@
       selectEditPriority(t.priority || 3);
       // Repeat
       selectEditRepeat(t.repeat || 'none');
+      // Star + My Day toggles
+      _editStarred = !!t.starred;
+      _editMyDay   = !!t.myDay;
+      updateEditTagButtons();
+      // Note
+      document.getElementById('edit-task-note').value = t.note || '';
       // Show modal
       document.getElementById('edit-modal-overlay').classList.add('show');
       setTimeout(() => document.getElementById('edit-task-name').focus(), 50);
+    }
+
+    function updateEditTagButtons() {
+      const s = document.getElementById('edit-star-btn');
+      const m = document.getElementById('edit-myday-btn');
+      if (s) s.classList.toggle('star-on', _editStarred);
+      if (m) m.classList.toggle('myday-on', _editMyDay);
+    }
+
+    function toggleEditStar()  { _editStarred = !_editStarred; updateEditTagButtons(); }
+    function toggleEditMyDay() { _editMyDay   = !_editMyDay;   updateEditTagButtons(); }
+
+    function deleteFromEditModal() {
+      const id = _editingTaskId;
+      if (id == null) return;
+      // Reuse the existing delete-confirmation modal
+      closeEditModal();
+      promptDeleteTask(id);
     }
 
     function closeEditModal() {
@@ -998,6 +1025,9 @@
       t.repeat   = _editRepeat;
       t.listId   = document.getElementById('edit-task-list-select').value || 'inbox';
       t.reminder = remVal ? new Date(remVal).toISOString() : '';
+      t.starred  = _editStarred;
+      t.myDay    = _editMyDay;
+      t.note     = document.getElementById('edit-task-note').value;
       // If reminder time changed, reset fired flag
       if (t.reminder !== oldReminder) t.reminderFired = false;
       if (t.reminder && Notification.permission === 'default') Notification.requestPermission();
@@ -2362,6 +2392,7 @@
       // Edit + data import/export
       openEditModal, closeEditModal, selectEditPriority, selectEditRepeat,
       saveEditedTask, exportData, importData,
+      toggleEditStar, toggleEditMyDay, deleteFromEditModal,
       // Drag-and-drop reorder
       onTaskDragStart, onTaskDragOver, onTaskDragLeave, onTaskDrop, onTaskDragEnd,
       // Help modal
