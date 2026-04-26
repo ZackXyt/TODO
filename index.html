@@ -11,8 +11,8 @@
   <meta name="apple-mobile-web-app-title" content="心流">
   <link rel="icon" type="image/svg+xml" href="/TODO/heartflow.svg">
   <link rel="apple-touch-icon" href="/TODO/apple-touch-icon-180x180.png">
-  <script type="module" crossorigin src="/TODO/assets/index-AGi_X-Pf.js"></script>
-  <link rel="stylesheet" crossorigin href="/TODO/assets/index-D25FP9xJ.css">
+  <script type="module" crossorigin src="/TODO/assets/index-CXCdxCZ8.js"></script>
+  <link rel="stylesheet" crossorigin href="/TODO/assets/index-Ci6aAMOB.css">
 <link rel="manifest" href="/TODO/manifest.webmanifest"></head>
 <body>
   <div id="wallpaper"></div>
@@ -139,6 +139,27 @@
           <button class="view-tab active" id="tab-all" onclick="setViewMode('all')">全部任务</button>
           <button class="view-tab" id="tab-myday" onclick="setViewMode('myDay')">☀️ 今日</button>
           <button class="view-tab" id="tab-starred" onclick="setViewMode('starred')">⭐ 重要</button>
+        </div>
+
+        <!-- QUICK ADD BAR -->
+        <div class="quick-add-wrap">
+          <span class="quick-add-icon">＋</span>
+          <input class="quick-add-input" id="quick-add-input"
+                 placeholder="快速添加：试试『明天下午3点开会 P1』"
+                 onkeydown="if(event.key==='Enter')quickAddTask()" />
+          <button class="quick-add-hint-btn" id="quick-add-hint-btn" onclick="toggleQuickAddHint()" title="语法提示">?</button>
+        </div>
+        <div class="quick-add-hint" id="quick-add-hint">
+          <div class="qa-hint-row"><span class="qa-hint-key">P1～P5</span><span>优先级（默认 P3）</span></div>
+          <div class="qa-hint-row"><span class="qa-hint-key">!</span><span>标为重要 ⭐</span></div>
+          <div class="qa-hint-row"><span class="qa-hint-key">今天 / 明天 / 后天</span><span>当日截止</span></div>
+          <div class="qa-hint-row"><span class="qa-hint-key">周一～周日</span><span>下个该周几</span></div>
+          <div class="qa-hint-row"><span class="qa-hint-key">5月3日 / 5/3</span><span>具体日期</span></div>
+          <div class="qa-hint-row"><span class="qa-hint-key">3天后 / 2小时后</span><span>相对时间</span></div>
+          <div class="qa-hint-row"><span class="qa-hint-key">下午3点 / 15:00 / 9点半</span><span>具体时刻</span></div>
+          <div class="qa-hint-row" style="border:none;margin-top:4px;color:rgba(180,220,255,0.85);font-size:10.5px;">
+            例：<i>明天上午10点交报告 P1 !</i>
+          </div>
         </div>
 
         <!-- SEARCH BAR -->
@@ -336,7 +357,8 @@
         <span>⌨️ 快捷键</span>
         <button class="edit-modal-close" onclick="closeHelp()">✕</button>
       </div>
-      <div class="help-row"><span class="help-label">新建任务</span><span class="help-key">N</span></div>
+      <div class="help-row"><span class="help-label">⚡ 快速添加（自然语言）</span><span class="help-key">A</span></div>
+      <div class="help-row"><span class="help-label">完整新建表单</span><span class="help-key">N</span></div>
       <div class="help-row"><span class="help-label">搜索</span><span class="help-key">/</span></div>
       <div class="help-row"><span class="help-label">切换排序</span><span class="help-key">S</span></div>
       <div class="help-row"><span class="help-label">全部任务</span><span class="help-key">1</span></div>
