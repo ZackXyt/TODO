@@ -10,7 +10,9 @@ export default defineConfig({
   },
   plugins: [
     VitePWA({
-      registerType: 'autoUpdate',
+      // 'prompt' = 检测到新版本时触发 onNeedRefresh 回调（显示横幅让用户选）
+      // 'autoUpdate' = 静默自动更新，不通知用户（不是我们想要的）
+      registerType: 'prompt',
       includeAssets: [
         'favicon.ico',
         'apple-touch-icon-180x180.png',

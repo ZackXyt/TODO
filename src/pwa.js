@@ -9,13 +9,28 @@
 export function initPWA() {
   import('virtual:pwa-register').then(({ registerSW }) => {
     const updateSW = registerSW({
+      // 检测到新版本时弹出更新横幅（用户决定是否更新）
       onNeedRefresh() {
         showUpdateBanner(() => updateSW(true));
       },
+      // 首次安装完成、可离线使用时提示
       onOfflineReady() {
         if (typeof window.showToast === 'function') {
           window.showToast('✅ 已离线可用');
         }
+      },
+      // 注册成功后，每小时主动检查一次更新（防止 app 长时间不刷新）
+      onRegisteredSW(swUrl, registration) {
+        if (!registration) return;
+        // 立即检查一次（0.5s 后，避开冷启动竞争）
+        setTimeout(() => registration.update().catch(() => {}), 500);
+        // 之后每小时检查一次
+        setInterval(() => registration.update().catch(() => {}), 60 * 60 * 1000);
+        // 切回标签页/窗口聚焦时也检查
+        document.addEventListener('visibilitychange', () => {
+          if (!document.hidden) registration.update().catch(() => {});
+        });
+        window.addEventListener('focus', () => registration.update().catch(() => {}));
       },
     });
   }).catch(() => { /* dev mode or SW unavailable */ });
