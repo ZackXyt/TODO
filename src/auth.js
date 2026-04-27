@@ -189,6 +189,10 @@ export async function submitAuthForm() {
 export async function logoutUser() {
   if (!confirm('确定要退出登录吗？\n本地数据不会丢失，下次登录可重新同步。')) return;
   try {
+    // 退出前先把当前设备从云端 devices 列表里删掉，让其它设备实时看到「少了一台」
+    if (_currentUser && typeof window.logoutCurrentDevice === 'function') {
+      try { await window.logoutCurrentDevice(_currentUser.uid); } catch {}
+    }
     await signOut(auth);
     window.showToast?.('👋 已退出登录');
   } catch (err) {

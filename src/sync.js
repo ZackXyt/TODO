@@ -11,7 +11,7 @@
 
 import { db } from './firebase.js';
 import {
-  collection, doc, onSnapshot, getDocs, getDoc, setDoc, writeBatch,
+  collection, doc, onSnapshot, getDocs, getDoc, setDoc, deleteDoc, writeBatch,
 } from 'firebase/firestore';
 import { onUserChange } from './auth.js';
 
@@ -23,6 +23,8 @@ const _state = {
   pushQueue: { tasks: false, lists: false, notepad: false },
   pushTimer: null,
   initialPullDone: false,
+  heartbeatTimer: null,
+  focusHandlerInstalled: false,
 };
 
 // ---- Status indicator ----
@@ -59,7 +61,12 @@ function teardown() {
   _state.unsubs.forEach(u => { try { u(); } catch {} });
   _state.unsubs = [];
   clearTimeout(_state.pushTimer);
+  clearInterval(_state.heartbeatTimer);
   _state.pushQueue = { tasks: false, lists: false, notepad: false };
+  // 登出时清空 UI 设备列表
+  if (typeof window.renderDevicesUI === 'function') {
+    window.renderDevicesUI([], getOrCreateDeviceId());
+  }
 }
 
 async function setupForUser(uid) {
@@ -96,7 +103,122 @@ async function setupForUser(uid) {
   );
   _state.unsubs.push(unsubNotepad);
 
+  // 设备登记 + 实时监听账号在哪些设备登录
+  await registerDevice(uid);
+  startDeviceHeartbeat(uid);
+  const devicesCol = collection(db, 'users', uid, 'devices');
+  const unsubDevices = onSnapshot(
+    devicesCol,
+    snap => handleDevicesSnapshot(snap),
+    err => console.error('Devices listener error:', err)
+  );
+  _state.unsubs.push(unsubDevices);
+
   setStatus('synced', '已同步');
+}
+
+// ---- Device registry ----
+// 每台设备首次登录时生成稳定的 UUID 存 localStorage，以后心跳用同一个 ID 更新
+// lastSeenAt。这样扩展坞能实时统计『这个账号登录在几台设备上』。
+
+function getOrCreateDeviceId() {
+  let id = localStorage.getItem('todo_device_id');
+  if (!id) {
+    id = (typeof crypto !== 'undefined' && crypto.randomUUID)
+      ? crypto.randomUUID()
+      : ('d-' + Date.now() + '-' + Math.random().toString(36).slice(2, 10));
+    localStorage.setItem('todo_device_id', id);
+  }
+  return id;
+}
+
+function getDeviceName() {
+  const ua = navigator.userAgent || '';
+  const platform = navigator.platform || '';
+  const standalone = window.matchMedia('(display-mode: standalone)').matches
+    || (typeof navigator.standalone === 'boolean' && navigator.standalone);
+  const mode = standalone ? ' · PWA' : '';
+  if (/iPhone/i.test(ua))   return 'iPhone' + mode;
+  if (/iPad/i.test(ua))     return 'iPad' + mode;
+  if (/Android/i.test(ua))  return 'Android' + mode;
+  if (/Macintosh|Mac OS/i.test(ua)) {
+    if (/Safari/.test(ua) && !/Chrome|Chromium|Edg/.test(ua)) return 'Mac · Safari';
+    if (/Edg\//.test(ua))    return 'Mac · Edge';
+    if (/Chrome\//.test(ua)) return 'Mac · Chrome';
+    if (/Firefox/.test(ua))  return 'Mac · Firefox';
+    return 'Mac';
+  }
+  if (/Windows/i.test(ua))  return 'Windows';
+  if (/Linux/i.test(platform)) return 'Linux';
+  return '未知设备';
+}
+
+async function registerDevice(uid) {
+  try {
+    const id = getOrCreateDeviceId();
+    const ref = doc(db, 'users', uid, 'devices', id);
+    const now = Date.now();
+    const existing = await getDoc(ref);
+    const base = {
+      deviceId: id,
+      name: getDeviceName(),
+      userAgent: navigator.userAgent || '',
+      platform: navigator.platform || '',
+      lastSeenAt: now,
+    };
+    if (existing.exists()) {
+      const prev = existing.data();
+      await setDoc(ref, { ...base, firstSeenAt: prev.firstSeenAt || now }, { merge: true });
+    } else {
+      await setDoc(ref, { ...base, firstSeenAt: now });
+    }
+  } catch (err) {
+    console.error('Register device failed:', err);
+  }
+}
+
+function startDeviceHeartbeat(uid) {
+  clearInterval(_state.heartbeatTimer);
+  // 每 5 分钟更新一次 lastSeenAt（在线时长统计 + 设备活跃度判断）
+  _state.heartbeatTimer = setInterval(() => touchDevice(uid), 5 * 60 * 1000);
+  // 窗口重新聚焦也算心跳（用户切回 app）
+  if (!_state.focusHandlerInstalled) {
+    window.addEventListener('focus', () => { if (_state.uid) touchDevice(_state.uid); });
+    document.addEventListener('visibilitychange', () => {
+      if (!document.hidden && _state.uid) touchDevice(_state.uid);
+    });
+    _state.focusHandlerInstalled = true;
+  }
+}
+
+async function touchDevice(uid) {
+  try {
+    const id = getOrCreateDeviceId();
+    const ref = doc(db, 'users', uid, 'devices', id);
+    await setDoc(ref, { lastSeenAt: Date.now() }, { merge: true });
+  } catch {} // 心跳失败无所谓，下次再试
+}
+
+function handleDevicesSnapshot(snap) {
+  const myId = getOrCreateDeviceId();
+  const devices = snap.docs.map(d => d.data())
+    .filter(d => d && d.deviceId)
+    // 过滤 60 天没活跃的，避免无限累积
+    .filter(d => (Date.now() - (d.lastSeenAt || 0)) < 60 * 24 * 3600 * 1000)
+    .sort((a, b) => (b.lastSeenAt || 0) - (a.lastSeenAt || 0));
+  // 通过全局 hook 把数据塞到 UI（auth.js 渲染设备列表）
+  if (typeof window.renderDevicesUI === 'function') {
+    window.renderDevicesUI(devices, myId);
+  }
+}
+
+export async function logoutCurrentDevice(uid) {
+  // 退出登录时移除当前设备记录
+  try {
+    if (!uid) return;
+    const id = getOrCreateDeviceId();
+    await deleteDoc(doc(db, 'users', uid, 'devices', id));
+  } catch {}
 }
 
 // ---- Initial pull + merge ----

@@ -1316,6 +1316,60 @@
       0%, 100% { opacity: 1; }
       50%      { opacity: 0.45; }
     }
+    /* ====== DEVICE LIST (登录设备列表) ====== */
+    .devices-row { padding: 4px 14px 8px; }
+    .devices-toggle {
+      width: 100%;
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 10px;
+      padding: 8px 12px;
+      color: rgba(255,255,255,0.78);
+      font-size: 12px;
+      font-family: inherit;
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: space-between;
+      transition: background 0.15s;
+    }
+    .devices-toggle:hover { background: rgba(255,255,255,0.1); }
+    .devices-chevron {
+      color: rgba(255,255,255,0.5);
+      font-size: 14px;
+      transition: transform 0.2s;
+    }
+    .devices-list {
+      margin-top: 6px;
+      display: flex; flex-direction: column; gap: 4px;
+    }
+    .device-item {
+      display: flex; align-items: center; gap: 10px;
+      padding: 8px 10px;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 9px;
+    }
+    .device-item.device-current {
+      background: rgba(120,200,255,0.13);
+      border-color: rgba(120,200,255,0.32);
+    }
+    .device-emoji { font-size: 18px; flex-shrink: 0; }
+    .device-meta { flex: 1; min-width: 0; }
+    .device-name {
+      font-size: 12px; font-weight: 600;
+      color: rgba(255,255,255,0.88);
+      overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    }
+    .device-this {
+      font-weight: 500;
+      color: rgba(120,200,255,0.95);
+      font-size: 10px;
+    }
+    .device-last {
+      font-size: 10px;
+      color: rgba(255,255,255,0.45);
+      margin-top: 2px;
+    }
+
     .sync-status-text {
       font-family: inherit; flex: 1;
       overflow: hidden; text-overflow: ellipsis; white-space: nowrap;

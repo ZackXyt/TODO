@@ -46,7 +46,7 @@
       submitAuthForm, logoutUser, getCurrentUser, onUserChange,
     } from './auth.js';
     // §SYNC  Firestore 双向实时同步
-    import { initSync, syncTasksToCloud, syncListsToCloud, syncNotepadToCloud, getSyncStatus, manualSync } from './sync.js';
+    import { initSync, syncTasksToCloud, syncListsToCloud, syncNotepadToCloud, getSyncStatus, manualSync, logoutCurrentDevice } from './sync.js';
 
     initPWA();
     initAuth();
@@ -583,6 +583,73 @@
       txt.textContent = cfg.label;
       txt.title = detail || '';
     };
+
+    // 让 sync.js 能调到 logoutCurrentDevice（auth.js 退出时用）
+    window.logoutCurrentDevice = logoutCurrentDevice;
+
+    // 设备列表渲染（由 sync.js 在 onSnapshot 触发）
+    window.renderDevicesUI = function(devices, currentDeviceId) {
+      const row   = document.getElementById('devices-row');
+      const count = document.getElementById('devices-count');
+      const list  = document.getElementById('devices-list');
+      if (!row || !count || !list) return;
+      if (!devices || devices.length === 0) {
+        row.style.display = 'none';
+        list.innerHTML = '';
+        return;
+      }
+      row.style.display = 'block';
+      count.textContent = String(devices.length);
+      list.innerHTML = devices.map(d => {
+        const isCurrent = d.deviceId === currentDeviceId;
+        const lastSeen = formatLastSeen(d.lastSeenAt);
+        return `
+          <div class="device-item ${isCurrent ? 'device-current' : ''}">
+            <span class="device-emoji">${deviceEmoji(d.name)}</span>
+            <div class="device-meta">
+              <div class="device-name">${escapeHtml(d.name || '未知设备')}${isCurrent ? ' · <span class="device-this">本机</span>' : ''}</div>
+              <div class="device-last">${lastSeen}</div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    };
+
+    function deviceEmoji(name) {
+      const n = String(name || '').toLowerCase();
+      if (n.includes('iphone'))  return '📱';
+      if (n.includes('ipad'))    return '📱';
+      if (n.includes('android')) return '📱';
+      if (n.includes('mac'))     return '💻';
+      if (n.includes('windows')) return '🖥';
+      if (n.includes('linux'))   return '🐧';
+      return '🌐';
+    }
+
+    function formatLastSeen(ts) {
+      if (!ts) return '从未活跃';
+      const diff = Date.now() - ts;
+      if (diff < 60 * 1000)             return '刚刚活跃';
+      if (diff < 60 * 60 * 1000)        return Math.floor(diff / 60000) + ' 分钟前';
+      if (diff < 24 * 60 * 60 * 1000)   return Math.floor(diff / 3600000) + ' 小时前';
+      const d = Math.floor(diff / (24 * 3600000));
+      if (d < 30) return d + ' 天前';
+      return new Date(ts).toLocaleDateString('zh-CN');
+    }
+
+    function escapeHtml(s) {
+      return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+    }
+
+    function toggleDevicesList() {
+      const list = document.getElementById('devices-list');
+      const chev = document.getElementById('devices-chevron');
+      if (!list) return;
+      const open = list.style.display !== 'none' && list.style.display !== '';
+      list.style.display = open ? 'none' : 'block';
+      if (chev) chev.textContent = open ? '›' : '⌄';
+    }
+    window.toggleDevicesList = toggleDevicesList;
 
     const STATE_ORDER = { overdue:0, panic:1, urgent:2, soon:3, normal:4 };
     const STATE_CFG = {
