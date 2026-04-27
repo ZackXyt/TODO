@@ -11,8 +11,8 @@
   <meta name="apple-mobile-web-app-title" content="凝光">
   <link rel="icon" type="image/svg+xml" href="/TODO/heartflow.svg">
   <link rel="apple-touch-icon" href="/TODO/apple-touch-icon-180x180.png">
-  <script type="module" crossorigin src="/TODO/assets/index-Ce38Zlgk.js"></script>
-  <link rel="stylesheet" crossorigin href="/TODO/assets/index-BtOudJ0y.css">
+  <script type="module" crossorigin src="/TODO/assets/index-BnIQROt9.js"></script>
+  <link rel="stylesheet" crossorigin href="/TODO/assets/index-DlVkFE0H.css">
 <link rel="manifest" href="/TODO/manifest.webmanifest"></head>
 <body>
   <div id="wallpaper"></div>
@@ -409,6 +409,13 @@
       <div class="sync-status-row">
         <span class="sync-dot" id="sync-dot"></span>
         <span class="sync-status-text" id="sync-status-text">未登录</span>
+      </div>
+      <div class="devices-row" id="devices-row" style="display:none;">
+        <button class="devices-toggle" onclick="toggleDevicesList()">
+          <span>📱 <span id="devices-count">—</span> 台设备已登录</span>
+          <span class="devices-chevron" id="devices-chevron">›</span>
+        </button>
+        <div class="devices-list" id="devices-list" style="display:none;"></div>
       </div>
     </div>
 

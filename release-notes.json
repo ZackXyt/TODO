@@ -1,6 +1,45 @@
 {
   "versions": [
     {
+      "version": "3.1.2",
+      "emoji": "📱",
+      "title": "扩展坞显示：账号在几台设备登录",
+      "tagline": "一眼知道你的凝光在哪几台设备活跃，本机用蓝色高亮标记",
+      "highlights": [
+        {
+          "emoji": "📊",
+          "title": "实时设备列表",
+          "what": "扩展坞账号区下方新增「📱 X 台设备已登录」入口，点开能看到每台设备的名字 + 最后活跃时间",
+          "how": "Firestore 路径 users/{uid}/devices/{deviceId}，onSnapshot 监听跨设备实时更新——A 设备登录后 B 设备 1-2 秒内就能看到"
+        },
+        {
+          "emoji": "🆔",
+          "title": "稳定设备 ID",
+          "what": "每台设备首次登录生成一个 UUID 存 localStorage，之后用同一个 ID 心跳更新",
+          "how": "crypto.randomUUID()，本机用蓝色「本机」标签区分"
+        },
+        {
+          "emoji": "🛰",
+          "title": "智能设备名识别",
+          "what": "iPhone / iPad / Android / Mac · Chrome / Mac · Safari / Windows 自动判断",
+          "how": "navigator.userAgent + display-mode standalone 检测，PWA 模式还会标 · PWA 后缀"
+        },
+        {
+          "emoji": "💓",
+          "title": "心跳机制",
+          "what": "lastSeenAt 每 5 分钟更新一次，再加上窗口聚焦/visibilitychange 事件触发即时更新",
+          "how": "60 天没活跃的设备自动从列表过滤（数据保留，但不显示）"
+        },
+        {
+          "emoji": "👋",
+          "title": "退出登录会主动下线",
+          "what": "点退出按钮时，当前设备会从云端 devices 列表中删除，让其他设备实时看到「少了一台」",
+          "how": "deleteDoc 当前 deviceId 文档"
+        }
+      ],
+      "footer": "知道自己的「凝光」分身在哪几个屏幕里 ✨"
+    },
+    {
       "version": "3.1.1",
       "emoji": "🌍",
       "title": "全设备适配 + 位置/时区移入扩展坞",
