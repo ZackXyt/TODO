@@ -11,8 +11,8 @@
   <meta name="apple-mobile-web-app-title" content="凝光">
   <link rel="icon" type="image/svg+xml" href="/TODO/heartflow.svg">
   <link rel="apple-touch-icon" href="/TODO/apple-touch-icon-180x180.png">
-  <script type="module" crossorigin src="/TODO/assets/index-8JI_uUmo.js"></script>
-  <link rel="stylesheet" crossorigin href="/TODO/assets/index-ZwAmta-E.css">
+  <script type="module" crossorigin src="/TODO/assets/index-Ce38Zlgk.js"></script>
+  <link rel="stylesheet" crossorigin href="/TODO/assets/index-BtOudJ0y.css">
 <link rel="manifest" href="/TODO/manifest.webmanifest"></head>
 <body>
   <div id="wallpaper"></div>
@@ -37,13 +37,7 @@
         <div class="weather-card">
           <div class="weather-top-row">
             <div class="weather-sky" id="weather-sky">获取天气中…</div>
-            <button class="weather-edit-btn" onclick="toggleCityEdit()" title="切换城市">📍</button>
           </div>
-          <div class="weather-edit-form" id="weather-edit-form">
-            <input class="weather-input" id="weather-city-input" placeholder="城市名 / City name…" />
-            <button class="weather-search-btn" onclick="searchCity()">搜索</button>
-          </div>
-          <div class="weather-candidates" id="weather-candidates"></div>
           <div class="weather-stats">
             <span class="weather-temp" id="weather-temp">--°</span>
             <span class="weather-humidity" id="weather-humidity">湿度 --%</span>
@@ -254,6 +248,32 @@
         <div>
           <div id="report-label">工作报告</div>
           <div class="menu-item-desc" id="report-desc">查看时间段内的任务情况</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 位置 & 天气：把主屏的切城市 UI 搬进来，主屏只留显示 -->
+    <div class="menu-section">
+      <div class="menu-section-title">位置 & 天气</div>
+      <div class="menu-item" style="cursor:default;align-items:flex-start;">
+        <span class="menu-item-icon">📍</span>
+        <div style="flex:1;min-width:0;">
+          <div>当前城市</div>
+          <div class="menu-item-desc" id="menu-current-city">未设置</div>
+        </div>
+      </div>
+      <div class="menu-item" style="cursor:default;flex-direction:column;align-items:stretch;gap:8px;">
+        <div class="weather-edit-form-menu" style="display:flex;gap:8px;">
+          <input class="weather-input" id="weather-city-input" placeholder="搜城市：北京 / Tokyo / Paris…" />
+          <button class="weather-search-btn" onclick="searchCity()">搜索</button>
+        </div>
+        <div class="weather-candidates" id="weather-candidates" style="margin:0;"></div>
+      </div>
+      <div class="menu-item" onclick="useMyLocation()" style="cursor:pointer;">
+        <span class="menu-item-icon">🛰</span>
+        <div>
+          <div>用我的当前位置</div>
+          <div class="menu-item-desc">重新请求浏览器定位（时区会同步切换）</div>
         </div>
       </div>
     </div>
