@@ -347,6 +347,53 @@
       document.getElementById("color-dot").style.background = "#533483";
     }
 
+    // §APP-ICON ─ 应用图标切换（影响浏览器 tab、Apple 主屏「添加到主屏幕」等）
+    const APP_ICON_BASE = (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.BASE_URL)
+      ? import.meta.env.BASE_URL
+      : '/TODO/';
+    function _iconUrl(n, size) {
+      return `${APP_ICON_BASE}icons/icon${n}-${size}.png`;
+    }
+    function _setLink(rel, href, sizes) {
+      let el = document.querySelector(`link[rel="${rel}"]${sizes ? `[sizes="${sizes}"]` : ''}`);
+      if (!el) {
+        el = document.createElement('link');
+        el.rel = rel;
+        if (sizes) el.sizes = sizes;
+        document.head.appendChild(el);
+      }
+      // bust cache so browser actually refreshes the favicon
+      el.href = href + '?v=' + Date.now();
+      el.type = 'image/png';
+    }
+    function setAppIcon(n, opts) {
+      n = String(n);
+      if (!['1','2','3','4'].includes(n)) n = '1';
+      const silent = !!(opts && opts.silent);
+      // Remove svg favicon override so png takes over
+      const svgIcon = document.querySelector('link[rel="icon"][type="image/svg+xml"]');
+      if (svgIcon) svgIcon.remove();
+      _setLink('icon',             _iconUrl(n, 192));
+      _setLink('shortcut icon',    _iconUrl(n, 192));
+      _setLink('apple-touch-icon', _iconUrl(n, 180));
+      localStorage.setItem('todo_app_icon', n);
+      document.querySelectorAll('.icon-choice').forEach(b => {
+        b.classList.toggle('active', b.dataset.icon === n);
+      });
+      if (!silent) openIconNotice();
+    }
+    function openIconNotice() {
+      const ov = document.getElementById('icon-notice-overlay');
+      if (ov) ov.classList.add('show');
+    }
+    function closeIconNotice() {
+      const ov = document.getElementById('icon-notice-overlay');
+      if (ov) ov.classList.remove('show');
+    }
+    // Init from localStorage (default = '1')
+    const savedAppIcon = localStorage.getItem('todo_app_icon') || '1';
+    setAppIcon(savedAppIcon, { silent: true });
+
     // §TASKS ─ 任务核心状态
     let sortMode     = localStorage.getItem('todo_sort_mode')   || 'urgency';
     let viewMode     = localStorage.getItem('todo_view_mode')   || 'all';
@@ -2691,6 +2738,8 @@
       quickAddTask, toggleQuickAddHint, parseQuickAdd,
       // Layout customization
       setDensity, setModuleVisible, applyLayoutPreset,
+      // App icon picker
+      setAppIcon, openIconNotice, closeIconNotice,
       // Toast (so other modules like auth.js can call window.showToast)
       showToast,
     });

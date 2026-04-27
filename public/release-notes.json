@@ -1,6 +1,38 @@
 {
   "versions": [
     {
+      "version": "3.1.3",
+      "emoji": "🌙",
+      "title": "四款应用图标任你切换",
+      "tagline": "凝光的「灯笼」可以换装了——星辉、极光、暮光、星尘四种心境随手挑",
+      "highlights": [
+        {
+          "emoji": "🎨",
+          "title": "扩展坞 · 应用图标",
+          "what": "扩展坞「壁纸」下方新增「应用图标」选择面板，4 个候选缩略图直接点选，当前选中带紫色描边 + ✓ 角标",
+          "how": "图标资源放在 public/icons/iconN-{64,180,192,512}.png，点击即时切换浏览器 tab favicon 与 apple-touch-icon"
+        },
+        {
+          "emoji": "✂️",
+          "title": "智能裁切，圆角铺满",
+          "what": "原图带紫色背景，已自动检测每张里那个圆角方形 icon 的边界、裁掉多余背景，让图标本体铺满整格",
+          "how": "用 Pillow 取角落颜色当背景基准，差值阈值 28 抠出前景 bbox，再扩成正方形居中裁切"
+        },
+        {
+          "emoji": "💾",
+          "title": "选择会被记住",
+          "what": "你的图标偏好存进 localStorage(todo_app_icon)，下次打开自动恢复，不会被重置",
+          "how": "初始默认 icon1（星辉）；切换时给 link href 加时间戳防止浏览器缓存旧 favicon"
+        },
+        {
+          "emoji": "💬",
+          "title": "俏皮说明弹窗",
+          "what": "切换图标时弹个小通知告诉你：浏览器 tab 立刻就变，但 Dock / 启动台里的图标得卸载重装才会换装",
+          "how": "新增 #icon-notice-overlay 模态框，复用已有的 help-modal 样式 + 文案手写得不正经一些"
+        }
+      ]
+    },
+    {
       "version": "3.1.2",
       "emoji": "📱",
       "title": "扩展坞显示：账号在几台设备登录",

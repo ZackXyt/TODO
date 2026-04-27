@@ -310,6 +310,33 @@
     </div>
 
     <div class="menu-section">
+      <div class="menu-section-title">应用图标</div>
+      <div class="menu-item" style="cursor:default;flex-direction:column;align-items:stretch;gap:10px;">
+        <div style="display:flex;align-items:center;gap:10px;">
+          <span class="menu-item-icon">🌙</span>
+          <div style="flex:1;min-width:0;">
+            <div>选择图标</div>
+            <div class="menu-item-desc">点击切换浏览器标签 / 桌面图标</div>
+          </div>
+        </div>
+        <div class="icon-picker" id="icon-picker">
+          <button class="icon-choice" data-icon="1" onclick="setAppIcon('1')" title="星辉">
+            <img src="icons/icon1-192.png" alt="icon 1" />
+          </button>
+          <button class="icon-choice" data-icon="2" onclick="setAppIcon('2')" title="极光">
+            <img src="icons/icon2-192.png" alt="icon 2" />
+          </button>
+          <button class="icon-choice" data-icon="3" onclick="setAppIcon('3')" title="暮光">
+            <img src="icons/icon3-192.png" alt="icon 3" />
+          </button>
+          <button class="icon-choice" data-icon="4" onclick="setAppIcon('4')" title="星尘">
+            <img src="icons/icon4-192.png" alt="icon 4" />
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div class="menu-section">
       <div class="menu-item" style="cursor:default;">
         <span class="menu-item-icon">🌐</span>
         <div>语言 / Language</div>
@@ -422,6 +449,27 @@
       <span>✨ 凝光 Lumen</span>
       <span class="app-version-num" id="app-version-num">v—</span>
       <button class="version-check-btn" id="version-check-btn" onclick="checkForUpdate()">检查更新</button>
+    </div>
+  </div>
+
+  <!-- ICON SWITCH NOTICE MODAL -->
+  <div class="help-modal-overlay" id="icon-notice-overlay" onclick="if(event.target===this)closeIconNotice()">
+    <div class="help-modal icon-notice-modal">
+      <div class="help-title">
+        <span>🌙 图标已偷偷换好啦</span>
+        <button class="edit-modal-close" onclick="closeIconNotice()">✕</button>
+      </div>
+      <div class="icon-notice-body">
+        <p>🍃 浏览器标签页里的小图标 <b>立刻就变身</b> 了～</p>
+        <p>但 <b>Dock / 启动台 / 任务栏</b> 里那张图标，是你当初安装时被系统「拓印」下来的——小编暂时撬不动它 😅</p>
+        <p>想让它也换装的话，得请你 <b>先卸载凝光，再重新安装一次</b>。新安装的那个就是你刚选的图标啦 ✨</p>
+      </div>
+      <div class="help-tip">
+        💡 只在浏览器里用？那啥都不用管，已经齐活了。
+      </div>
+      <div style="display:flex;justify-content:flex-end;margin-top:14px;">
+        <button class="preset-btn" style="padding:8px 18px;font-size:12px;" onclick="closeIconNotice()">知道啦</button>
+      </div>
     </div>
   </div>
 
