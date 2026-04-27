@@ -232,6 +232,10 @@
     }
     .weather-candidate-btn:hover { background: rgba(255,255,255,0.22); color: white; }
 
+    /* 在扩展坞菜单里使用时，字稍微大一点更易读 */
+    .weather-edit-form-menu .weather-input,
+    .weather-edit-form-menu .weather-search-btn { font-size: 13px; padding: 7px 11px; }
+
     /* ====== DINO WIDGET → STADIUM CONTAINER ====== */
     .dino-widget {
       flex: 1;
@@ -2251,7 +2255,8 @@
          视觉上像 iOS 原生 app 的底部 tab bar，不再有暗色断层感。
          本身无固定颜色（rgba 半透明 + backdrop-filter），底色完全跟随后面的
          html gradient，所以用户切换壁纸配色时它会自动同步。
-         顶部 12px 用 mask 渐隐，与上方 widget 区平滑过渡，不留硬边。 */
+         仅在 PWA standalone 模式下显示——Safari/Android Chrome 浏览器内
+         打开时这条带没意义，直接隐藏。 */
       body::after {
         content: '';
         position: fixed;
@@ -2266,6 +2271,10 @@
         -webkit-mask-image: linear-gradient(to top, black calc(100% - 12px), transparent);
         z-index: 50;
         pointer-events: none;
+        display: none;
+      }
+      @media (display-mode: standalone) {
+        body::after { display: block; }
       }
 
       /* Reset desktop grid → single scrollable column */
@@ -2368,13 +2377,12 @@
         overflow: visible;
       }
 
-      /* PWA 模式下底部毛玻璃条高度 = env(safe-area-inset-bottom) + 12px。
-         此时把水印放到条的视觉正中，更有「品牌签名」的精致感。
-         Safari 模式下条只有 12px 太矮，居中会把字推出屏幕，所以只在
-         standalone 下生效。 */
+      /* PWA 模式 + 设备有 Home 指示器（safe-area > 0）时，把水印放到玻璃条
+         视觉正中。max(8px, …) 兜底：Android 等 safe-area = 0 的 PWA 不会
+         把字推出屏幕。 */
       @media (display-mode: standalone) {
         .watermark {
-          bottom: calc((env(safe-area-inset-bottom, 0px) + 12px) / 2) !important;
+          bottom: max(8px, calc((env(safe-area-inset-bottom, 0px) + 12px) / 2)) !important;
           transform: translate(-50%, 50%) !important;     /* 横竖都中心对齐到 anchor 点 */
           color: rgba(255,255,255,0.55) !important;        /* 衬玻璃条略提亮 */
         }

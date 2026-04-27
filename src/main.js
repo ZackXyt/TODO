@@ -153,24 +153,59 @@
       weatherRefreshTimer = setInterval(() => fetchWeather(lat, lon), 10 * 60 * 1000);
     }
 
-    function toggleCityEdit() {
-      const form = document.getElementById("weather-edit-form");
-      const visible = form.style.display !== "none";
-      form.style.display = visible ? "none" : "flex";
-      if (!visible) document.getElementById("weather-city-input").focus();
+    // v3.1.1：切城市 UI 已搬到扩展坞菜单，toggleCityEdit 保留为兼容用 no-op
+    function toggleCityEdit() { /* no-op：UI 已在菜单内常驻 */ }
+
+    function useMyLocation() {
+      if (!navigator.geolocation) {
+        showToast('❌ 当前设备不支持定位');
+        return;
+      }
+      showToast('📡 请求浏览器定位中…');
+      navigator.geolocation.getCurrentPosition(
+        pos => {
+          // 用反向解析拿城市名 + 时区
+          const { latitude, longitude } = pos.coords;
+          fetch(`https://geocoding-api.open-meteo.com/v1/reverse?latitude=${latitude}&longitude=${longitude}&language=zh`)
+            .then(r => r.json())
+            .then(data => {
+              const r = (data && data.results && data.results[0]) || null;
+              if (r) {
+                applyCity({ latitude, longitude, timezone: r.timezone, name: r.name, admin1: r.admin1, country: r.country });
+              } else {
+                applyCity({ latitude, longitude, timezone: Intl.DateTimeFormat().resolvedOptions().timeZone, name: '当前位置', admin1: '', country: '' });
+              }
+            })
+            .catch(() => {
+              applyCity({ latitude, longitude, timezone: Intl.DateTimeFormat().resolvedOptions().timeZone, name: '当前位置', admin1: '', country: '' });
+            });
+        },
+        err => {
+          showToast('❌ 定位被拒绝或失败：' + (err && err.message ? err.message : '未知原因'));
+        },
+        { enableHighAccuracy: false, timeout: 8000, maximumAge: 5 * 60 * 1000 }
+      );
     }
 
     function applyCity({ latitude, longitude, timezone, name, admin1, country }) {
-      const label = `📍 ${name}${admin1 ? ', ' + admin1 : ''}, ${country}`;
+      const fullLabel  = `📍 ${name}${admin1 ? ', ' + admin1 : ''}${country ? ', ' + country : ''}`;
+      const shortLabel = `${name}${admin1 ? ', ' + admin1 : ''}${country ? ', ' + country : ''}`;
       currentTimezone = timezone;
       localStorage.setItem('todo_weather_lat', latitude);
       localStorage.setItem('todo_weather_lon', longitude);
       localStorage.setItem('todo_weather_tz', timezone);
-      localStorage.setItem('todo_weather_city', label);
-      document.getElementById("weather-location").textContent = label;
-      document.getElementById("weather-edit-form").style.display = "none";
-      document.getElementById("weather-candidates").innerHTML = "";
-      document.getElementById("weather-city-input").value = "";
+      localStorage.setItem('todo_weather_city', fullLabel);
+      // 主屏：仅显示位置文字（无可点击 UI）
+      const wl = document.getElementById("weather-location");
+      if (wl) wl.textContent = fullLabel;
+      // 扩展坞：显示当前城市
+      const mc = document.getElementById("menu-current-city");
+      if (mc) mc.textContent = shortLabel;
+      // 清理菜单内的搜索输入和候选
+      const cands = document.getElementById("weather-candidates");
+      if (cands) cands.innerHTML = "";
+      const inp = document.getElementById("weather-city-input");
+      if (inp) inp.value = "";
       startWeatherRefresh(latitude, longitude);
       showToast(`🌍 已切换到 ${name}，时钟同步当地时间`);
     }
@@ -222,9 +257,12 @@
       const savedLon  = parseFloat(localStorage.getItem('todo_weather_lon'));
       const savedTz   = localStorage.getItem('todo_weather_tz');
       const savedCity = localStorage.getItem('todo_weather_city');
+      const wl = document.getElementById("weather-location");
+      const mc = document.getElementById("menu-current-city");
       if (savedLat && savedLon) {
         currentTimezone = savedTz || null;
-        document.getElementById("weather-location").textContent = savedCity || "";
+        if (wl) wl.textContent = savedCity || "";
+        if (mc) mc.textContent = (savedCity || "").replace(/^📍\s*/, '') || '未设置';
         startWeatherRefresh(savedLat, savedLon);
         return;
       }
@@ -234,20 +272,21 @@
           pos => startWeatherRefresh(pos.coords.latitude, pos.coords.longitude),
           () => {
             startWeatherRefresh(39.9042, 116.4074);
-            document.getElementById("weather-location").textContent = "位置未授权，显示默认城市";
+            if (wl) wl.textContent = "位置未授权，显示默认城市";
+            if (mc) mc.textContent = '默认城市（北京）';
           }
         );
       } else {
         startWeatherRefresh(39.9042, 116.4074);
+        if (mc) mc.textContent = '默认城市（北京）';
       }
     }
 
-    // 城市输入框支持回车确认
-    document.getElementById("weather-city-input")
-      .addEventListener("keydown", e => { if (e.key === "Enter") searchCity(); });
-
-    // 初始化时隐藏输入框（CSS flex 会覆盖，强制设置）
-    document.getElementById("weather-edit-form").style.display = "none";
+    // 城市输入框支持回车确认（输入框已搬到扩展坞菜单，但 ID 不变）
+    const _cityInp = document.getElementById("weather-city-input");
+    if (_cityInp) {
+      _cityInp.addEventListener("keydown", e => { if (e.key === "Enter") searchCity(); });
+    }
 
     initWeather();
 
@@ -2568,7 +2607,7 @@
       resetStretchTimer, resetWallpaper, restoreTask, saveNote, searchCity,
       selectPriority, selectRepeat, setActiveList, setCalView, setDuration,
       setViewMode, showCalDayTasks, showCreateList, showCustomDurInput,
-      startPauseTimer, toggleCityEdit, toggleCompletedPanel, toggleFocusMode,
+      startPauseTimer, toggleCityEdit, useMyLocation, toggleCompletedPanel, toggleFocusMode,
       toggleForm, toggleMascotPanel, toggleMenu, toggleMyDay, toggleSortMode,
       toggleStarred, toggleStep, toggleTaskExpand,
       // Edit + data import/export
