@@ -119,13 +119,13 @@ function showReleaseNotesModal(data, mode /* 'preview' | 'celebration' */) {
   const previous = versions[1];
   const isCelebration = mode === 'celebration';
 
+  // 只渲染 title + what（面向用户），how 字段保留在 JSON 里作为开发备忘但不展示
   const renderHighlights = v => (v.highlights || []).map(h => `
     <div class="rn-item">
       <div class="rn-item-emoji">${h.emoji || '✨'}</div>
       <div class="rn-item-body">
         <div class="rn-item-title">${escapeHtml(h.title || '')}</div>
         ${h.what ? `<div class="rn-item-what">${escapeHtml(h.what)}</div>` : ''}
-        ${h.how  ? `<div class="rn-item-how">💡 ${escapeHtml(h.how)}</div>` : ''}
       </div>
     </div>
   `).join('');
