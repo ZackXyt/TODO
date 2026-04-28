@@ -112,7 +112,7 @@
       <h2>谁能看到你的数据</h2>
       <ul>
         <li><b>你自己</b>：所有数据原文。</li>
-        <li><b>创作者（我）</b>：作为 admin 我可以查看 <b>所有用户的数据用于聚合分析</b>。我承诺不会在公开场合披露任何个人内容、不会卖给任何人、不会用作个人用途之外的事。如有需要引用某段话作为产品反馈案例，我会脱敏处理。</li>
+        <li><b>创作者（我）</b>：作为 admin 我<b>只能读取设备元数据</b>（设备名、UUID、最后活跃时间）用于做聚合统计（DAU/WAU/设备分布）。<b>读不到</b>你的任务、清单、随想录、专注记录等任何具体内容——这点由 Firestore 安全规则在服务端强制执行，不靠"自觉"。</li>
         <li><b>Google</b>：作为 Firebase 服务商，承担数据存储职责，受其自身隐私政策约束。</li>
       </ul>
 
@@ -161,7 +161,7 @@
       <h2>Who can see your data</h2>
       <ul>
         <li><b>You</b>: all your data in plaintext.</li>
-        <li><b>The creator (me)</b>: as admin I can read <b>all user data for aggregate analysis</b>. I commit to never publicly disclose personal content, never sell it, and never use it beyond product improvement. If I quote a snippet as feedback, I will redact identifying details.</li>
+        <li><b>The creator (me)</b>: as admin I can read <b>only device metadata</b> (device label, UUID, last-active timestamp) for aggregate stats (DAU/WAU/device mix). I <b>cannot</b> read your tasks, lists, notepad, or focus records — this is enforced server-side by Firestore security rules, not by good faith.</li>
         <li><b>Google</b>: as the Firebase provider, responsible for storage, governed by its own privacy policy.</li>
       </ul>
 
