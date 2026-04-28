@@ -1,6 +1,20 @@
 {
   "versions": [
     {
+      "version": "3.4.2",
+      "emoji": "🌌",
+      "title": "星空跟随你到任何颜色",
+      "tagline": "无论你选什么背景色，繁星都常驻在天上",
+      "highlights": [
+        {
+          "emoji": "💫",
+          "title": "星空与背景色解绑",
+          "what": "之前只在默认紫色背景下显示星空，现在不管你把背景换成红、蓝、绿还是任何颜色，繁星都一直在",
+          "how": "main.js 移除 isDefaultWpColor 判定，applyColorWallpaper 不再切换 starfield；初始化无条件 showStarfield()；删除 hideStarfield 死代码"
+        }
+      ]
+    },
+    {
       "version": "3.4.1",
       "emoji": "🌠",
       "title": "默认配色下星空一直在",

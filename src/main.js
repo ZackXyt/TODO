@@ -347,11 +347,7 @@
       return [Math.round(h*360), Math.round(s*100), Math.round(l*100)];
     }
 
-    // §STARFIELD ─ 默认紫色背景上的繁星（仅在使用默认配色时显示）
-    const DEFAULT_WP_COLOR = '#9435C0';
-    function isDefaultWpColor(c) {
-      return !c || c.toUpperCase() === DEFAULT_WP_COLOR.toUpperCase();
-    }
+    // §STARFIELD ─ 繁星（任何背景下都常驻）
     function buildStarfield() {
       const sf = document.getElementById('starfield');
       if (!sf || sf.dataset.built) return;
@@ -388,10 +384,6 @@
       const sf = document.getElementById('starfield');
       if (sf) sf.classList.add('show');
     }
-    function hideStarfield() {
-      const sf = document.getElementById('starfield');
-      if (sf) sf.classList.remove('show');
-    }
 
     function applyColorWallpaper(hex) {
       const [h, s, l] = hexToHSL(hex);
@@ -407,8 +399,6 @@
       document.documentElement.style.backgroundColor = dark;
       document.getElementById("color-dot").style.background = hex;
       localStorage.setItem('todo_wallpaper_color', hex);
-      if (isDefaultWpColor(hex)) showStarfield();
-      else hideStarfield();
     }
 
     function resetWallpaper() {
@@ -421,9 +411,11 @@
       document.getElementById("wallpaper-color-input").value = "#9435C0";
       document.getElementById("color-dot").style.background = "#9435C0";
       localStorage.removeItem('todo_wallpaper_color');
-      showStarfield();
       showToast("✨ 已重置为默认配色");
     }
+
+    // 星空常驻：不依赖背景色，任何配色下都显示
+    showStarfield();
 
     // 读取上次保存的配色
     const savedColor = localStorage.getItem('todo_wallpaper_color');
@@ -432,7 +424,6 @@
       applyColorWallpaper(savedColor);
     } else {
       document.getElementById("color-dot").style.background = "#9435C0";
-      showStarfield();
     }
 
     // §APP-ICON ─ 应用图标切换（影响浏览器 tab、Apple 主屏「添加到主屏幕」等）
