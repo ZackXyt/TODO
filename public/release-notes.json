@@ -1,6 +1,20 @@
 {
   "versions": [
     {
+      "version": "3.3.2",
+      "emoji": "🩹",
+      "title": "修复创作者后台拉取失败",
+      "tagline": "v3.3.1 收紧规则后，创作者后台跨用户拉 devices 被 Firestore 拒掉，加一条 collection group 规则补回来",
+      "highlights": [
+        {
+          "emoji": "🛠",
+          "title": "补 collection group 规则",
+          "what": "v3.3.1 改完规则后创作者后台报「Missing or insufficient permissions」。原因是 collectionGroup('devices') 查询只匹配带递归通配的 match /{path=**}/devices/{deviceId} 规则，具体路径规则不会被命中",
+          "how": "新增一条 match /{path=**}/devices/{deviceId} 仅对 isAdmin() 开 read；写仍然走具体路径规则做本人校验，权限范围不变"
+        }
+      ]
+    },
+    {
       "version": "3.3.1",
       "emoji": "🔐",
       "title": "权限收紧到最小必要",
