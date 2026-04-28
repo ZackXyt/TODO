@@ -347,7 +347,11 @@
       return [Math.round(h*360), Math.round(s*100), Math.round(l*100)];
     }
 
-    // §STARFIELD ─ 默认紫色背景上的繁星（仅在没自定义颜色时显示）
+    // §STARFIELD ─ 默认紫色背景上的繁星（仅在使用默认配色时显示）
+    const DEFAULT_WP_COLOR = '#9435C0';
+    function isDefaultWpColor(c) {
+      return !c || c.toUpperCase() === DEFAULT_WP_COLOR.toUpperCase();
+    }
     function buildStarfield() {
       const sf = document.getElementById('starfield');
       if (!sf || sf.dataset.built) return;
@@ -403,7 +407,8 @@
       document.documentElement.style.backgroundColor = dark;
       document.getElementById("color-dot").style.background = hex;
       localStorage.setItem('todo_wallpaper_color', hex);
-      hideStarfield();
+      if (isDefaultWpColor(hex)) showStarfield();
+      else hideStarfield();
     }
 
     function resetWallpaper() {
