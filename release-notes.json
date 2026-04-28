@@ -1,6 +1,21 @@
 {
   "versions": [
     {
+      "version": "3.4.0",
+      "majorUpdate": true,
+      "emoji": "🌌",
+      "title": "默认背景上线繁星点点",
+      "tagline": "默认紫色背景下整片宇宙在你手心，磨砂玻璃卡片不变",
+      "highlights": [
+        {
+          "emoji": "✨",
+          "title": "宇宙感星空",
+          "what": "默认紫色背景上现在有 250+ 颗星，大小不一、自然闪烁，整体观感升一档；自定义颜色时不显示，重置壁纸即可召回",
+          "how": "main.js buildStarfield() 生成 180 静态 + 60 闪烁 + 14 带光晕主星，z-index 介于 wallpaper 和卡片之间，磨砂玻璃完全不受影响；尊重 prefers-reduced-motion"
+        }
+      ]
+    },
+    {
       "version": "3.3.5",
       "emoji": "🎨",
       "title": "默认配色更亮一点",
