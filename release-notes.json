@@ -1,15 +1,28 @@
 {
   "versions": [
     {
+      "version": "3.3.4",
+      "emoji": "✂️",
+      "title": "更新通知更精简",
+      "tagline": "更新弹窗不再展示技术细节，一句话告诉你这次更新带来了什么",
+      "highlights": [
+        {
+          "emoji": "👀",
+          "title": "面向使用者的更新说明",
+          "what": "现在每条更新只展示「你能用到什么 / 你得到什么保护」一句话，开发实现细节不再打扰你"
+        }
+      ]
+    },
+    {
       "version": "3.3.3",
       "emoji": "🌐",
       "title": "隐私政策补跨境数据告知",
-      "tagline": "依《个人信息保护法》要求，明确告知数据存储在 Google 美国数据中心，不同意可以纯本地使用",
+      "tagline": "明确告知数据存储位置，让你做出知情选择",
       "highlights": [
         {
           "emoji": "📍",
-          "title": "新增「数据存储位置（跨境告知）」章节",
-          "what": "隐私政策中英双语都加了一段：明确说明账号信息和应用数据存储在 Google 位于美国的数据中心，并附 Firebase 隐私说明链接。如果不同意数据出境，可以不登录账号纯本地使用",
+          "title": "数据存储位置告知",
+          "what": "隐私政策新增章节：你的数据存储在 Google 位于美国的数据中心；不想让数据出境，不登录账号即可纯本地使用",
           "how": "privacy.html 在「谁能看到你的数据」与「数据保留」之间插入新 h2，中英版本同步更新"
         }
       ]
@@ -18,12 +31,12 @@
       "version": "3.3.2",
       "emoji": "🩹",
       "title": "修复创作者后台拉取失败",
-      "tagline": "v3.3.1 收紧规则后，创作者后台跨用户拉 devices 被 Firestore 拒掉，加一条 collection group 规则补回来",
+      "tagline": "上一版改完规则后后台打不开，这版修好了",
       "highlights": [
         {
           "emoji": "🛠",
-          "title": "补 collection group 规则",
-          "what": "v3.3.1 改完规则后创作者后台报「Missing or insufficient permissions」。原因是 collectionGroup('devices') 查询只匹配带递归通配的 match /{path=**}/devices/{deviceId} 规则，具体路径规则不会被命中",
+          "title": "后台数据恢复正常",
+          "what": "v3.3.1 收紧权限后，创作者后台无法读取设备数据，已修复",
           "how": "新增一条 match /{path=**}/devices/{deviceId} 仅对 isAdmin() 开 read；写仍然走具体路径规则做本人校验，权限范围不变"
         }
       ]
@@ -31,19 +44,19 @@
     {
       "version": "3.3.1",
       "emoji": "🔐",
-      "title": "权限收紧到最小必要",
-      "tagline": "把创作者后台的读权限从「能读所有内容」收紧到「只能读设备元数据」，技术规则与隐私政策措辞对齐",
+      "title": "隐私保护更严格",
+      "tagline": "你的内容现在连作者也读不到，由服务端规则强制保护",
       "highlights": [
         {
           "emoji": "🛡",
-          "title": "Firestore 规则最小化",
-          "what": "创作者只能读 users/{uid}/devices 子集合用于聚合统计；任务、清单、随想录、专注记录任何人（包括创作者本人在 admin 身份下）都读不到",
+          "title": "任务和笔记内容真正只属于你",
+          "what": "你的任务、清单、随想录、专注记录现在连作者也读不到——这点由服务端规则强制执行，不靠承诺",
           "how": "拆成两条 match 规则——通配规则 /users/{uid}/{=**} 不再给 isAdmin() 开 read，仅 /users/{uid}/devices/{id} 单独给 admin read 权"
         },
         {
           "emoji": "📜",
-          "title": "隐私政策对齐",
-          "what": "把「admin 可以查看所有用户的数据」精确改为「admin 仅能查看设备元数据用于聚合统计」，做到政策和代码完全一致",
+          "title": "隐私政策与代码一致",
+          "what": "更新隐私政策措辞，做到「政策怎么写、规则就怎么执行」完全一致",
           "how": "privacy.html 中英双语同步更新「谁能看到你的数据」段"
         }
       ]
