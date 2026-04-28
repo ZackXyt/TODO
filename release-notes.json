@@ -1,6 +1,45 @@
 {
   "versions": [
     {
+      "version": "3.3.0",
+      "majorUpdate": true,
+      "emoji": "👑",
+      "title": "创作者后台 + 隐私合规",
+      "tagline": "上线了创作者监控面板（仅创作者可见），同时把隐私合规建好——隐私政策、注册同意、删除账号一站齐",
+      "highlights": [
+        {
+          "emoji": "👑",
+          "title": "创作者后台 Monitor",
+          "what": "扩展坞「账号」下方新增「创作者后台」入口（仅创作者邮箱登录后才可见）。点开能看到：注册用户数、DAU/WAU/MAU、设备分布柱状图、Top 30 活跃用户列表",
+          "how": "前端鉴权 isAdminUser(user) + Firestore 规则双重校验（admin 邮箱才允许 read 全集合）；数据来源 collectionGroup('devices') 一次拉全部，前端聚合 lastSeenAt"
+        },
+        {
+          "emoji": "📜",
+          "title": "隐私政策（中/EN）",
+          "what": "扩展坞「账号」区新增「隐私政策」入口，点开新标签打开 /TODO/privacy.html。讲清楚：收集什么、不收集什么、谁能看、保留多久、怎么删",
+          "how": "纯静态页面，不带任何脚本/像素/分析 SDK；中文 + 英文一键切换"
+        },
+        {
+          "emoji": "✅",
+          "title": "注册时同意机制",
+          "what": "注册流程增加「我已阅读并同意隐私政策」勾选框，未勾选会阻止注册并显示错误。同意时间戳会写到 users/{uid}/profile/consent 用作审计",
+          "how": "auth.js submitAuthForm 加 mode === 'signup' 检查 + writeConsent() 同步到 Firestore"
+        },
+        {
+          "emoji": "🗑",
+          "title": "删除账号（GDPR 删除权）",
+          "what": "扩展坞「账号」区新增「删除账号」按钮，二次确认后永久清除 users/{uid}/* 下所有子集合（tasks/lists/devices/profile）。本地数据保留",
+          "how": "deleteAccountData(uid) 用 writeBatch 分批 delete，500 条/批；前端两次 confirm 防误触"
+        },
+        {
+          "emoji": "🔒",
+          "title": "Firestore 规则更新",
+          "what": "新增 isAdmin() 函数：只对创作者邮箱开 read 权限，写权限永远只允许本人——admin 也不能改用户数据，仅能聚合统计",
+          "how": "request.auth.token.email == 'zack2004221@163.com'；客户端 + 服务端双层鉴权，缺一不可"
+        }
+      ]
+    },
+    {
       "version": "3.2.0",
       "emoji": "🛟",
       "title": "任务持久化保险 + 过期催促弹窗",

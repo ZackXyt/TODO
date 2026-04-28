@@ -11,8 +11,8 @@
   <meta name="apple-mobile-web-app-title" content="凝光">
   <link rel="icon" type="image/svg+xml" href="/TODO/heartflow.svg">
   <link rel="apple-touch-icon" href="/TODO/apple-touch-icon-180x180.png">
-  <script type="module" crossorigin src="/TODO/assets/index-C0EKbbGd.js"></script>
-  <link rel="stylesheet" crossorigin href="/TODO/assets/index-CBwSzF8o.css">
+  <script type="module" crossorigin src="/TODO/assets/index-DPjEIpJf.js"></script>
+  <link rel="stylesheet" crossorigin href="/TODO/assets/index-DfC3ZH7v.css">
 <link rel="manifest" href="/TODO/manifest.webmanifest"></head>
 <body>
   <div id="wallpaper"></div>
@@ -443,6 +443,31 @@
           <span class="devices-chevron" id="devices-chevron">›</span>
         </button>
         <div class="devices-list" id="devices-list" style="display:none;"></div>
+      </div>
+      <div class="menu-item account-extras" id="account-extras-row" style="display:none;cursor:pointer;" onclick="confirmDeleteAccount()">
+        <span class="menu-item-icon">🗑</span>
+        <div>
+          <div style="color:rgba(255,140,140,0.95);">删除账号</div>
+          <div class="menu-item-desc">永久清除云端 users/{你的uid}/* 下的全部数据，本地数据不动</div>
+        </div>
+      </div>
+      <div class="menu-item" style="cursor:pointer;" onclick="window.open('/TODO/privacy.html','_blank','noopener')">
+        <span class="menu-item-icon">📜</span>
+        <div>
+          <div>隐私政策</div>
+          <div class="menu-item-desc">查看本应用收集了什么、谁能看到</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ADMIN ENTRY — only visible when body.is-admin (set after auth check) -->
+    <div class="menu-section admin-entry-row">
+      <div class="menu-item" style="cursor:pointer;" onclick="openAdminPanel()">
+        <span class="menu-item-icon">👑</span>
+        <div>
+          <div>创作者后台</div>
+          <div class="menu-item-desc">查看注册数 / 活跃度 / 设备分布（仅创作者可见）</div>
+        </div>
       </div>
     </div>
 
