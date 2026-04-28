@@ -1229,6 +1229,65 @@
       transform: translateY(-1px);
     }
 
+    /* ====== OVERDUE NUDGE MODAL ====== */
+    .overdue-nudge-modal { max-width: 400px; }
+    .overdue-nudge-body { color: rgba(255,255,255,0.85); }
+    .overdue-nudge-task {
+      font-size: 16px; font-weight: 700; color: #fff;
+      padding: 12px 14px;
+      background: linear-gradient(135deg, rgba(255,107,107,0.18), rgba(255,140,140,0.10));
+      border: 1px solid rgba(255,120,120,0.35);
+      border-radius: 12px;
+      line-height: 1.45;
+      word-break: break-word;
+    }
+    .overdue-nudge-meta {
+      margin-top: 8px;
+      font-size: 12px;
+      color: rgba(255,180,180,0.85);
+    }
+    .overdue-nudge-prompt {
+      margin-top: 14px;
+      font-size: 13px;
+      color: rgba(255,255,255,0.78);
+      text-align: center;
+    }
+    .overdue-nudge-actions {
+      display: flex; gap: 8px;
+      margin-top: 16px;
+      flex-wrap: wrap; justify-content: center;
+    }
+    .overdue-nudge-actions .pwa-banner-btn {
+      padding: 9px 16px; font-size: 13px;
+      border-radius: 10px; cursor: pointer;
+      font-family: inherit; font-weight: 600;
+      transition: all 0.18s; line-height: 1.2;
+    }
+    .overdue-nudge-actions .pwa-btn-primary {
+      background: linear-gradient(135deg, rgba(120,200,255,0.32), rgba(180,140,255,0.32));
+      border: 1px solid rgba(120,200,255,0.55);
+      color: white;
+    }
+    .overdue-nudge-actions .pwa-btn-primary:hover {
+      background: linear-gradient(135deg, rgba(120,200,255,0.5), rgba(180,140,255,0.5));
+    }
+    .overdue-nudge-actions .pwa-btn-secondary {
+      background: rgba(180,140,255,0.18);
+      border: 1px solid rgba(180,140,255,0.4);
+      color: rgba(220,200,255,0.95);
+    }
+    .overdue-nudge-actions .pwa-btn-secondary:hover {
+      background: rgba(180,140,255,0.32); color: white;
+    }
+    .overdue-nudge-actions .pwa-btn-ghost {
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.12);
+      color: rgba(255,255,255,0.7);
+    }
+    .overdue-nudge-actions .pwa-btn-ghost:hover {
+      background: rgba(255,255,255,0.12); color: white;
+    }
+
     /* ====== APP ICON SWITCH NOTICE ====== */
     .icon-notice-modal { max-width: 400px; }
     .icon-notice-body {

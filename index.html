@@ -452,6 +452,29 @@
     </div>
   </div>
 
+  <!-- OVERDUE NUDGE MODAL -->
+  <div class="help-modal-overlay" id="overdue-nudge-overlay" onclick="if(event.target===this)dismissOverdueNudge()">
+    <div class="help-modal overdue-nudge-modal">
+      <div class="help-title">
+        <span>⏰ 任务过期啦</span>
+        <button class="edit-modal-close" onclick="dismissOverdueNudge()">✕</button>
+      </div>
+      <div class="overdue-nudge-body">
+        <div class="overdue-nudge-task" id="overdue-nudge-task">—</div>
+        <div class="overdue-nudge-meta" id="overdue-nudge-meta">—</div>
+        <div class="overdue-nudge-prompt">是延时任务，还是现在完成？</div>
+      </div>
+      <div class="overdue-nudge-actions">
+        <button class="pwa-banner-btn pwa-btn-primary" onclick="overdueNudgeComplete()">✓ 现在完成</button>
+        <button class="pwa-banner-btn pwa-btn-secondary" onclick="overdueNudgeSnooze(60)">⏳ 延时 1 小时</button>
+        <button class="pwa-banner-btn pwa-btn-ghost" onclick="dismissOverdueNudge()">稍后再提醒</button>
+      </div>
+      <div class="help-tip" style="margin-top:14px;">
+        💡 「延时 1 小时」之后这条任务在 1h 内不会再弹；「稍后再提醒」会进入下个常规提醒周期。
+      </div>
+    </div>
+  </div>
+
   <!-- ICON SWITCH NOTICE MODAL -->
   <div class="help-modal-overlay" id="icon-notice-overlay" onclick="if(event.target===this)closeIconNotice()">
     <div class="help-modal icon-notice-modal">

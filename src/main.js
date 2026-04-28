@@ -599,6 +599,68 @@
     }
     let tasks = loadTasksFromStorage();
 
+    // §TASK-BACKUP ─ 防御性每日快照
+    // 任务数据从未被「每日刷新」逻辑触碰——刷新只影响计数器和今日已完成面板。
+    // 但万一以后某次改动引入 bug 误清空 tasks，我们保留最近 7 天的快照可以恢复。
+    function pruneOldBackups() {
+      try {
+        const keep = 7;
+        const keys = [];
+        for (let i = 0; i < localStorage.length; i++) {
+          const k = localStorage.key(i);
+          if (k && k.startsWith('todo_tasks_backup_')) keys.push(k);
+        }
+        keys.sort().slice(0, Math.max(0, keys.length - keep)).forEach(k => localStorage.removeItem(k));
+      } catch {}
+    }
+    function snapshotTasksDaily() {
+      try {
+        const dk = getDayKey();
+        const key = 'todo_tasks_backup_' + dk;
+        if (localStorage.getItem(key)) return; // already snapshotted today
+        const cur = localStorage.getItem('todo_tasks');
+        if (cur && cur.length > 2) {  // not '[]'
+          localStorage.setItem(key, cur);
+          pruneOldBackups();
+        }
+      } catch {}
+    }
+    // Auto-recover: if storage is empty/wiped but we have a recent non-empty snapshot, restore it.
+    function recoverTasksIfWiped() {
+      try {
+        const cur = localStorage.getItem('todo_tasks');
+        const isEmpty = !cur || cur === '[]' || cur === 'null';
+        if (!isEmpty) return false;
+        // Find most recent backup
+        const keys = [];
+        for (let i = 0; i < localStorage.length; i++) {
+          const k = localStorage.key(i);
+          if (k && k.startsWith('todo_tasks_backup_')) keys.push(k);
+        }
+        if (!keys.length) return false;
+        keys.sort();
+        const latest = keys[keys.length - 1];
+        const data = localStorage.getItem(latest);
+        if (!data || data === '[]') return false;
+        const arr = JSON.parse(data);
+        if (!Array.isArray(arr) || !arr.length) return false;
+        localStorage.setItem('todo_tasks', data);
+        tasks = arr;
+        console.warn('[lumen] tasks were empty; restored from backup', latest, arr.length, 'tasks');
+        setTimeout(() => {
+          if (typeof showToast === 'function') {
+            showToast(`🛟 检测到任务异常清空，已自动从备份恢复 ${arr.length} 条`);
+          }
+        }, 1500);
+        return true;
+      } catch (e) { console.warn('recoverTasksIfWiped:', e); return false; }
+    }
+    recoverTasksIfWiped();
+    // Snapshot once at startup, then daily on focus / visibility change
+    setTimeout(snapshotTasksDaily, 2000);
+    document.addEventListener('visibilitychange', () => { if (!document.hidden) snapshotTasksDaily(); });
+    window.addEventListener('focus', snapshotTasksDaily);
+
     // §SYNC-HOOKS  Helpers used by sync.js to apply remote changes locally
     // (called WITHOUT going through saveTasks/saveLists to avoid sync loops)
     window.reloadDataFromStorage = function() {
@@ -1451,6 +1513,116 @@
       });
       showToast(`${STATE_CFG[getState(urgent[0].deadline)].emoji} ${urgent[0].text} — ${STATE_CFG[getState(urgent[0].deadline)].quip}`);
     }
+
+    // §OVERDUE-NUDGE ─ 任务过期 1 小时催一次
+    // 任务进入 overdue 状态后，每隔 1 小时弹一次模态问 user：现在完成 / 延时 / 稍后
+    // 用 task.overdueNudgedUntil（毫秒时间戳）记录"在此之前不再打扰"
+    var _overdueQueue = [];        // 等待弹的过期任务 id
+    var _overdueShowingId = null;  // 当前弹出中的任务 id
+
+    function checkOverdueNudges() {
+      const now = Date.now();
+      const due = tasks.filter(t => {
+        if (getState(t.deadline) !== 'overdue') return false;
+        const until = t.overdueNudgedUntil || 0;
+        return until <= now;
+      });
+      if (!due.length) return;
+
+      // Browser notification（窗口隐藏时也能看到）
+      if (typeof Notification !== 'undefined' && Notification.permission === 'granted' && document.hidden) {
+        const t = due[0];
+        try {
+          new Notification('⏰ 凝光 · 任务过期催促', {
+            body: `${t.text} — 已过期 ${overdueAgoText(t.deadline)}，是延时还是现在完成？`,
+            tag: 'overdue-' + t.id,
+          });
+        } catch {}
+      }
+
+      // In-app modal（一次只弹一个，剩下排队）
+      due.forEach(t => {
+        if (!_overdueQueue.includes(t.id) && _overdueShowingId !== t.id) {
+          _overdueQueue.push(t.id);
+        }
+      });
+      if (!_overdueShowingId) showNextOverdueNudge();
+    }
+
+    function formatDeadlineAbsolute(deadline) {
+      const d = new Date(deadline);
+      const m = d.getMonth() + 1, day = d.getDate();
+      const hh = String(d.getHours()).padStart(2,'0');
+      const mm = String(d.getMinutes()).padStart(2,'0');
+      return `${m}/${day} ${hh}:${mm}`;
+    }
+    function overdueAgoText(deadline) {
+      const ms = Date.now() - new Date(deadline).getTime();
+      if (ms < 60 * 60 * 1000) return Math.max(1, Math.round(ms / 60000)) + ' 分钟';
+      if (ms < 24 * 60 * 60 * 1000) return Math.round(ms / (60 * 60 * 1000)) + ' 小时';
+      return Math.round(ms / (24 * 60 * 60 * 1000)) + ' 天';
+    }
+
+    function showNextOverdueNudge() {
+      // Pop next queued id that still exists & still overdue
+      while (_overdueQueue.length) {
+        const id = _overdueQueue.shift();
+        const t = tasks.find(x => x.id === id);
+        if (!t) continue;
+        if (getState(t.deadline) !== 'overdue') continue;
+        if ((t.overdueNudgedUntil || 0) > Date.now()) continue;
+        _overdueShowingId = id;
+        document.getElementById('overdue-nudge-task').textContent = t.text;
+        document.getElementById('overdue-nudge-meta').textContent =
+          `截止 ${formatDeadlineAbsolute(t.deadline)} · 已过期 ${overdueAgoText(t.deadline)}`;
+        document.getElementById('overdue-nudge-overlay').classList.add('show');
+        return;
+      }
+      _overdueShowingId = null;
+    }
+
+    function _closeOverdueNudgeUI() {
+      document.getElementById('overdue-nudge-overlay').classList.remove('show');
+      _overdueShowingId = null;
+      // Show next queued (if any) shortly
+      setTimeout(showNextOverdueNudge, 350);
+    }
+
+    function dismissOverdueNudge() {
+      // "稍后再提醒"：snooze 短时间，下个常规检查周期再来
+      const id = _overdueShowingId;
+      const t = id != null ? tasks.find(x => x.id === id) : null;
+      if (t) {
+        t.overdueNudgedUntil = Date.now() + 5 * 60 * 1000;  // 5 分钟后可再次弹
+        saveTasks();
+      }
+      _closeOverdueNudgeUI();
+    }
+
+    function overdueNudgeSnooze(minutes) {
+      const id = _overdueShowingId;
+      const t = id != null ? tasks.find(x => x.id === id) : null;
+      if (t) {
+        t.overdueNudgedUntil = Date.now() + minutes * 60 * 1000;
+        saveTasks();
+        showToast(`⏳ 延时 ${minutes} 分钟，到点再喊你`);
+      }
+      _closeOverdueNudgeUI();
+    }
+
+    function overdueNudgeComplete() {
+      const id = _overdueShowingId;
+      _closeOverdueNudgeUI();
+      if (id != null) {
+        // 走正常完成流程
+        if (typeof completeTask === 'function') completeTask(id);
+      }
+    }
+
+    // 启动后 5 秒首查 + 每 5 分钟检查
+    setTimeout(checkOverdueNudges, 5000);
+    setInterval(checkOverdueNudges, 5 * 60 * 1000);
+    document.addEventListener('visibilitychange', () => { if (!document.hidden) checkOverdueNudges(); });
 
     // §TOAST ─ 右下角通知条
     let toastTimer;
@@ -2740,6 +2912,8 @@
       setDensity, setModuleVisible, applyLayoutPreset,
       // App icon picker
       setAppIcon, openIconNotice, closeIconNotice,
+      // Overdue task nudge
+      dismissOverdueNudge, overdueNudgeSnooze, overdueNudgeComplete,
       // Toast (so other modules like auth.js can call window.showToast)
       showToast,
     });
