@@ -1,6 +1,20 @@
 {
   "versions": [
     {
+      "version": "3.4.1",
+      "emoji": "🌠",
+      "title": "默认配色下星空一直在",
+      "tagline": "在颜色选择器里手动选回默认紫，星空也会显示，不再以「是否动过」作为判定",
+      "highlights": [
+        {
+          "emoji": "✨",
+          "title": "星空显示判定更聪明",
+          "what": "之前只要碰过颜色选择器就再也看不到星空。现在改成：只要当前用的是默认紫色，不管你有没有动过选择器，繁星都在",
+          "how": "main.js 加 isDefaultWpColor() 判定（大小写不敏感匹配 #9435C0），applyColorWallpaper 按结果分别 show/hide starfield"
+        }
+      ]
+    },
+    {
       "version": "3.4.0",
       "majorUpdate": true,
       "emoji": "🌌",
