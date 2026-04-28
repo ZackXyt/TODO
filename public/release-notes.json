@@ -1,6 +1,26 @@
 {
   "versions": [
     {
+      "version": "3.5.0",
+      "majorUpdate": true,
+      "emoji": "🌠",
+      "title": "星空活了：1270 颗 + 漂浮 + 触控避让",
+      "tagline": "繁星 5 倍密度，自由漂浮，点哪它们就避开哪——真正的宇宙手感",
+      "highlights": [
+        {
+          "emoji": "✨",
+          "title": "5 倍星点 + 自由飘动",
+          "what": "星空数量从 254 提升到 1270 颗（5 倍），每颗星都有自己的漂移方向和速度，再也不是静止的星海"
+        },
+        {
+          "emoji": "👆",
+          "title": "触控/点击星会避开",
+          "what": "用鼠标点击或手指触屏，附近的星星会被推开形成空白圈再缓慢回流——像在拨开一片银河",
+          "how": "main.js 改用 canvas 粒子系统：900 静态 + 300 闪烁 + 70 带光晕主星，rAF 渲染；点击触发 impulseAt() 给半径 170px 内的星加冲量速度，每帧 0.93 衰减回归漂移；DPR 适配；尊重 prefers-reduced-motion；光晕用预渲染 sprite 避免每帧画 radialGradient"
+        }
+      ]
+    },
+    {
       "version": "3.4.2",
       "emoji": "🌌",
       "title": "星空跟随你到任何颜色",

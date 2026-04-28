@@ -347,42 +347,153 @@
       return [Math.round(h*360), Math.round(s*100), Math.round(l*100)];
     }
 
-    // §STARFIELD ─ 繁星（任何背景下都常驻）
-    function buildStarfield() {
-      const sf = document.getElementById('starfield');
-      if (!sf || sf.dataset.built) return;
-      sf.dataset.built = '1';
-      const tinyCount = 180, smallCount = 60, glowCount = 14;
-      const parts = [];
-      const rand = (a, b) => a + Math.random() * (b - a);
-      // 普通星：1px 左右，不闪烁，铺底
-      for (let i = 0; i < tinyCount; i++) {
-        const sz = rand(0.8, 1.4).toFixed(2);
-        const op = rand(0.35, 0.85).toFixed(2);
-        parts.push(`<span class="star" style="left:${rand(0,100).toFixed(2)}%;top:${rand(0,100).toFixed(2)}%;width:${sz}px;height:${sz}px;--op:${op}"></span>`);
-      }
-      // 小星：1.5-2.2px，慢闪
-      for (let i = 0; i < smallCount; i++) {
-        const sz = rand(1.5, 2.2).toFixed(2);
-        const op = rand(0.55, 0.95).toFixed(2);
-        const dur = rand(2.8, 5.5).toFixed(2);
-        const delay = rand(0, 5).toFixed(2);
-        parts.push(`<span class="star star-twinkle" style="left:${rand(0,100).toFixed(2)}%;top:${rand(0,100).toFixed(2)}%;width:${sz}px;height:${sz}px;--op:${op};--dur:${dur}s;--delay:${delay}s"></span>`);
-      }
-      // 主星：2.5-3.5px 带光晕，缓慢闪烁
-      for (let i = 0; i < glowCount; i++) {
-        const sz = rand(2.5, 3.5).toFixed(2);
-        const op = rand(0.75, 1).toFixed(2);
-        const dur = rand(4, 7).toFixed(2);
-        const delay = rand(0, 5).toFixed(2);
-        parts.push(`<span class="star star-glow" style="left:${rand(0,100).toFixed(2)}%;top:${rand(0,100).toFixed(2)}%;width:${sz}px;height:${sz}px;--op:${op};--dur:${dur}s;--delay:${delay}s"></span>`);
-      }
-      sf.innerHTML = parts.join('');
-    }
+    // §STARFIELD ─ Canvas 粒子系统：1270 颗星漂浮 + 闪烁 + 触控避让
     function showStarfield() {
-      buildStarfield();
-      const sf = document.getElementById('starfield');
-      if (sf) sf.classList.add('show');
+      const canvas = document.getElementById('starfield');
+      if (!canvas || canvas._inited) {
+        if (canvas) canvas.classList.add('show');
+        return;
+      }
+      canvas._inited = true;
+      const ctx = canvas.getContext('2d');
+      const reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+      // ── viewport / DPR 处理 ────────────────────────────
+      let dpr = window.devicePixelRatio || 1;
+      let W = 0, H = 0;
+      function resize() {
+        dpr = window.devicePixelRatio || 1;
+        W = window.innerWidth;
+        H = window.innerHeight;
+        canvas.width = W * dpr;
+        canvas.height = H * dpr;
+        canvas.style.width = W + 'px';
+        canvas.style.height = H + 'px';
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      }
+      resize();
+      window.addEventListener('resize', resize);
+
+      // ── 预渲染光晕 sprite（避免每帧都画 radialGradient） ───
+      const GLOW_PX = 64;
+      const glowSprite = document.createElement('canvas');
+      glowSprite.width = glowSprite.height = GLOW_PX;
+      {
+        const g = glowSprite.getContext('2d');
+        const grad = g.createRadialGradient(GLOW_PX/2, GLOW_PX/2, 0, GLOW_PX/2, GLOW_PX/2, GLOW_PX/2);
+        grad.addColorStop(0,    'rgba(255,255,255,1)');
+        grad.addColorStop(0.18, 'rgba(230,210,255,0.55)');
+        grad.addColorStop(0.5,  'rgba(180,140,255,0.18)');
+        grad.addColorStop(1,    'rgba(180,140,255,0)');
+        g.fillStyle = grad;
+        g.fillRect(0, 0, GLOW_PX, GLOW_PX);
+      }
+
+      // ── 生成星点 ───────────────────────────────────
+      const stars = [];
+      const TAU = Math.PI * 2;
+      function makeStar(layer, opts) {
+        const angle = Math.random() * TAU;
+        const speed = opts.driftMin + Math.random() * (opts.driftMax - opts.driftMin);
+        return {
+          x: Math.random() * W,
+          y: Math.random() * H,
+          // base drift velocity (px/frame at 60fps)
+          dvx: Math.cos(angle) * speed,
+          dvy: Math.sin(angle) * speed,
+          // impulse velocity (decays each frame)
+          ivx: 0, ivy: 0,
+          size: opts.sizeMin + Math.random() * (opts.sizeMax - opts.sizeMin),
+          baseOp: opts.opMin + Math.random() * (opts.opMax - opts.opMin),
+          twSpeed: opts.twSpeed ? (opts.twSpeed[0] + Math.random() * (opts.twSpeed[1] - opts.twSpeed[0])) : 0,
+          twPhase: Math.random() * TAU,
+          layer,
+        };
+      }
+      // 1270 = 900 tiny + 300 small（闪烁）+ 70 glow（光晕 + 闪烁）
+      for (let i = 0; i < 900; i++) stars.push(makeStar('tiny',  { sizeMin: 0.5, sizeMax: 1.2, opMin: 0.30, opMax: 0.75, driftMin: 0.02, driftMax: 0.10 }));
+      for (let i = 0; i < 300; i++) stars.push(makeStar('small', { sizeMin: 1.1, sizeMax: 1.9, opMin: 0.50, opMax: 0.92, driftMin: 0.03, driftMax: 0.14, twSpeed: [0.4, 1.6] }));
+      for (let i = 0; i < 70;  i++) stars.push(makeStar('glow',  { sizeMin: 1.7, sizeMax: 2.8, opMin: 0.70, opMax: 1.00, driftMin: 0.02, driftMax: 0.10, twSpeed: [0.25, 0.9] }));
+
+      // ── 触控/点击推开 ────────────────────────────────
+      const REPULSE_R = 170;       // 影响半径 px
+      const REPULSE_STRENGTH = 9;  // 中心附近最大冲量
+      function impulseAt(x, y) {
+        const R = REPULSE_R, R2 = R * R;
+        for (let i = 0; i < stars.length; i++) {
+          const s = stars[i];
+          const dx = s.x - x, dy = s.y - y;
+          const d2 = dx*dx + dy*dy;
+          if (d2 < R2) {
+            const d = Math.sqrt(d2) || 0.001;
+            const falloff = 1 - d / R;
+            const force = falloff * falloff * REPULSE_STRENGTH;
+            s.ivx += (dx / d) * force;
+            s.ivy += (dy / d) * force;
+          }
+        }
+      }
+      window.addEventListener('mousedown', e => impulseAt(e.clientX, e.clientY));
+      window.addEventListener('touchstart', e => {
+        for (const t of e.touches) impulseAt(t.clientX, t.clientY);
+      }, { passive: true });
+
+      // ── 渲染循环 ───────────────────────────────────
+      let lastT = performance.now();
+      function tick(now) {
+        // 帧间时间归一到 60fps（dt=1 表示标准帧）
+        const dt = Math.min((now - lastT) / 16.67, 3);
+        lastT = now;
+        const t = now * 0.001;
+        const damping = Math.pow(0.93, dt);
+
+        ctx.clearRect(0, 0, W, H);
+
+        // 先画光晕（在普通星下层），再画白点，避免光晕盖住小星
+        // 但分两遍开销大，简化为按数组顺序：tiny / small / glow
+        for (let i = 0; i < stars.length; i++) {
+          const s = stars[i];
+          // 位置更新
+          s.x += (s.dvx + s.ivx) * dt;
+          s.y += (s.dvy + s.ivy) * dt;
+          // 冲量衰减
+          s.ivx *= damping;
+          s.ivy *= damping;
+          // 边缘环绕
+          if      (s.x < -8)     s.x = W + 8;
+          else if (s.x > W + 8)  s.x = -8;
+          if      (s.y < -8)     s.y = H + 8;
+          else if (s.y > H + 8)  s.y = -8;
+
+          // 透明度（含闪烁）
+          let op = s.baseOp;
+          if (s.twSpeed) {
+            const tw = 0.5 + 0.5 * Math.sin(t * s.twSpeed + s.twPhase);
+            op = s.baseOp * (0.35 + 0.65 * tw);
+          }
+          ctx.globalAlpha = op;
+
+          if (s.layer === 'glow') {
+            const sz = s.size * 8;
+            ctx.drawImage(glowSprite, s.x - sz/2, s.y - sz/2, sz, sz);
+            ctx.fillStyle = '#fff';
+            ctx.beginPath();
+            ctx.arc(s.x, s.y, s.size, 0, TAU);
+            ctx.fill();
+          } else {
+            ctx.fillStyle = '#fff';
+            ctx.beginPath();
+            ctx.arc(s.x, s.y, s.size, 0, TAU);
+            ctx.fill();
+          }
+        }
+        ctx.globalAlpha = 1;
+
+        if (!reduceMotion) requestAnimationFrame(tick);
+      }
+      requestAnimationFrame(tick);
+
+      canvas.classList.add('show');
     }
 
     function applyColorWallpaper(hex) {
