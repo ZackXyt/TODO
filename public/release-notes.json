@@ -1,6 +1,26 @@
 {
   "versions": [
     {
+      "version": "3.3.1",
+      "emoji": "🔐",
+      "title": "权限收紧到最小必要",
+      "tagline": "把创作者后台的读权限从「能读所有内容」收紧到「只能读设备元数据」，技术规则与隐私政策措辞对齐",
+      "highlights": [
+        {
+          "emoji": "🛡",
+          "title": "Firestore 规则最小化",
+          "what": "创作者只能读 users/{uid}/devices 子集合用于聚合统计；任务、清单、随想录、专注记录任何人（包括创作者本人在 admin 身份下）都读不到",
+          "how": "拆成两条 match 规则——通配规则 /users/{uid}/{=**} 不再给 isAdmin() 开 read，仅 /users/{uid}/devices/{id} 单独给 admin read 权"
+        },
+        {
+          "emoji": "📜",
+          "title": "隐私政策对齐",
+          "what": "把「admin 可以查看所有用户的数据」精确改为「admin 仅能查看设备元数据用于聚合统计」，做到政策和代码完全一致",
+          "how": "privacy.html 中英双语同步更新「谁能看到你的数据」段"
+        }
+      ]
+    },
+    {
       "version": "3.3.0",
       "majorUpdate": true,
       "emoji": "👑",

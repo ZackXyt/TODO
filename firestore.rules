@@ -2,19 +2,26 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // 创作者管理员邮箱 — 只有这个邮箱登录后可以读取所有用户数据用于聚合统计。
-    // 写入仍然只允许数据本人，防止管理员意外篡改。
+    // 创作者管理员邮箱 — 仅用于读取设备元数据做聚合统计（DAU/WAU/设备分布）。
+    // 最小必要原则：admin 不能读任务/清单/随想录等内容，只能读 devices 子集合。
     function isAdmin() {
       return request.auth != null
         && request.auth.token.email == 'zack2004221@163.com';
     }
 
-    // 每个用户的私人数据：本人可读写，admin 仅可读（用于 monitor 统计）
+    // 每个用户的私人数据：仅本人可读写。admin 也读不到。
     match /users/{userId}/{document=**} {
+      allow read:  if request.auth != null && request.auth.uid == userId;
+      allow write: if request.auth != null && request.auth.uid == userId;
+    }
+
+    // 设备元数据子集合：本人可读写，admin 额外可读（用于 monitor 聚合统计）。
+    // Firestore 规则对每条匹配的 match 取 OR，所以这里给 admin 单独开 read，
+    // 而上面的通配规则不给 admin 开 read —— 结果是 admin 只能读 devices，读不到任务/笔记。
+    match /users/{userId}/devices/{deviceId} {
       allow read:  if request.auth != null
                     && (request.auth.uid == userId || isAdmin());
-      allow write: if request.auth != null
-                    && request.auth.uid == userId;
+      allow write: if request.auth != null && request.auth.uid == userId;
     }
 
     // 拒绝所有其他读写（默认）
