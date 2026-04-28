@@ -20,8 +20,9 @@ let _pfSecTs = 0;
 let _pfEcg = [];
 let _pfSpike = 0, _pfSpikePh = 0, _pfSpikeAmp = 1.0;
 let _pfCircleR = 0;
-let _pfPlanetSparkles = null;
 let _pfClickHandler = null, _pfTouchHandler = null;
+let _pfIconImg = null;
+const _PF_ICON_URL = (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.BASE_URL ? import.meta.env.BASE_URL : '/TODO/') + 'icons/icon1-512.png';
 
 function _pfTimer() {
   const fn = window._getTimer;
@@ -58,32 +59,15 @@ function _pfMkParts() {
     _pfParts.push({orbital:true, a, av:(Math.random()<.5?1:-1)*(.00025+Math.random()*.00045),
       r, rb:r, rd:0, ox:0, oy:0, sz, col:cs[i%3], t:Math.random()*Math.PI*2, tw:Math.random()*Math.PI*2, twv:.018+Math.random()*.022});
   }
-  // Cosmic dust — scattered across whole canvas
-  for(let j=0;j<1520;j++){
+  // Cosmic dust — 白色繁星，铺满整个画布（与主界面星空风格一致）
+  for(let j=0;j<2400;j++){
     const x=Math.random()*W, y=Math.random()*H;
     const rnd=Math.random();
-    const szC=rnd<.04 ? 1.5+Math.random()*1.0 : (rnd<.20 ? .6+Math.random()*.6 : .15+Math.random()*.38);
+    const szC=rnd<.04 ? 1.6+Math.random()*1.1 : (rnd<.20 ? .7+Math.random()*.7 : .15+Math.random()*.42);
     _pfParts.push({orbital:false, x, y,
       vx:(Math.random()-.5)*.07, vy:(Math.random()-.5)*.07,
       ox:0, oy:0,
-      sz:szC, col:cs[j%3], t:Math.random()*Math.PI*2, tw:Math.random()*Math.PI*2, twv:.008+Math.random()*.016, rd:0, rb:0});
-  }
-}
-
-function _pfMkPlanetSparkles() {
-  _pfPlanetSparkles = [];
-  for (let i = 0; i < 16; i++) {
-    const ang = Math.random() * Math.PI * 2;
-    const dist = Math.pow(Math.random(), 0.7) * 0.82;
-    const xn = Math.cos(ang) * dist;
-    let yn = Math.sin(ang) * dist - 0.18; // bias upward
-    yn = Math.max(-0.85, Math.min(0.20, yn));
-    _pfPlanetSparkles.push({
-      xn, yn,
-      sz: 0.5 + Math.random() * 1.4,
-      tw: Math.random() * Math.PI * 2,
-      twv: 0.018 + Math.random() * 0.045,
-    });
+      sz:szC, col:'#ffffff', t:Math.random()*Math.PI*2, tw:Math.random()*Math.PI*2, twv:.008+Math.random()*.016, rd:0, rb:0});
   }
 }
 
@@ -219,72 +203,17 @@ function _pfFrame(ts) {
   ctx.strokeStyle=rgg; ctx.stroke();
   ctx.restore();
 
-  // ── 中央星球（替代原来的进度大圆圈）─────────────────────
-  const R=_pfCircleR>10 ? _pfCircleR*1.55 : Math.min(W,H)*.22;
-  const circY=cy-H*.05;
-  ctx.save();
-  ctx.translate(cx, circY);
-  const sphereScale = 1 + bp * 0.85;
-  ctx.scale(sphereScale, sphereScale);
-
-  // 1. 外层光晕
-  const halo = ctx.createRadialGradient(0,0,R*0.92,0,0,R*1.7);
-  halo.addColorStop(0,    'rgba(200,160,255,0.32)');
-  halo.addColorStop(0.45, 'rgba(180,130,240,0.13)');
-  halo.addColorStop(1,    'transparent');
-  ctx.fillStyle = halo;
-  ctx.beginPath(); ctx.arc(0,0,R*1.7,0,Math.PI*2); ctx.fill();
-
-  // 2. 球体本体（顶 lavender → 中 rose → 底 amber）
-  const body = ctx.createLinearGradient(0,-R,0,R);
-  body.addColorStop(0,    'hsla(280, 70%, 78%, 0.92)');
-  body.addColorStop(0.30, 'hsla(305, 55%, 72%, 0.88)');
-  body.addColorStop(0.55, 'hsla(335, 60%, 76%, 0.82)');
-  body.addColorStop(0.80, 'hsla(35, 80%, 76%, 0.92)');
-  body.addColorStop(1,    'hsla(45, 92%, 70%, 0.96)');
-  ctx.fillStyle = body;
-  ctx.beginPath(); ctx.arc(0,0,R,0,Math.PI*2); ctx.fill();
-
-  // 3. 球内裁剪：暖色底光 + 顶部高光 + 内部繁星
-  ctx.save();
-  ctx.beginPath(); ctx.arc(0,0,R,0,Math.PI*2); ctx.clip();
-
-  const rim = ctx.createRadialGradient(0,R*0.45,R*0.15,0,R*0.65,R*0.95);
-  rim.addColorStop(0,   'rgba(255,210,140,0.55)');
-  rim.addColorStop(0.5, 'rgba(255,180,120,0.18)');
-  rim.addColorStop(1,   'transparent');
-  ctx.fillStyle = rim;
-  ctx.fillRect(-R,-R,R*2,R*2);
-
-  const hl = ctx.createRadialGradient(-R*0.32,-R*0.45,0,-R*0.32,-R*0.45,R*0.65);
-  hl.addColorStop(0,   'rgba(255,255,255,0.55)');
-  hl.addColorStop(0.5, 'rgba(255,255,255,0.15)');
-  hl.addColorStop(1,   'transparent');
-  ctx.fillStyle = hl;
-  ctx.fillRect(-R,-R,R*2,R*2);
-
-  if (_pfPlanetSparkles) {
-    for (const sp of _pfPlanetSparkles) {
-      sp.tw += sp.twv;
-      const op = 0.55 + 0.45 * Math.sin(sp.tw);
-      ctx.globalAlpha = op;
-      ctx.fillStyle = '#fff';
-      ctx.beginPath();
-      ctx.arc(sp.xn*R, sp.yn*R, sp.sz, 0, Math.PI*2);
-      ctx.fill();
-    }
-    ctx.globalAlpha = 1;
+  // ── 中央星球：直接渲染 icon1 图片，自动按设备缩放 ──────
+  if (_pfIconImg && _pfIconImg.complete && _pfIconImg.naturalWidth > 0) {
+    const iconSize = Math.min(W, H) * 0.95;
+    const circY = cy - H * 0.05;
+    ctx.save();
+    ctx.translate(cx, circY);
+    const sphereScale = 1 + bp * 0.85;
+    ctx.scale(sphereScale, sphereScale);
+    ctx.drawImage(_pfIconImg, -iconSize/2, -iconSize/2, iconSize, iconSize);
+    ctx.restore();
   }
-  ctx.restore();
-
-  // 4. 边缘描边
-  ctx.beginPath(); ctx.arc(0,0,R,0,Math.PI*2);
-  ctx.strokeStyle = 'rgba(255,255,255,0.18)';
-  ctx.lineWidth = 1.1;
-  ctx.shadowBlur = 0;
-  ctx.stroke();
-
-  ctx.restore();
 
   _pfAnimId=requestAnimationFrame(_pfFrame);
 }
@@ -294,7 +223,14 @@ export function enterPureFocus() {
   _pfCanvas=document.getElementById('pf-cv'); _pfCtx=_pfCanvas.getContext('2d');
   _pfCanvas.width=window.innerWidth; _pfCanvas.height=window.innerHeight;
   _pfLastST=-999; _pfBeat=0; _pfSpike=0; _pfSpikePh=0; _pfRunning=true;
-  _pfMkParts(); _pfMkEcg(); _pfMkPlanetSparkles();
+  _pfMkParts(); _pfMkEcg();
+
+  // 预加载 icon 图（首次进入纯享时）
+  if (!_pfIconImg) {
+    _pfIconImg = new Image();
+    _pfIconImg.src = _PF_ICON_URL;
+  }
+
   ov.classList.add('show');
   setTimeout(() => {
     const tw=document.getElementById('pf-time-wrap');
@@ -307,9 +243,12 @@ export function enterPureFocus() {
   };
   window.addEventListener('resize',window._pfRsz);
 
-  // 触控/点击：粒子避让效果
-  _pfClickHandler = e => _pfImpulseAt(e.clientX, e.clientY);
-  _pfTouchHandler = e => { for (const t of e.touches) _pfImpulseAt(t.clientX, t.clientY); };
+  // 触控/点击：粒子避让 + 心跳瞬间放大
+  _pfClickHandler = e => { _pfImpulseAt(e.clientX, e.clientY); _pfFire(); };
+  _pfTouchHandler = e => {
+    for (const t of e.touches) _pfImpulseAt(t.clientX, t.clientY);
+    _pfFire();
+  };
   document.addEventListener('mousedown', _pfClickHandler);
   document.addEventListener('touchstart', _pfTouchHandler, { passive: true });
 
