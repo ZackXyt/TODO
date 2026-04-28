@@ -1,6 +1,20 @@
 {
   "versions": [
     {
+      "version": "3.3.5",
+      "emoji": "🎨",
+      "title": "默认配色更亮一点",
+      "tagline": "新用户打开就能看到更鲜活的紫，老用户点「重置」也会用上新版默认色",
+      "highlights": [
+        {
+          "emoji": "💜",
+          "title": "默认背景紫调整",
+          "what": "新用户首次打开应用看到的紫色更鲜亮通透；如果你之前自定义过颜色，不会被覆盖；想恢复默认就在扩展坞点「重置壁纸」",
+          "how": "把 #533483（旧默认）替换为 #9435C0（更鲜的紫）—— style.css / index.html / main.js / pure-focus.js 同步更新；privacy.html 和 heartflow.svg 保留旧色不动（属于品牌资产）"
+        }
+      ]
+    },
+    {
       "version": "3.3.4",
       "emoji": "✂️",
       "title": "更新通知更精简",
