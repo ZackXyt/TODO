@@ -27,7 +27,7 @@ function _pfTimer() {
 }
 
 function _pfPal() {
-  const hx = (localStorage.getItem('todo_wallpaper_color') || '#533483').replace('#','');
+  const hx = (localStorage.getItem('todo_wallpaper_color') || '#9435C0').replace('#','');
   const R=parseInt(hx.slice(0,2),16)/255, G=parseInt(hx.slice(2,4),16)/255, B=parseInt(hx.slice(4,6),16)/255;
   const mx=Math.max(R,G,B), mn=Math.min(R,G,B), d=mx-mn;
   let h=0; const s=mx?d/mx:0;

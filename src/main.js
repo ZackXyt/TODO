@@ -364,14 +364,14 @@
     }
 
     function resetWallpaper() {
-      const grad = "linear-gradient(135deg, #1a1a2e 0%, #16213e 40%, #0f3460 70%, #533483 100%)";
+      const grad = "linear-gradient(135deg, #1a1a2e 0%, #16213e 40%, #0f3460 70%, #9435C0 100%)";
       const wp = document.getElementById("wallpaper");
       wp.style.background = grad;
       wp.style.backgroundImage = "";
       document.documentElement.style.setProperty('--wp-grad', grad);
       document.documentElement.style.backgroundColor = "#1a1a2e";
-      document.getElementById("wallpaper-color-input").value = "#533483";
-      document.getElementById("color-dot").style.background = "#533483";
+      document.getElementById("wallpaper-color-input").value = "#9435C0";
+      document.getElementById("color-dot").style.background = "#9435C0";
       localStorage.removeItem('todo_wallpaper_color');
       showToast("✨ 已重置为默认配色");
     }
@@ -382,7 +382,7 @@
       document.getElementById("wallpaper-color-input").value = savedColor;
       applyColorWallpaper(savedColor);
     } else {
-      document.getElementById("color-dot").style.background = "#533483";
+      document.getElementById("color-dot").style.background = "#9435C0";
     }
 
     // §APP-ICON ─ 应用图标切换（影响浏览器 tab、Apple 主屏「添加到主屏幕」等）

@@ -3,7 +3,7 @@
     /* Root background：gradient 直接挂 html，背景会自动覆盖整张视口画布。
        --wp-grad 变量给 JS 切换配色时同步更新。 */
     html {
-      --wp-grad: linear-gradient(135deg, #1a1a2e 0%, #16213e 40%, #0f3460 70%, #533483 100%);
+      --wp-grad: linear-gradient(135deg, #1a1a2e 0%, #16213e 40%, #0f3460 70%, #9435C0 100%);
       background: var(--wp-grad);
       background-color: #1a1a2e;
       background-attachment: fixed;
@@ -25,7 +25,7 @@
       top: 0; left: 0; right: 0; bottom: 0;
       width: 100vw; height: 100vh; height: 100dvh;
       margin: 0; padding: 0;
-      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 40%, #0f3460 70%, #533483 100%);
+      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 40%, #0f3460 70%, #9435C0 100%);
       background-size: cover;
       background-position: center;
       transition: background-image 0.4s ease;
