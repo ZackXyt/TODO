@@ -347,6 +347,48 @@
       return [Math.round(h*360), Math.round(s*100), Math.round(l*100)];
     }
 
+    // §STARFIELD ─ 默认紫色背景上的繁星（仅在没自定义颜色时显示）
+    function buildStarfield() {
+      const sf = document.getElementById('starfield');
+      if (!sf || sf.dataset.built) return;
+      sf.dataset.built = '1';
+      const tinyCount = 180, smallCount = 60, glowCount = 14;
+      const parts = [];
+      const rand = (a, b) => a + Math.random() * (b - a);
+      // 普通星：1px 左右，不闪烁，铺底
+      for (let i = 0; i < tinyCount; i++) {
+        const sz = rand(0.8, 1.4).toFixed(2);
+        const op = rand(0.35, 0.85).toFixed(2);
+        parts.push(`<span class="star" style="left:${rand(0,100).toFixed(2)}%;top:${rand(0,100).toFixed(2)}%;width:${sz}px;height:${sz}px;--op:${op}"></span>`);
+      }
+      // 小星：1.5-2.2px，慢闪
+      for (let i = 0; i < smallCount; i++) {
+        const sz = rand(1.5, 2.2).toFixed(2);
+        const op = rand(0.55, 0.95).toFixed(2);
+        const dur = rand(2.8, 5.5).toFixed(2);
+        const delay = rand(0, 5).toFixed(2);
+        parts.push(`<span class="star star-twinkle" style="left:${rand(0,100).toFixed(2)}%;top:${rand(0,100).toFixed(2)}%;width:${sz}px;height:${sz}px;--op:${op};--dur:${dur}s;--delay:${delay}s"></span>`);
+      }
+      // 主星：2.5-3.5px 带光晕，缓慢闪烁
+      for (let i = 0; i < glowCount; i++) {
+        const sz = rand(2.5, 3.5).toFixed(2);
+        const op = rand(0.75, 1).toFixed(2);
+        const dur = rand(4, 7).toFixed(2);
+        const delay = rand(0, 5).toFixed(2);
+        parts.push(`<span class="star star-glow" style="left:${rand(0,100).toFixed(2)}%;top:${rand(0,100).toFixed(2)}%;width:${sz}px;height:${sz}px;--op:${op};--dur:${dur}s;--delay:${delay}s"></span>`);
+      }
+      sf.innerHTML = parts.join('');
+    }
+    function showStarfield() {
+      buildStarfield();
+      const sf = document.getElementById('starfield');
+      if (sf) sf.classList.add('show');
+    }
+    function hideStarfield() {
+      const sf = document.getElementById('starfield');
+      if (sf) sf.classList.remove('show');
+    }
+
     function applyColorWallpaper(hex) {
       const [h, s, l] = hexToHSL(hex);
       const dark   = `hsl(${h}, ${Math.min(s+15,100)}%, ${Math.max(l-35,4)}%)`;
@@ -361,6 +403,7 @@
       document.documentElement.style.backgroundColor = dark;
       document.getElementById("color-dot").style.background = hex;
       localStorage.setItem('todo_wallpaper_color', hex);
+      hideStarfield();
     }
 
     function resetWallpaper() {
@@ -373,6 +416,7 @@
       document.getElementById("wallpaper-color-input").value = "#9435C0";
       document.getElementById("color-dot").style.background = "#9435C0";
       localStorage.removeItem('todo_wallpaper_color');
+      showStarfield();
       showToast("✨ 已重置为默认配色");
     }
 
@@ -383,6 +427,7 @@
       applyColorWallpaper(savedColor);
     } else {
       document.getElementById("color-dot").style.background = "#9435C0";
+      showStarfield();
     }
 
     // §APP-ICON ─ 应用图标切换（影响浏览器 tab、Apple 主屏「添加到主屏幕」等）
