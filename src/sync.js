@@ -221,6 +221,51 @@ export async function logoutCurrentDevice(uid) {
   } catch {}
 }
 
+// 隐私政策同意时间戳——便于审计
+export async function writeConsent(uid) {
+  if (!uid) return;
+  await setDoc(doc(db, 'users', uid, 'profile', 'consent'), {
+    version: '2026-04-28',
+    acceptedAt: Date.now(),
+    via: 'signup',
+  }, { merge: true });
+}
+
+// GDPR 删除权：清空 users/{uid}/* 下所有子集合
+export async function deleteAccountData(uid) {
+  if (!uid) throw new Error('no uid');
+  const subcols = ['tasks', 'lists', 'devices', 'profile'];
+  for (const sub of subcols) {
+    const snap = await getDocs(collection(db, 'users', uid, sub));
+    if (snap.empty) continue;
+    // Batch delete (limit 500 per batch)
+    let batch = writeBatch(db);
+    let count = 0;
+    for (const d of snap.docs) {
+      batch.delete(d.ref);
+      count++;
+      if (count >= 450) {
+        await batch.commit();
+        batch = writeBatch(db);
+        count = 0;
+      }
+    }
+    if (count > 0) await batch.commit();
+  }
+}
+
+// === Admin（创作者）只读聚合 ===
+// Firestore 规则把读权限开给了 ADMIN_EMAIL；普通用户拉这些会被规则拒绝。
+export async function adminFetchAllDevices() {
+  const { collectionGroup, getDocs } = await import('firebase/firestore');
+  const snap = await getDocs(collectionGroup(db, 'devices'));
+  return snap.docs.map(d => ({
+    path: d.ref.path,
+    uid: d.ref.parent.parent?.id || 'unknown',
+    ...d.data(),
+  }));
+}
+
 // ---- Initial pull + merge ----
 
 async function pullAndMerge(uid) {

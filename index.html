@@ -443,6 +443,31 @@
         </button>
         <div class="devices-list" id="devices-list" style="display:none;"></div>
       </div>
+      <div class="menu-item account-extras" id="account-extras-row" style="display:none;cursor:pointer;" onclick="confirmDeleteAccount()">
+        <span class="menu-item-icon">🗑</span>
+        <div>
+          <div style="color:rgba(255,140,140,0.95);">删除账号</div>
+          <div class="menu-item-desc">永久清除云端 users/{你的uid}/* 下的全部数据，本地数据不动</div>
+        </div>
+      </div>
+      <div class="menu-item" style="cursor:pointer;" onclick="window.open('/TODO/privacy.html','_blank','noopener')">
+        <span class="menu-item-icon">📜</span>
+        <div>
+          <div>隐私政策</div>
+          <div class="menu-item-desc">查看本应用收集了什么、谁能看到</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ADMIN ENTRY — only visible when body.is-admin (set after auth check) -->
+    <div class="menu-section admin-entry-row">
+      <div class="menu-item" style="cursor:pointer;" onclick="openAdminPanel()">
+        <span class="menu-item-icon">👑</span>
+        <div>
+          <div>创作者后台</div>
+          <div class="menu-item-desc">查看注册数 / 活跃度 / 设备分布（仅创作者可见）</div>
+        </div>
+      </div>
     </div>
 
     <div class="app-version-footer" id="app-version-footer">

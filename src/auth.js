@@ -64,6 +64,10 @@ function buildAuthModal(mode) {
              placeholder="密码（至少 6 位）" autocomplete="off"
              autocorrect="off" autocapitalize="off" spellcheck="false"
              data-form-type="other" />
+      <label class="auth-consent" id="auth-consent-row" style="display:none;">
+        <input type="checkbox" id="auth-consent-cb" />
+        <span>我已阅读并同意 <a href="/TODO/privacy.html" target="_blank" rel="noopener">隐私政策</a>，理解作者作为管理员可读取我的数据用于聚合统计与产品改进。</span>
+      </label>
       <div class="auth-error" id="auth-error"></div>
       <button class="auth-submit-btn" id="auth-submit-btn" type="button">登录 →</button>
       <div class="auth-switch-row">
@@ -135,6 +139,9 @@ export function setAuthMode(mode /* 'signin' | 'signup' | 'reset' */) {
   document.getElementById('auth-modal-title').textContent = titles[mode] || '🔐 登录';
   document.getElementById('auth-modal-sub').textContent  = subs[mode] || '';
   document.getElementById('auth-submit-btn').textContent = submitLabels[mode] || '提交 →';
+  // Show consent checkbox only on signup mode
+  const consentRow = document.getElementById('auth-consent-row');
+  if (consentRow) consentRow.style.display = (mode === 'signup') ? 'flex' : 'none';
   // Only clear error when actually changing modes (so errors persist on the same form)
   if (oldMode && oldMode !== mode) closeAuthError();
 }
@@ -159,6 +166,9 @@ export async function submitAuthForm() {
   if (!email) { showAuthError('请输入邮箱'); return; }
   if (mode !== 'reset' && !pw) { showAuthError('请输入密码'); return; }
   if (mode === 'signup' && pw.length < 6) { showAuthError('密码至少 6 位'); return; }
+  if (mode === 'signup' && !document.getElementById('auth-consent-cb')?.checked) {
+    showAuthError('请阅读并同意隐私政策再注册'); return;
+  }
 
   btn.disabled = true;
   btn.textContent = '处理中…';
@@ -170,6 +180,15 @@ export async function submitAuthForm() {
     } else if (mode === 'signup') {
       const cred = await createUserWithEmailAndPassword(auth, email, pw);
       try { await updateProfile(cred.user, { displayName: email.split('@')[0] }); } catch {}
+      // Record consent locally (in case user signs out and another auth flow checks)
+      try { localStorage.setItem('todo_privacy_consent', JSON.stringify({
+        version: '2026-04-28', acceptedAt: new Date().toISOString(),
+      })); } catch {}
+      // Record consent in Firestore for the user document (audit trail)
+      try {
+        const { writeConsent } = await import('./sync.js');
+        if (typeof writeConsent === 'function') await writeConsent(cred.user.uid);
+      } catch {}
       closeAuthModal();
       window.showToast?.('✨ 注册成功，欢迎加入凝光！');
     } else if (mode === 'reset') {

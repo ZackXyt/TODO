@@ -46,7 +46,9 @@
       submitAuthForm, logoutUser, getCurrentUser, onUserChange,
     } from './auth.js';
     // §SYNC  Firestore 双向实时同步
-    import { initSync, syncTasksToCloud, syncListsToCloud, syncNotepadToCloud, getSyncStatus, manualSync, logoutCurrentDevice } from './sync.js';
+    import { initSync, syncTasksToCloud, syncListsToCloud, syncNotepadToCloud, getSyncStatus, manualSync, logoutCurrentDevice, deleteAccountData } from './sync.js';
+    // §ADMIN  创作者后台监控（仅 ADMIN_EMAIL 可见）
+    import { openAdminPanel, closeAdminPanel, isAdminUser } from './admin.js';
 
     initPWA();
     initAuth();
@@ -58,6 +60,42 @@
       openAuthModal, closeAuthModal, setAuthMode, submitAuthForm, logoutUser,
       manualSync,
     });
+
+    // §ADMIN-GATE  根据当前登录用户给 body 加 is-admin class，并暴露 admin 入口函数
+    onUserChange(user => {
+      const adminMode = isAdminUser(user);
+      document.body.classList.toggle('is-admin', adminMode);
+      const extras = document.getElementById('account-extras-row');
+      if (extras) extras.style.display = user ? 'flex' : 'none';
+    });
+    window.openAdminPanel = () => openAdminPanel(getCurrentUser());
+    window.closeAdminPanel = closeAdminPanel;
+
+    // §ACCOUNT-DELETION  GDPR 删除权
+    window.confirmDeleteAccount = async function() {
+      const user = getCurrentUser();
+      if (!user) {
+        showToast('请先登录');
+        return;
+      }
+      const ok = confirm(
+        '⚠️ 永久删除你的云端账号数据？\n\n' +
+        '将清除 users/' + user.uid + '/* 下的：\n' +
+        '· 所有任务 / 清单 / 随想录 / 设备记录 / 同意记录\n\n' +
+        '本地数据保留，不受影响。\n' +
+        '此操作不可撤销。'
+      );
+      if (!ok) return;
+      const ok2 = confirm('再确认一次：你真的要清空云端账号吗？');
+      if (!ok2) return;
+      try {
+        showToast('🗑 正在删除云端数据…');
+        await deleteAccountData(user.uid);
+        showToast('✅ 云端数据已删除。建议你「退出登录」防止本地任务重新上云。');
+      } catch (err) {
+        showToast('❌ 删除失败：' + (err?.message || err));
+      }
+    };
 
     // §VERSION ─ 显示版本号 + 暴露手动检查更新
     const APP_VERSION = typeof __APP_VERSION__ !== 'undefined' ? __APP_VERSION__ : 'dev';

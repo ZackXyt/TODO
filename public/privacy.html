@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>凝光 · 隐私政策 / Privacy Policy</title>
+  <link rel="icon" type="image/png" href="/TODO/icons/icon1-192.png">
+  <style>
+    :root { color-scheme: dark; }
+    html, body {
+      margin: 0; padding: 0;
+      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 40%, #0f3460 70%, #533483 100%);
+      min-height: 100vh;
+      color: rgba(255,255,255,0.88);
+      font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', system-ui, sans-serif;
+      line-height: 1.7;
+    }
+    .wrap {
+      max-width: 720px; margin: 0 auto; padding: 40px 24px 80px;
+    }
+    h1 {
+      font-size: 26px; margin: 0 0 4px;
+      letter-spacing: 0.5px;
+    }
+    .sub {
+      font-size: 13px; color: rgba(255,255,255,0.5);
+      margin-bottom: 32px;
+    }
+    h2 {
+      margin: 32px 0 8px;
+      font-size: 17px;
+      color: #fff;
+      border-bottom: 1px solid rgba(180,140,255,0.28);
+      padding-bottom: 6px;
+    }
+    p, li { font-size: 14px; color: rgba(255,255,255,0.8); }
+    code {
+      background: rgba(255,255,255,0.08);
+      padding: 1px 6px; border-radius: 4px;
+      font-family: 'SF Mono', Menlo, monospace;
+      font-size: 12px;
+      color: rgba(180,220,255,0.95);
+    }
+    .lang-toggle {
+      display: inline-flex;
+      gap: 4px;
+      background: rgba(255,255,255,0.06);
+      border-radius: 999px;
+      padding: 4px;
+      margin-bottom: 24px;
+    }
+    .lang-toggle button {
+      background: none; border: none; color: rgba(255,255,255,0.6);
+      padding: 6px 14px; border-radius: 999px;
+      font-size: 12px; font-weight: 600; cursor: pointer;
+      font-family: inherit;
+    }
+    .lang-toggle button.active {
+      background: rgba(180,140,255,0.4); color: white;
+    }
+    .back-link {
+      display: inline-block;
+      margin-top: 32px;
+      color: rgba(180,220,255,0.85);
+      text-decoration: none;
+      font-size: 13px;
+    }
+    .back-link:hover { color: white; }
+    .lang { display: none; }
+    .lang.active { display: block; }
+    .meta {
+      margin-top: 40px; padding: 16px;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 12px;
+      font-size: 12px;
+      color: rgba(255,255,255,0.6);
+    }
+    a { color: rgba(180,220,255,0.95); }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="lang-toggle">
+      <button id="btn-zh" class="active" onclick="setLang('zh')">中文</button>
+      <button id="btn-en" onclick="setLang('en')">English</button>
+    </div>
+
+    <!-- ============ 中文 ============ -->
+    <div id="lang-zh" class="lang active">
+      <h1>凝光 · Lumen 隐私政策</h1>
+      <div class="sub">最近更新：2026 年 4 月 28 日</div>
+
+      <p>这是一个由 UCI 学生 Yiting Xu（Zack）独立开发的免费任务管理 PWA。我们尽可能不收集你的数据，下面把我们做的事讲清楚。</p>
+
+      <h2>我们收集什么</h2>
+      <ul>
+        <li><b>邮箱地址</b>：登录账号用，由 Firebase Authentication 处理。我们不会用它发广告。</li>
+        <li><b>你创建的内容</b>：任务、清单、随想录、专注次数等——存于 Google Firestore，仅你本人可读写（受 Firestore 安全规则保护）。</li>
+        <li><b>设备信息</b>：当前登录设备的型号粗略名称（如「iPhone」「Mac · Chrome」）+ 一个本地生成的 UUID + 最后活跃时间。用于多设备同步显示「你在几台设备登录」。</li>
+        <li><b>聚合活跃度</b>：作为创作者，我可能查看 <b>聚合统计</b>（DAU / WAU / 设备分布），用于判断功能是否被用、是否值得继续维护。</li>
+      </ul>
+
+      <h2>我们 <em>不</em> 收集什么</h2>
+      <ul>
+        <li>❌ 你的 IP 地址（不主动收集；Firebase 服务端日志可能临时记录用于反滥用，但我们看不到）</li>
+        <li>❌ 你的精确地理位置（天气模块用的城市是你自己输入或浏览器粗略 geolocation）</li>
+        <li>❌ 任何浏览历史、击键内容</li>
+        <li>❌ 任何第三方追踪 cookie / 广告 SDK / 统计 SDK</li>
+      </ul>
+
+      <h2>谁能看到你的数据</h2>
+      <ul>
+        <li><b>你自己</b>：所有数据原文。</li>
+        <li><b>创作者（我）</b>：作为 admin 我可以查看 <b>所有用户的数据用于聚合分析</b>。我承诺不会在公开场合披露任何个人内容、不会卖给任何人、不会用作个人用途之外的事。如有需要引用某段话作为产品反馈案例，我会脱敏处理。</li>
+        <li><b>Google</b>：作为 Firebase 服务商，承担数据存储职责，受其自身隐私政策约束。</li>
+      </ul>
+
+      <h2>你的权利</h2>
+      <ul>
+        <li><b>访问</b>：在扩展坞的「📤 导出备份」可一键下载你的全部本地数据。</li>
+        <li><b>删除</b>：在扩展坞「账号」区有「删除账号」按钮，会永久清除云端 <code>users/{你的uid}/*</code> 下的全部数据。</li>
+        <li><b>撤回同意</b>：随时退出登录即可——本地数据保留，不再上云。</li>
+      </ul>
+
+      <h2>数据保留</h2>
+      <p>账号删除后立即销毁；只要账号存在就保留（这是同步服务的必要前提）。</p>
+
+      <h2>儿童隐私</h2>
+      <p>本应用不面向 13 岁以下儿童。如发现误注册的未成年账号请联系我删除。</p>
+
+      <h2>联系</h2>
+      <p>邮箱：<a href="mailto:zack2004221@163.com">zack2004221@163.com</a></p>
+
+      <a href="/TODO/" class="back-link">← 返回凝光</a>
+    </div>
+
+    <!-- ============ English ============ -->
+    <div id="lang-en" class="lang">
+      <h1>Lumen Privacy Policy</h1>
+      <div class="sub">Last updated: April 28, 2026</div>
+
+      <p>Lumen is a free task-management PWA built independently by Yiting Xu (Zack), a student at UC Irvine. We collect as little as we can. Here's what we do.</p>
+
+      <h2>What we collect</h2>
+      <ul>
+        <li><b>Email address</b>: for authentication, handled by Firebase Auth. We never use it for marketing.</li>
+        <li><b>Content you create</b>: tasks, lists, notepad, focus stats — stored in Google Firestore, readable/writable only by you (enforced by Firestore security rules).</li>
+        <li><b>Device info</b>: a coarse device label ("iPhone", "Mac · Chrome"), a locally generated UUID, and last-active timestamp — used to show your logged-in devices across the app.</li>
+        <li><b>Aggregate activity</b>: as the creator I may inspect <b>aggregate stats</b> (DAU / WAU / device distribution) to inform product decisions.</li>
+      </ul>
+
+      <h2>What we do <em>not</em> collect</h2>
+      <ul>
+        <li>❌ Your IP address (not actively collected; Firebase backend may log briefly for abuse prevention, beyond our reach)</li>
+        <li>❌ Precise geolocation (the weather module uses a city you type, or coarse browser geolocation you opt into)</li>
+        <li>❌ Browsing history, keystroke content</li>
+        <li>❌ Any third-party tracking cookies / ad SDK / analytics SDK</li>
+      </ul>
+
+      <h2>Who can see your data</h2>
+      <ul>
+        <li><b>You</b>: all your data in plaintext.</li>
+        <li><b>The creator (me)</b>: as admin I can read <b>all user data for aggregate analysis</b>. I commit to never publicly disclose personal content, never sell it, and never use it beyond product improvement. If I quote a snippet as feedback, I will redact identifying details.</li>
+        <li><b>Google</b>: as the Firebase provider, responsible for storage, governed by its own privacy policy.</li>
+      </ul>
+
+      <h2>Your rights</h2>
+      <ul>
+        <li><b>Access</b>: the dock's "📤 Export Backup" downloads all your local data as JSON.</li>
+        <li><b>Deletion</b>: the dock's "Account" section has a "Delete account" button; this permanently removes everything under <code>users/{your-uid}/*</code> in the cloud.</li>
+        <li><b>Withdraw consent</b>: log out at any time — local data is preserved but won't sync to the cloud anymore.</li>
+      </ul>
+
+      <h2>Data retention</h2>
+      <p>Wiped immediately on account deletion; retained for as long as your account exists (necessary for the sync service).</p>
+
+      <h2>Children's privacy</h2>
+      <p>Lumen is not directed at children under 13. Please contact me to delete any underage account that may have been registered.</p>
+
+      <h2>Contact</h2>
+      <p>Email: <a href="mailto:zack2004221@163.com">zack2004221@163.com</a></p>
+
+      <a href="/TODO/" class="back-link">← Back to Lumen</a>
+    </div>
+
+    <div class="meta">
+      🔒 This page is static and ships no scripts beyond the language toggle below. No tracking pixels, no analytics, no third-party requests.
+    </div>
+  </div>
+
+  <script>
+    function setLang(lang) {
+      document.querySelectorAll('.lang').forEach(el => el.classList.remove('active'));
+      document.getElementById('lang-' + lang).classList.add('active');
+      document.getElementById('btn-zh').classList.toggle('active', lang === 'zh');
+      document.getElementById('btn-en').classList.toggle('active', lang === 'en');
+      document.documentElement.lang = lang;
+      try { localStorage.setItem('lumen_privacy_lang', lang); } catch {}
+    }
+    try {
+      const saved = localStorage.getItem('lumen_privacy_lang');
+      if (saved) setLang(saved);
+    } catch {}
+  </script>
+</body>
+</html>
