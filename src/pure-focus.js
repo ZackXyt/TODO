@@ -54,8 +54,9 @@ function _pfPlanetCols() {
   const f = (hh, ss, ll, aa) => `hsla(${(Math.round(hh)%360+360)%360},${ss}%,${ll}%,${aa})`;
   const target = 45; // 底部暖金
   return {
-    halo:    f(hue, 70, 65, 0.32),
-    haloMid: f(hue, 60, 55, 0.13),
+    halo:      f(hue, 75, 68, 0.42),
+    haloMid:   f(hue, 65, 58, 0.20),
+    haloOuter: f(hue, 55, 50, 0.08),
     top:     f(hue,                  68, 78, 0.92),
     upMid:   f(lerpHue(hue, target, 0.30), 60, 73, 0.88),
     mid:     f(lerpHue(hue, target, 0.60), 65, 75, 0.84),
@@ -176,13 +177,15 @@ function _pfDrawPlanet(ctx, cx, cy, R, bp) {
   const scale = 1 + bp * 0.85;
   ctx.scale(scale, scale);
 
-  // 1. 外层光晕
-  const halo = ctx.createRadialGradient(0,0,R*0.92,0,0,R*1.7);
+  // 1. 外层光晕（放大软化，减弱与黑底的对比）
+  const HALO_R = R * 2.7;
+  const halo = ctx.createRadialGradient(0,0,R*0.88,0,0,HALO_R);
   halo.addColorStop(0,    cols.halo);
-  halo.addColorStop(0.45, cols.haloMid);
+  halo.addColorStop(0.22, cols.haloMid);
+  halo.addColorStop(0.55, cols.haloOuter);
   halo.addColorStop(1,    'transparent');
   ctx.fillStyle = halo;
-  ctx.beginPath(); ctx.arc(0,0,R*1.7,0,Math.PI*2); ctx.fill();
+  ctx.beginPath(); ctx.arc(0,0,HALO_R,0,Math.PI*2); ctx.fill();
 
   // 2. 球体本体（5 段渐变 顶 hue → 底 amber）
   const body = ctx.createLinearGradient(0,-R,0,R);
