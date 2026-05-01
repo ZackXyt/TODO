@@ -2765,7 +2765,10 @@
     const DEFAULT_LAYOUT = {
       density: 'comfortable',
       visibility: { weather:true, stadium:true, notepad:true, pomodoro:true, mascot:true },
+      glassAlpha: 0.13,
     };
+    const GLASS_ALPHA_MIN = 0;
+    const GLASS_ALPHA_MAX = 0.35;
 
     function loadLayout() {
       try {
@@ -2779,9 +2782,13 @@
             vis.stadium = false;
           }
           delete vis.quotes; // drop the orphaned key
+          let ga = Number(obj.glassAlpha);
+          if (!Number.isFinite(ga)) ga = DEFAULT_LAYOUT.glassAlpha;
+          ga = Math.min(GLASS_ALPHA_MAX, Math.max(GLASS_ALPHA_MIN, ga));
           return {
             density: obj.density || DEFAULT_LAYOUT.density,
             visibility: vis,
+            glassAlpha: ga,
           };
         }
       } catch(e) {}
@@ -2802,6 +2809,22 @@
       document.querySelectorAll('.seg-btn[data-density]').forEach(b => {
         b.classList.toggle('active', b.dataset.density === _layout.density);
       });
+      // Glass alpha：写到 CSS 变量上，主屏五张卡片同步改变背景不透明度
+      html.style.setProperty('--glass-alpha', String(_layout.glassAlpha));
+      const slider = document.getElementById('glass-alpha-slider');
+      if (slider && Number(slider.value) !== _layout.glassAlpha) {
+        slider.value = String(_layout.glassAlpha);
+      }
+      const valEl = document.getElementById('glass-alpha-value');
+      if (valEl) valEl.textContent = Math.round(_layout.glassAlpha * 100) + '%';
+    }
+
+    function setGlassAlpha(v) {
+      let n = Number(v);
+      if (!Number.isFinite(n)) return;
+      n = Math.min(GLASS_ALPHA_MAX, Math.max(GLASS_ALPHA_MIN, n));
+      _layout.glassAlpha = n;
+      saveLayout(_layout); applyLayoutToDOM();
     }
 
     function setDensity(d) {
@@ -2830,7 +2853,9 @@
     function applyLayoutPreset(name) {
       const p = LAYOUT_PRESETS[name];
       if (!p) return;
+      const prevGlass = _layout.glassAlpha;
       _layout = JSON.parse(JSON.stringify(p));
+      _layout.glassAlpha = prevGlass; // 玻璃透明度不归预设管，保留用户当前值
       saveLayout(_layout); applyLayoutToDOM();
       const labels = { default:'默认', focus:'任务专注', minimal:'极简', full:'全模块' };
       showToast(`✨ 已切换到「${labels[name]}」布局`);
@@ -3099,7 +3124,7 @@
       // Quick add (with NLP) + celebration
       quickAddTask, toggleQuickAddHint, parseQuickAdd,
       // Layout customization
-      setDensity, setModuleVisible, applyLayoutPreset,
+      setDensity, setModuleVisible, applyLayoutPreset, setGlassAlpha,
       // App icon picker
       setAppIcon, openIconNotice, closeIconNotice,
       // Overdue task nudge

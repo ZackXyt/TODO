@@ -4,6 +4,10 @@
        --wp-grad 变量给 JS 切换配色时同步更新。 */
     html {
       --wp-grad: linear-gradient(135deg, #1a1a2e 0%, #16213e 40%, #0f3460 70%, #9435C0 100%);
+      /* 磨砂玻璃透明度：主屏五张卡片（时钟 / 天气 / 任务 / 随想录 / 专注提醒）
+         共用这个变量。0 = 完全透明（只剩边框与模糊），0.35 = 接近不透明。
+         在拓展坞「玻璃质感」里可拖拽调节。 */
+      --glass-alpha: 0.13;
       background: var(--wp-grad);
       background-color: #1a1a2e;
       background-attachment: fixed;
@@ -73,7 +77,7 @@
     }
 
     .time-card {
-      background: rgba(255,255,255,0.13);
+      background: rgba(255,255,255,var(--glass-alpha));
       backdrop-filter: blur(24px);
       -webkit-backdrop-filter: blur(24px);
       border-radius: 20px;
@@ -125,7 +129,7 @@
     }
 
     .weather-card {
-      background: rgba(255,255,255,0.13);
+      background: rgba(255,255,255,var(--glass-alpha));
       backdrop-filter: blur(24px);
       -webkit-backdrop-filter: blur(24px);
       border-radius: 20px;
@@ -503,7 +507,7 @@
       flex: 1;
       display: flex;
       flex-direction: column;
-      background: rgba(255,255,255,0.13);
+      background: rgba(255,255,255,var(--glass-alpha));
       backdrop-filter: blur(24px);
       -webkit-backdrop-filter: blur(24px);
       border-radius: 20px;
@@ -657,7 +661,8 @@
       flex: 1;
       display: flex;
       flex-direction: column;
-      background: rgba(255,255,255,0.16);
+      /* 任务卡比其他卡片略实一点（+0.03），可读性更稳；跟随同一个变量缩放 */
+      background: rgba(255,255,255,calc(var(--glass-alpha) + 0.03));
       backdrop-filter: blur(24px);
       -webkit-backdrop-filter: blur(24px);
       border-radius: 20px;
@@ -677,7 +682,7 @@
 
     /* 专注提醒卡片样式 - 放置在原小恐龙位置 */
     .status-card {
-      background: rgba(255,255,255,0.13);
+      background: rgba(255,255,255,var(--glass-alpha));
       backdrop-filter: blur(24px);
       -webkit-backdrop-filter: blur(24px);
       border-radius: 16px;
@@ -1244,6 +1249,49 @@
       background: rgba(120,200,255,0.22);
       color: white;
       transform: translateY(-1px);
+    }
+
+    /* ====== GLASS ALPHA SLIDER (in dock) ====== */
+    .glass-slider-row {
+      display: flex; align-items: center; gap: 10px;
+      padding: 4px 0 2px;
+    }
+    .glass-slider-row .glass-label {
+      font-size: 12px; color: rgba(255,255,255,0.85);
+      white-space: nowrap;
+    }
+    .glass-slider-row .glass-value {
+      font-size: 11px; color: rgba(180,220,255,0.75);
+      font-family: 'SF Mono', Menlo, monospace;
+      font-variant-numeric: tabular-nums;
+      min-width: 34px; text-align: right;
+    }
+    .glass-slider {
+      flex: 1;
+      -webkit-appearance: none; appearance: none;
+      height: 4px; border-radius: 4px;
+      background: linear-gradient(to right, rgba(255,255,255,0.08), rgba(255,255,255,0.55));
+      outline: none; cursor: pointer;
+    }
+    .glass-slider::-webkit-slider-thumb {
+      -webkit-appearance: none; appearance: none;
+      width: 16px; height: 16px; border-radius: 50%;
+      background: rgba(255,255,255,0.95);
+      border: 2px solid rgba(120,200,255,0.55);
+      box-shadow: 0 2px 6px rgba(0,0,0,0.35);
+      cursor: pointer; transition: transform 0.15s;
+    }
+    .glass-slider::-webkit-slider-thumb:hover { transform: scale(1.15); }
+    .glass-slider::-moz-range-thumb {
+      width: 16px; height: 16px; border-radius: 50%;
+      background: rgba(255,255,255,0.95);
+      border: 2px solid rgba(120,200,255,0.55);
+      box-shadow: 0 2px 6px rgba(0,0,0,0.35);
+      cursor: pointer;
+    }
+    .glass-hint {
+      font-size: 10.5px; color: rgba(255,255,255,0.45);
+      padding: 2px 0 0; line-height: 1.5;
     }
 
     /* ====== ADMIN MONITOR PANEL ====== */

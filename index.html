@@ -308,6 +308,23 @@
         <span class="menu-item-icon">↩️</span>
         <div>重置壁纸</div>
       </div>
+      <div class="menu-item" style="cursor:default;flex-direction:column;align-items:stretch;gap:6px;">
+        <div style="display:flex;align-items:center;gap:10px;">
+          <span class="menu-item-icon">🪟</span>
+          <div style="flex:1;min-width:0;">
+            <div>磨砂玻璃透明度</div>
+            <div class="menu-item-desc">让卡片更通透 / 更扎实，主屏五张卡片同步变化</div>
+          </div>
+        </div>
+        <div class="glass-slider-row">
+          <span class="glass-label">透</span>
+          <input type="range" class="glass-slider" id="glass-alpha-slider"
+                 min="0" max="0.35" step="0.01" value="0.13"
+                 oninput="setGlassAlpha(this.value)" />
+          <span class="glass-label">实</span>
+          <span class="glass-value" id="glass-alpha-value">13%</span>
+        </div>
+      </div>
     </div>
 
     <div class="menu-section">
