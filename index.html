@@ -227,6 +227,28 @@
     </div>
 
     <div class="menu-section">
+      <div class="menu-section-title">✨ 你的昵称</div>
+      <div class="menu-item" style="cursor:default;flex-direction:column;align-items:stretch;gap:8px;">
+        <div style="display:flex;align-items:center;gap:10px;">
+          <span class="menu-item-icon">🪪</span>
+          <div style="flex:1;min-width:0;">
+            <div>怎么称呼你？</div>
+            <div class="menu-item-desc">设置后，提示和升级问候都会以你的名字起手</div>
+          </div>
+        </div>
+        <div class="nickname-row">
+          <input type="text" class="nickname-input" id="nickname-input"
+                 maxlength="20" placeholder="比如：小光 / Yiting"
+                 oninput="onNicknameInput(this.value)"
+                 onblur="commitNickname(this.value)" />
+          <button class="nickname-clear-btn" id="nickname-clear-btn"
+                  onclick="clearNickname()" title="清除昵称">✕</button>
+        </div>
+        <div class="nickname-hint" id="nickname-hint"></div>
+      </div>
+    </div>
+
+    <div class="menu-section">
       <div class="menu-section-title">工具</div>
       <div class="menu-item" id="focus-menu-item" onclick="toggleFocusMode()">
         <span class="menu-item-icon">🎯</span>

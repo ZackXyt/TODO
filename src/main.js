@@ -1814,11 +1814,111 @@
     setInterval(checkOverdueNudges, 5 * 60 * 1000);
     document.addEventListener('visibilitychange', () => { if (!document.hidden) checkOverdueNudges(); });
 
+    // §NICKNAME ─ 用户昵称（让提示更亲切）
+    // 存在 localStorage.todo_nickname；随想录第一行会同步成 "Hi, ${nick} ✨"
+    // 之前那条问候记在 todo_nickname_greeting，方便修改昵称时精准替换。
+    function getNickname() {
+      return (localStorage.getItem('todo_nickname') || '').trim();
+    }
+    function _greetingFor(nick) {
+      return nick ? `Hi, ${nick} ✨` : '';
+    }
+    function _syncNotepadGreeting(newNick) {
+      const newGreeting = _greetingFor(newNick);
+      const oldGreeting = localStorage.getItem('todo_nickname_greeting') || '';
+      const ta = document.getElementById('notepad-textarea');
+      if (!ta) return;
+      const cur = ta.value || '';
+      const lines = cur.split('\n');
+      const firstLine = lines[0] || '';
+      let next;
+      if (oldGreeting && firstLine === oldGreeting) {
+        // 之前是我们写入的问候 → 直接替换或删掉
+        if (newGreeting) {
+          lines[0] = newGreeting;
+          next = lines.join('\n');
+        } else {
+          // 删掉问候 + 紧跟的一个空行（如果有）
+          lines.shift();
+          if (lines[0] === '') lines.shift();
+          next = lines.join('\n');
+        }
+      } else if (newGreeting) {
+        if (cur.trim() === '') {
+          next = newGreeting + '\n\n';
+        } else {
+          next = newGreeting + '\n\n' + cur;
+        }
+      } else {
+        next = cur; // 没昵称、也没旧问候要清，啥都不动
+      }
+      if (next !== cur) {
+        ta.value = next;
+        localStorage.setItem('todo_notepad', next);
+        localStorage.setItem('todo_notepad_updatedAt', String(Date.now()));
+        try { typeof syncNotepadToCloud === 'function' && syncNotepadToCloud(); } catch {}
+        const countEl = document.getElementById('notepad-count');
+        if (countEl) {
+          const remaining = 500 - next.length;
+          countEl.textContent = remaining;
+          countEl.style.color = remaining < 50 ? 'rgba(255,100,100,0.8)' : 'rgba(255,255,255,0.4)';
+        }
+      }
+      localStorage.setItem('todo_nickname_greeting', newGreeting);
+    }
+    function _refreshNicknameUI() {
+      const nick = getNickname();
+      const input = document.getElementById('nickname-input');
+      const hint = document.getElementById('nickname-hint');
+      const clearBtn = document.getElementById('nickname-clear-btn');
+      if (input && document.activeElement !== input) input.value = nick;
+      if (hint) {
+        if (nick) {
+          hint.textContent = `已设置：以后我会喊你「${nick}」`;
+          hint.classList.remove('empty');
+        } else {
+          hint.textContent = '还没设置 · 暂时按系统口吻提示';
+          hint.classList.add('empty');
+        }
+      }
+      if (clearBtn) clearBtn.hidden = !nick;
+    }
+    function setNickname(name) {
+      const clean = (name || '').trim().replace(/\s+/g, ' ').slice(0, 20);
+      const old = getNickname();
+      if (clean === old) { _refreshNicknameUI(); return; }
+      if (clean) localStorage.setItem('todo_nickname', clean);
+      else       localStorage.removeItem('todo_nickname');
+      _syncNotepadGreeting(clean);
+      _refreshNicknameUI();
+    }
+    function onNicknameInput(v) {
+      // 输入中只更新清除按钮可见性，不立即写入（写入在 blur）
+      const clearBtn = document.getElementById('nickname-clear-btn');
+      if (clearBtn) clearBtn.hidden = !((v || '').trim());
+    }
+    function commitNickname(v) { setNickname(v); }
+    function clearNickname() {
+      const input = document.getElementById('nickname-input');
+      if (input) input.value = '';
+      setNickname('');
+    }
+
     // §TOAST ─ 右下角通知条
     let toastTimer;
+    // 起手不加昵称的前缀：错误、警告、纯系统状态。其它友好提示自动加上 "${nick}, "。
+    const _TOAST_NEUTRAL_RE = /^([❌🚫⚠️🛟🗑]|🔍\s*正在|✅\s*已是|❌\s*检查|🔍|📡|🔄|⏱)/;
     function showToast(msg) {
+      const nick = getNickname();
+      let text = String(msg);
+      if (nick && !_TOAST_NEUTRAL_RE.test(text) && !text.startsWith(nick)) {
+        // emoji 前缀放在最前，昵称插在 emoji 之后：「✨ Yiting，已切换…」
+        const m = text.match(/^(\p{Extended_Pictographic}+\s*)(.*)$/u);
+        if (m) text = `${m[1]}${nick}，${m[2]}`;
+        else   text = `${nick}，${text}`;
+      }
       const el = document.getElementById("toast");
-      el.textContent = msg;
+      el.textContent = text;
       el.classList.add("show");
       clearTimeout(toastTimer);
       toastTimer = setTimeout(() => el.classList.remove("show"), 3200);
@@ -2882,6 +2982,7 @@
     // Apply on load + keep info synced on resize
     applyLayoutToDOM();
     updateScreenInfo();
+    _refreshNicknameUI();
     window.addEventListener('resize', () => { updateScreenInfo(); });
 
     // §QUICK-ADD ─ 快速添加 + 自然语言解析
@@ -3125,6 +3226,8 @@
       quickAddTask, toggleQuickAddHint, parseQuickAdd,
       // Layout customization
       setDensity, setModuleVisible, applyLayoutPreset, setGlassAlpha,
+      // Nickname
+      setNickname, onNicknameInput, commitNickname, clearNickname, getNickname,
       // App icon picker
       setAppIcon, openIconNotice, closeIconNotice,
       // Overdue task nudge

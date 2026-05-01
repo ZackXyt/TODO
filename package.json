@@ -1,6 +1,6 @@
 {
   "name": "lumen",
-  "version": "3.8.0",
+  "version": "3.9.0",
   "description": "凝光 Lumen — 凝聚一束光，专注此时此刻",
   "scripts": {
     "dev": "vite",

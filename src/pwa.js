@@ -131,6 +131,11 @@ function showReleaseNotesModal(data, mode /* 'preview' | 'celebration' */) {
   `).join('');
 
   const isMajor = !!current.majorUpdate;
+  const nick = (() => {
+    try { return (localStorage.getItem('todo_nickname') || '').trim(); }
+    catch { return ''; }
+  })();
+  const nickPrefix = nick ? `${escapeHtml(nick)}，` : '';
   const overlay = document.createElement('div');
   overlay.id = 'release-notes-modal';
   overlay.className = 'rn-overlay'
@@ -142,12 +147,16 @@ function showReleaseNotesModal(data, mode /* 'preview' | 'celebration' */) {
         ${isMajor ? `<div class="rn-major-badge">✨ 重磅更新 ✨</div>` : ''}
         <div class="rn-hero-emoji">${current.emoji || (isCelebration ? '🎉' : '📦')}</div>
         <div class="rn-hero-title">${
-          isCelebration ? (isMajor ? `${escapeHtml(current.title || '重磅更新')} 🎉` : `升级成功！🎉`) : escapeHtml(current.title || '更新日志')
+          isCelebration
+            ? (isMajor
+                ? `${nickPrefix}${escapeHtml(current.title || '重磅更新')} 🎉`
+                : `${nickPrefix}升级成功！🎉`)
+            : `${nickPrefix}${escapeHtml(current.title || '更新日志')}`
         }</div>
         <div class="rn-hero-version">v${current.version}</div>
         <div class="rn-hero-tagline">${
           isCelebration
-            ? '感谢一路陪伴，作者跪谢 🙇'
+            ? (nick ? `${escapeHtml(nick)}，感谢一路陪伴，作者跪谢 🙇` : '感谢一路陪伴，作者跪谢 🙇')
             : escapeHtml(current.tagline || '')
         }</div>
       </div>
